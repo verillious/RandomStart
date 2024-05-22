@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using HarmonyLib;
 using RimWorld;
-using UnityEngine;
 using Verse;
 
 namespace RandomStartMod
@@ -33,21 +32,17 @@ namespace RandomStartMod
                 {
                     ListableOption newOption = new ListableOption(  // Create a new ListableOption object for the new option button
                     "Random".Translate(),                      // Label for the new option button
-                    delegate
-                    {
+                    delegate {
                         LongEventHandler.QueueLongEvent(delegate
-                        {
-                            if (Current.Game == null)
                             {
                                 RandomScenario.SetupForRandomPlay();
-                                Find.GameInitData.PrepForMapGen();
-                                Find.Scenario.PreMapGenerate();
-                            }
-                            Current.Game.InitNewGame();
-                            ScreenFader.SetColor(Color.black);
-                            ScreenFader.StartFade(Color.clear, 0.5f);
-                        }, "GeneratingMap", doAsynchronously: true, GameAndMapInitExceptionHandlers.ErrorWhileGeneratingMap);
-                    });
+                                PageUtility.InitGameStart();
+                            }, "GeneratingMap", doAsynchronously: true, GameAndMapInitExceptionHandlers.ErrorWhileGeneratingMap);
+                    },                                              // Code to execute when the new option button is clicked
+                    null                                            // Tooltip (optional)
+                    );
+                    optList.Insert(0, newOption);
+                    break;
                 }
             }
         }
