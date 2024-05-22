@@ -30,16 +30,15 @@ namespace RandomStartMod
                 // Check if the option has a non-null action, indicating that are the main menu buttons
                 if (opt.action != null)
                 {
-                    ListableOption newOption = new ListableOption(  // Create a new ListableOption object for the new option button
-                    "Random".Translate(),                      // Label for the new option button
+                    ListableOption newOption = new ListableOption(
+                    "Random".Translate(),
                     delegate {
                         LongEventHandler.QueueLongEvent(delegate
                             {
                                 RandomScenario.SetupForRandomPlay();
-                                PageUtility.InitGameStart();
                             }, "GeneratingMap", doAsynchronously: true, GameAndMapInitExceptionHandlers.ErrorWhileGeneratingMap);
-                    },                                              // Code to execute when the new option button is clicked
-                    null                                            // Tooltip (optional)
+                    },
+                    null
                     );
                     optList.Insert(0, newOption);
                     break;

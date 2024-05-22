@@ -2,6 +2,7 @@
 using RimWorld.Planet;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime;
 using Verse;
 
 namespace RandomStartMod
@@ -9,6 +10,29 @@ namespace RandomStartMod
     {
         public static void SetupForRandomPlay()
         {
+            //Current.ProgramState = ProgramState.Entry;
+            //Current.Game = new Game();
+            //Current.Game.InitData = new GameInitData();
+            //Find.GameInitData.startedFromEntry = true;
+
+
+            //ScenarioDef chosenScenario = ScenarioDefOf.Crashlanded;
+            //Current.Game.Scenario = chosenScenario.scenario;
+            //DifficultyDef chosenDifficulty = DifficultyDefOf.Rough;
+            //StorytellerDef chosenStoryteller = StorytellerDefOf.Cassandra;
+            //Current.Game.storyteller = new Storyteller(chosenStoryteller, chosenDifficulty);
+
+            //Current.Game.World = WorldGenerator.GenerateWorld(0.3f, GenText.RandomSeedString(), OverallRainfall.Normal, OverallTemperature.Normal, OverallPopulation.Normal, null, 0.05f);
+
+
+            //Find.GameInitData.ChooseRandomStartingTile();
+            //Season startingSeason = Season.Summer;
+            //Find.GameInitData.startingSeason = startingSeason;
+            //Find.GameInitData.mapSize = 250;
+            //Find.GameInitData.permadeath = true;
+            //Find.Scenario.PostIdeoChosen();
+            //PageUtility.InitGameStart();
+
             Log.Message($"[{"RandomStartMod.Title".Translate()}] Randomising Scenario");
             RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
 
@@ -30,6 +54,7 @@ namespace RandomStartMod
 
             int scenarioIndex = Rand.Range(0, possibleScenarios.Count);
             chosenScenario = possibleScenarios[scenarioIndex];
+            
             Log.Message($"[{"RandomStartMod.Title".Translate()}] Starting Scenario {chosenScenario.LabelCap}");
             Current.Game.Scenario = chosenScenario.scenario;
 
@@ -58,8 +83,11 @@ namespace RandomStartMod
             int storytellerIndex = Rand.Range(0, possibleStorytellers.Count);
 
             chosenStoryteller = possibleStorytellers[storytellerIndex];
+            chosenStoryteller.tutorialMode = false;
 
             Current.Game.storyteller = new Storyteller(chosenStoryteller, chosenDifficulty);
+
+            
 
             if (ModsConfig.AnomalyActive)
             {
@@ -137,7 +165,7 @@ namespace RandomStartMod
                 worldFactions = null;
             }
 
-            
+
             Current.Game.World = WorldGenerator.GenerateWorld(settings.planetCoverage, GenText.RandomSeedString(), rainfall, temperature, population, worldFactions, pollution);
 
 
@@ -149,7 +177,10 @@ namespace RandomStartMod
             Find.GameInitData.startingSeason = startingSeason;
             Find.GameInitData.mapSize = settings.mapSize;
             Find.GameInitData.permadeath = settings.permadeath;
+            
             Find.Scenario.PostIdeoChosen();
+            Find.GameInitData.startedFromEntry = true;
+            PageUtility.InitGameStart();
         }
     }
 }
