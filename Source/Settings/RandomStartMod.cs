@@ -3,12 +3,11 @@ using RimWorld.Planet;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Text;
 using UnityEngine;
 using Verse;
-using Verse.Noise;
 using Verse.Sound;
+using static UnityEngine.Scripting.GarbageCollector;
 
 namespace RandomStartMod
 {
@@ -22,17 +21,19 @@ namespace RandomStartMod
         private static Vector2 mainScrollPosition;
         private static Vector2 factionScrollPosition;
         private static Vector2 planetScrollPosition;
+        private static Vector2 scenariosScrollPosition;
 
         private static float mainListingHeight;
         private static float factionListingHeight;
         private static float planetListingHeight;
+        private static float storytellerListingHeight;
+        private static float scenarioListingHeight;
 
         public int currentTab = 0;
         public RandomStartMod(ModContentPack content) : base(content)
         {
             this.settings = GetSettings<RandomStartSettings>();
         }
-
 
         public override void DoSettingsWindowContents(Rect inRect)
         {
@@ -64,12 +65,22 @@ namespace RandomStartMod
                     currentTab = 2;
                     WriteSettings();
                 }, currentTab == 2),
+                new TabRecord("Storyteller".Translate(), () =>
+                {
+                    currentTab = 3;
+                    WriteSettings();
+                }, currentTab == 3),
+                new TabRecord("StatsReport_ScenarioFactor".Translate(), () =>
+                {
+                    currentTab = 4;
+                    WriteSettings();
+                }, currentTab == 4),
             };
             TabDrawer.DrawTabs(tabRect, tabs);
 
             if (currentTab == 0)
             {
-                DoMainSettingsTabContents(mainRect.ContractedBy(15f));
+                DoDifficultySettingsTabContents(mainRect.ContractedBy(15f));
             }
             else if (currentTab == 1)
             {
@@ -79,10 +90,18 @@ namespace RandomStartMod
             {
                 DoPlanetSettingsTabContents(mainRect.ContractedBy(15f));
             }
+            else if (currentTab == 3)
+            {
+                DoStorytellerSettingsTabContents(mainRect.ContractedBy(15f));
+            }
+            else if (currentTab == 4)
+            {
+                DoScenarioSettingsTabContents(mainRect.ContractedBy(15f));
+            }
 
         }
 
-        public void DoMainSettingsTabContents(Rect inRect)
+        public void DoDifficultySettingsTabContents(Rect inRect)
         {
             Rect rect = new Rect(0f, 60f, inRect.width, mainListingHeight);
             mainListingHeight = 0f;
@@ -186,18 +205,96 @@ namespace RandomStartMod
                 }
             }
 
+            listingStandard.End();
+            Widgets.EndScrollView();
+            base.DoSettingsWindowContents(inRect);
+
+        }
+
+        private void DoScenarioSettingsTabContents(Rect inRect)
+        {
+            Rect rect = new Rect(0f, 60f, inRect.width, scenarioListingHeight);
+            scenarioListingHeight = 0f;
+            Widgets.BeginScrollView(inRect, ref scenariosScrollPosition, rect, false);
+
+            Listing_Standard listingStandard = new Listing_Standard();
+            listingStandard.Begin(rect);
+            
+            // Scenarios
+            listingStandard.Gap();
+            Text.Font = GameFont.Medium;
+            listingStandard.Label("RandomStartMod.RandomlyPick".Translate());
+            listingStandard.GapLine();
+            scenarioListingHeight += 24f + Text.LineHeight;
+            Text.Font = GameFont.Small;
+            
+            List<ScenarioDef> enabledScenarios = DefDatabase<ScenarioDef>.AllDefsListForReading.Where((ScenarioDef item) => !settings.disabledScenarios.Contains(item.defName) && item.scenario.showInUI).ToList();
+
+            for (int i = 0; i < enabledScenarios.Count; i++)
+            {
+                listingStandard.Gap(4f);
+                if (DoScenarioRow(listingStandard.GetRect(24f), enabledScenarios[i], i, enabledScenarios.Count))
+                {
+                    i--;
+                }
+                listingStandard.Gap(4f);
+                scenarioListingHeight += 32f;
+            }
+
+            if (Widgets.ButtonText(listingStandard.GetRect(28f), "Add".Translate().CapitalizeFirst() + "..."))
+            {
+                var floatMenuOptions = new List<FloatMenuOption>();
+                if (settings.disabledScenarios.NullOrEmpty())
+                    settings.disabledScenarios = new List<string>();
+
+                foreach (ScenarioDef item in DefDatabase<ScenarioDef>.AllDefs)
+                {
+                    if (settings.disabledScenarios.Contains(item.defName) && item.scenario.showInUI)
+                    {
+                        floatMenuOptions.Add(new FloatMenuOption(item.LabelCap, () => settings.disabledScenarios.Remove(item.defName), GetSourceIcon(item), Color.white, MenuOptionPriority.Default, null, null, 24f, (Rect r) => Widgets.InfoCardButton(r.x, r.y + 3f, item), null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true));
+                    }
+                }
+
+                if (floatMenuOptions.Count > 0)
+                    Find.WindowStack.Add(new FloatMenu(floatMenuOptions));
+            }
+            scenarioListingHeight += 32f;
+
+            listingStandard.End();
+            Widgets.EndScrollView();
+        }
+
+        private void DoStorytellerSettingsTabContents(Rect inRect)
+        {
+            Rect rect = new Rect(0f, 60f, inRect.width, storytellerListingHeight);
+            storytellerListingHeight = 0f;
+            Widgets.BeginScrollView(inRect, ref mainScrollPosition, rect, false);
+
+            Listing_Standard listingStandard = new Listing_Standard();
+            listingStandard.Begin(rect);
+
             // Storytellers
             listingStandard.Gap();
             Text.Font = GameFont.Medium;
-            listingStandard.Label("Storyteller".Translate());
+            listingStandard.Label("RandomStartMod.RandomlyPick".Translate());
             listingStandard.GapLine();
-            mainListingHeight += 24f + Text.LineHeight;
+            storytellerListingHeight += 24f + Text.LineHeight;
             Text.Font = GameFont.Small;
 
-            Rect leftStorytellerRect = listingStandard.GetRect(30f);
-            float width = leftStorytellerRect.width;
-            leftStorytellerRect.width /= 2f;
-            if (Widgets.ButtonText(leftStorytellerRect, "ClickToAdd".Translate()))
+            List<StorytellerDef> enabledStorytellers = DefDatabase<StorytellerDef>.AllDefsListForReading.Where((StorytellerDef item) => !settings.disabledStorytellers.Contains(item.defName)).ToList();
+
+            for (int i = 0; i < enabledStorytellers.Count; i++)
+            {
+                listingStandard.Gap(4f);
+                if (DoStorytellerRow(listingStandard.GetRect(24f), enabledStorytellers[i], i, enabledStorytellers.Count))
+                {
+                    i--;
+                }
+                listingStandard.Gap(4f);
+                storytellerListingHeight += 32f;
+            }
+
+            if (Widgets.ButtonText(listingStandard.GetRect(28f), "Add".Translate().CapitalizeFirst() + "..."))
             {
                 var floatMenuOptions = new List<FloatMenuOption>();
                 if (settings.disabledStorytellers.NullOrEmpty())
@@ -207,188 +304,18 @@ namespace RandomStartMod
                 {
                     if (item.listVisible && settings.disabledStorytellers.Contains(item.defName))
                     {
-                        floatMenuOptions.Add(new FloatMenuOption(item.LabelCap, () => settings.disabledStorytellers.Remove(item.defName)));
+                        floatMenuOptions.Add(new FloatMenuOption(item.LabelCap, () => settings.disabledStorytellers.Remove(item.defName), GetSourceIcon(item), Color.white, MenuOptionPriority.Default, null, null, 24f, (Rect r) => Widgets.InfoCardButton(r.x, r.y + 3f, item), null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true));
                     }
                 }
 
                 if (floatMenuOptions.Count > 0)
                     Find.WindowStack.Add(new FloatMenu(floatMenuOptions));
             }
-            mainListingHeight += 32f;
-            Rect rightStorytellerRect = listingStandard.GetRect(30f);
-            rightStorytellerRect.width = leftStorytellerRect.width;
-            rightStorytellerRect.x += width - rightStorytellerRect.width;
-            rightStorytellerRect.y -= 30f;
-            if (Widgets.ButtonText(rightStorytellerRect, "ClickToRemove".Translate()))
-            {
-                var floatMenuOptions = new List<FloatMenuOption>();
-                if (settings.disabledStorytellers.NullOrEmpty())
-                    settings.disabledStorytellers = new List<string>();
-
-                listingStandard.Indent();
-                foreach (StorytellerDef item in DefDatabase<StorytellerDef>.AllDefs.OrderBy((StorytellerDef tel) => tel.listOrder))
-                {
-                    if (item.listVisible && !settings.disabledStorytellers.Contains(item.defName))
-                    {
-                        floatMenuOptions.Add(new FloatMenuOption(item.LabelCap, () => settings.disabledStorytellers.Add(item.defName)));
-                    }
-                }
-                listingStandard.Outdent();
-
-                if (floatMenuOptions.Count > 0 && floatMenuOptions.Count != 1)
-                    Find.WindowStack.Add(new FloatMenu(floatMenuOptions));
-            }
-            mainListingHeight += 32f;
-            listingStandard.Label("Enabled".Translate() + ":");
-            mainListingHeight += Text.LineHeight;
-
-            listingStandard.Indent();
-            Text.Font = GameFont.Tiny;
-            foreach (StorytellerDef item in DefDatabase<StorytellerDef>.AllDefs.OrderBy((StorytellerDef tel) => tel.listOrder))
-            {
-                if (item.listVisible && !settings.disabledStorytellers.Contains(item.defName))
-                {
-                    listingStandard.Label(item.LabelCap, -1, item.description.ResolveTags());
-                    mainListingHeight += Text.LineHeight;
-                }
-            }
-            listingStandard.Outdent();
-            Text.Font = GameFont.Small;
-
-
-
-            // Scenarios
-            listingStandard.Gap();
-            Text.Font = GameFont.Medium;
-            listingStandard.Label("StatsReport_ScenarioFactor".Translate());
-            listingStandard.GapLine();
-            mainListingHeight += 24f + Text.LineHeight;
-            Text.Font = GameFont.Small;
-
-            Rect leftScenarioRect = listingStandard.GetRect(30f);
-            leftScenarioRect.width /= 2f;
-            if (Widgets.ButtonText(leftScenarioRect, "ClickToAdd".Translate()))
-            {
-                var floatMenuOptions = new List<FloatMenuOption>();
-                if (settings.disabledScenarios.NullOrEmpty())
-                    settings.disabledScenarios = new List<string>();
-
-                foreach (Scenario item in ScenarioLister.ScenariosInCategory(ScenarioCategory.FromDef))
-                {
-                    if (settings.disabledScenarios.Contains(item.name) && item.showInUI)
-                    {
-                        floatMenuOptions.Add(new FloatMenuOption(item.name, () => settings.disabledScenarios.Remove(item.name)));
-                    }
-                }
-                if (settings.enableCustomScenarios)
-                    foreach (Scenario item in ScenarioLister.ScenariosInCategory(ScenarioCategory.CustomLocal))
-                    {
-                        if (settings.disabledScenarios.Contains(item.name) && item.showInUI)
-                        {
-                            floatMenuOptions.Add(new FloatMenuOption(item.name, () => settings.disabledScenarios.Remove(item.name)));
-                        }
-                    }
-                if (settings.enableSteamWorkshopScenarios)
-                    foreach (Scenario item in ScenarioLister.ScenariosInCategory(ScenarioCategory.SteamWorkshop))
-                    {
-                        if (settings.disabledScenarios.Contains(item.name) && item.showInUI)
-                        {
-                            floatMenuOptions.Add(new FloatMenuOption(item.name, () => settings.disabledScenarios.Remove(item.name)));
-                        }
-                    }
-
-                if (floatMenuOptions.Count > 0)
-                    Find.WindowStack.Add(new FloatMenu(floatMenuOptions));
-            }
-            Rect rightScenarioRect = listingStandard.GetRect(30f);
-            rightScenarioRect.width = leftStorytellerRect.width;
-            rightScenarioRect.x += width - rightScenarioRect.width;
-            rightScenarioRect.y -= 30f;
-
-
-
-            if (Widgets.ButtonText(rightScenarioRect, "ClickToRemove".Translate()))
-            {
-                var floatMenuOptions = new List<FloatMenuOption>();
-                if (settings.disabledScenarios.NullOrEmpty())
-                    settings.disabledScenarios = new List<string>();
-
-                listingStandard.Indent();
-
-                foreach (Scenario item in ScenarioLister.ScenariosInCategory(ScenarioCategory.FromDef))
-                {
-                    if (!settings.disabledScenarios.Contains(item.name) && item.showInUI)
-                    {
-                        floatMenuOptions.Add(new FloatMenuOption(item.name, () => settings.disabledScenarios.Add(item.name)));
-                    }
-                }
-                if (settings.enableCustomScenarios)
-                    foreach (Scenario item in ScenarioLister.ScenariosInCategory(ScenarioCategory.CustomLocal))
-                    {
-                        if (!settings.disabledScenarios.Contains(item.name) && item.showInUI)
-                        {
-                            floatMenuOptions.Add(new FloatMenuOption(item.name, () => settings.disabledScenarios.Add(item.name)));
-                        }
-                    }
-                if (settings.enableSteamWorkshopScenarios)
-                    foreach (Scenario item in ScenarioLister.ScenariosInCategory(ScenarioCategory.SteamWorkshop))
-                    {
-                        if (!settings.disabledScenarios.Contains(item.name) && item.showInUI)
-                        {
-                            floatMenuOptions.Add(new FloatMenuOption(item.name, () => settings.disabledScenarios.Add(item.name)));
-                        }
-                    }
-
-                listingStandard.Outdent();
-
-
-                if (floatMenuOptions.Count > 0 && floatMenuOptions.Count != 1)
-                    Find.WindowStack.Add(new FloatMenu(floatMenuOptions));
-            }
-
-            mainListingHeight += 32f;
-            listingStandard.CheckboxLabeled("ScenariosCustom".Translate(), ref settings.enableCustomScenarios, 0f);
-            listingStandard.CheckboxLabeled("ScenariosSteamWorkshop".Translate(), ref settings.enableSteamWorkshopScenarios, 0f);
-
-            listingStandard.Label("Enabled".Translate() + ":");
-            mainListingHeight += 64f + Text.LineHeight;
-            listingStandard.Indent();
-            Text.Font = GameFont.Tiny;
-            foreach (Scenario item in ScenarioLister.ScenariosInCategory(ScenarioCategory.FromDef))
-            {
-                if (!settings.disabledScenarios.Contains(item.name) && item.showInUI)
-                {
-                    listingStandard.Label(item.name, -1, item.description.ResolveTags());
-                    mainListingHeight += Text.LineHeight;
-                }
-            }
-            if (settings.enableCustomScenarios)
-                foreach (Scenario item in ScenarioLister.ScenariosInCategory(ScenarioCategory.CustomLocal))
-                {
-                    if (!settings.disabledScenarios.Contains(item.name) && item.showInUI)
-                    {
-                        listingStandard.Label(item.name, -1, item.description.ResolveTags());
-                        mainListingHeight += Text.LineHeight;
-                    }
-                }
-            if (settings.enableSteamWorkshopScenarios)
-                foreach (Scenario item in ScenarioLister.ScenariosInCategory(ScenarioCategory.SteamWorkshop))
-                {
-                    if (!settings.disabledScenarios.Contains(item.name) && item.showInUI)
-                    {
-                        listingStandard.Label(item.name, -1, item.description.ResolveTags());
-                        mainListingHeight += Text.LineHeight;
-                    }
-                }
-
-            listingStandard.Outdent();
-            Text.Font = GameFont.Small;
-
+            storytellerListingHeight += 32f;
 
             listingStandard.End();
             Widgets.EndScrollView();
             base.DoSettingsWindowContents(inRect);
-
         }
 
         private void DoFactionSettingsTabContents(Rect inRect)
@@ -412,7 +339,7 @@ namespace RandomStartMod
  
             listingStandard.Gap();
             Text.Font = GameFont.Medium;
-            listingStandard.Label("RandomStartMod.FactionsAlwaysAdd".Translate());
+            listingStandard.Label("RandomStartMod.AlwaysSpawn".Translate());
             listingStandard.GapLine();
             factionListingHeight += 24f + Text.LineHeight;
             Text.Font = GameFont.Small;
@@ -476,7 +403,7 @@ namespace RandomStartMod
 
             listingStandard.Gap();
             Text.Font = GameFont.Medium;
-            listingStandard.Label("RandomStartMod.FactionsRandomlyAdd".Translate());
+            listingStandard.Label("RandomStartMod.RandomlySpawn".Translate());
             listingStandard.GapLine();
             factionListingHeight += 24f + Text.LineHeight;
             Text.Font = GameFont.Small;
@@ -752,11 +679,84 @@ namespace RandomStartMod
                 {
                     settings.startingSeason = (int)Season.PermanentWinter;
                 }
-                mainListingHeight += 32f * 6;
+                storytellerListingHeight += 32f * 6;
 
             }
             listingStandard.End();
             Widgets.EndScrollView();
+        }
+
+        public bool DoScenarioRow(Rect rect, ScenarioDef scenarioDef, int index, int scenarioCount)
+        {
+            bool result = false;
+            Rect rect2 = new Rect(rect.x, rect.y - 4f, rect.width, rect.height + 8f);
+            if (index % 2 == 1)
+            {
+                Widgets.DrawLightHighlight(rect2);
+            }
+            Widgets.BeginGroup(rect);
+            WidgetRow widgetRow = new WidgetRow(6f, 0f);
+            GUI.color = Color.white;
+            
+            widgetRow.Icon(GetSourceIcon(scenarioDef));
+            
+            GUI.color = Color.white;
+            widgetRow.Gap(4f);
+            Text.Anchor = TextAnchor.MiddleCenter;
+            widgetRow.Label(scenarioDef.LabelCap);
+            Text.Anchor = TextAnchor.UpperLeft;
+            if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
+            {
+                SoundDefOf.Click.PlayOneShotOnCamera();
+                if (scenarioCount > 1)
+                {
+                    settings.disabledScenarios.Add(scenarioDef.defName);
+                    result = true;
+                }
+            }
+            Widgets.EndGroup();
+            if (Mouse.IsOver(rect2))
+            {
+                TooltipHandler.TipRegion(rect2, scenarioDef.LabelCap.AsTipTitle() + "\n" + scenarioDef.description + "\n" + "\n" + GetSourceModMetaData(scenarioDef).Name.AsTipTitle());
+                Widgets.DrawHighlight(rect2);
+            }
+            return result;
+        }
+
+        public bool DoStorytellerRow(Rect rect, StorytellerDef storytellerDef, int index, int storyTellerCount)
+        {
+            bool result = false;
+            Rect rect2 = new Rect(rect.x, rect.y - 4f, rect.width, rect.height + 8f);
+            if (index % 2 == 1)
+            {
+                Widgets.DrawLightHighlight(rect2);
+            }
+            Widgets.BeginGroup(rect);
+            WidgetRow widgetRow = new WidgetRow(6f, 0f);
+            GUI.color = Color.white;
+            ModContentPack mod = storytellerDef.modContentPack;
+            widgetRow.Icon(GetSourceIcon(storytellerDef));
+            GUI.color = Color.white;
+            widgetRow.Gap(4f);
+            Text.Anchor = TextAnchor.MiddleCenter;
+            widgetRow.Label(storytellerDef.LabelCap);
+            Text.Anchor = TextAnchor.UpperLeft;
+            if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
+            {
+                SoundDefOf.Click.PlayOneShotOnCamera();
+                if(storyTellerCount > 1)
+                {
+                    settings.disabledStorytellers.Add(storytellerDef.defName);
+                    result = true;
+                }
+            }
+            Widgets.EndGroup();
+            if (Mouse.IsOver(rect2))
+            {
+                TooltipHandler.TipRegion(rect2, storytellerDef.LabelCap.AsTipTitle() + "\n" + storytellerDef.description + "\n" + "\n" + GetSourceModMetaData(storytellerDef).Name.AsTipTitle());
+                Widgets.DrawHighlight(rect2);
+            }
+            return result;
         }
 
         public bool DoFactionRow(Rect rect, FactionDef factionDef, List<string> factionDefNames, int index)
@@ -776,21 +776,38 @@ namespace RandomStartMod
             Text.Anchor = TextAnchor.MiddleCenter;
             widgetRow.Label(factionDef.LabelCap);
             Text.Anchor = TextAnchor.UpperLeft;
-            if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete) && TutorSystem.AllowAction("ConfiguringWorldFactions"))
+            if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
             {
                 SoundDefOf.Click.PlayOneShotOnCamera();
                 factionDefNames.RemoveAt(index);
                 result = true;
             }
             Widgets.EndGroup();
+            ModContentPack mod = factionDef.modContentPack;
             if (Mouse.IsOver(rect2))
             {
-                TooltipHandler.TipRegion(rect2, factionDef.LabelCap.AsTipTitle() + "\n" + factionDef.Description);
+                TooltipHandler.TipRegion(rect2, factionDef.LabelCap.AsTipTitle() + "\n" + factionDef.Description + "\n" + "\n" + GetSourceModMetaData(factionDef).Name.AsTipTitle());
                 Widgets.DrawHighlight(rect2);
             }
             return result;
         }
 
+        public ModMetaData GetSourceModMetaData(Def def)
+        {
+            return def.modContentPack.ModMetaData;
+        }
+
+        public Texture2D GetSourceIcon(Def def)
+        {
+            ModContentPack modContentPack = def.modContentPack;
+            ModMetaData modMetaData = modContentPack.ModMetaData;
+            if (modContentPack.IsOfficialMod)
+            {
+                return modMetaData.Expansion.Icon;
+            }
+            else
+                return modMetaData.Icon;
+        }
         public override string SettingsCategory()
         {
             return "RandomStartMod.Title".Translate();

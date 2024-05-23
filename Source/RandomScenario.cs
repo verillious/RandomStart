@@ -1,37 +1,22 @@
 ﻿using RimWorld;
 using RimWorld.Planet;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime;
+using UnityEngine.SceneManagement;
 using Verse;
+using Verse.Profile;
 
 namespace RandomStartMod
 {    public static class RandomScenario
     {
+        public static void LogMessage(string message)
+        {
+            Log.Message($"[{"RandomStartMod.Title".Translate()}] {message}");
+        }
         public static void SetupForRandomPlay()
         {
-            //Current.ProgramState = ProgramState.Entry;
-            //Current.Game = new Game();
-            //Current.Game.InitData = new GameInitData();
-            //Find.GameInitData.startedFromEntry = true;
-
-
-            //ScenarioDef chosenScenario = ScenarioDefOf.Crashlanded;
-            //Current.Game.Scenario = chosenScenario.scenario;
-            //DifficultyDef chosenDifficulty = DifficultyDefOf.Rough;
-            //StorytellerDef chosenStoryteller = StorytellerDefOf.Cassandra;
-            //Current.Game.storyteller = new Storyteller(chosenStoryteller, chosenDifficulty);
-
-            //Current.Game.World = WorldGenerator.GenerateWorld(0.3f, GenText.RandomSeedString(), OverallRainfall.Normal, OverallTemperature.Normal, OverallPopulation.Normal, null, 0.05f);
-
-
-            //Find.GameInitData.ChooseRandomStartingTile();
-            //Season startingSeason = Season.Summer;
-            //Find.GameInitData.startingSeason = startingSeason;
-            //Find.GameInitData.mapSize = 250;
-            //Find.GameInitData.permadeath = true;
-            //Find.Scenario.PostIdeoChosen();
-            //PageUtility.InitGameStart();
 
             Log.Message($"[{"RandomStartMod.Title".Translate()}] Randomising Scenario");
             RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
@@ -45,7 +30,7 @@ namespace RandomStartMod
 
             foreach (ScenarioDef item in DefDatabase<ScenarioDef>.AllDefs)
             {
-                if (!settings.disabledScenarios.Contains(item.scenario.name) && item.scenario.showInUI)
+                if (!settings.disabledScenarios.Contains(item.defName) && item.scenario.showInUI)
                 {
                     Log.Message($"[{"RandomStartMod.Title".Translate()}] Adding {item.LabelCap} to possible scenarios");
                     possibleScenarios.Add(item);
@@ -54,8 +39,7 @@ namespace RandomStartMod
 
             int scenarioIndex = Rand.Range(0, possibleScenarios.Count);
             chosenScenario = possibleScenarios[scenarioIndex];
-            
-            Log.Message($"[{"RandomStartMod.Title".Translate()}] Starting Scenario {chosenScenario.LabelCap}");
+
             Current.Game.Scenario = chosenScenario.scenario;
 
             DifficultyDef chosenDifficulty = DifficultyDefOf.Rough;
@@ -68,7 +52,7 @@ namespace RandomStartMod
                     break;
                 }
             }
-
+            
             StorytellerDef chosenStoryteller = StorytellerDefOf.Cassandra;
             List<StorytellerDef> possibleStorytellers = new List<StorytellerDef>();
 
@@ -87,7 +71,7 @@ namespace RandomStartMod
 
             Current.Game.storyteller = new Storyteller(chosenStoryteller, chosenDifficulty);
 
-            
+
 
             if (ModsConfig.AnomalyActive)
             {
@@ -128,7 +112,6 @@ namespace RandomStartMod
 
             if (settings.randomiseFactions)
             {
-                Log.Message($"[{"RandomStartMod.Title".Translate()}] Randomising Faction");
                 IEnumerable<FactionDef> allFactionDefs = DefDatabase<FactionDef>.AllDefsListForReading.Where((FactionDef x) => x.isPlayer);
 
                 foreach (string factionDefName in settings.factionsAlwaysAdd)
@@ -177,7 +160,7 @@ namespace RandomStartMod
             Find.GameInitData.startingSeason = startingSeason;
             Find.GameInitData.mapSize = settings.mapSize;
             Find.GameInitData.permadeath = settings.permadeath;
-            
+
             Find.Scenario.PostIdeoChosen();
             Find.GameInitData.startedFromEntry = true;
             PageUtility.InitGameStart();

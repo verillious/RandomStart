@@ -36,7 +36,7 @@ namespace RandomStartMod
                         LongEventHandler.QueueLongEvent(delegate
                             {
                                 RandomScenario.SetupForRandomPlay();
-                            }, "GeneratingMap", doAsynchronously: true, GameAndMapInitExceptionHandlers.ErrorWhileGeneratingMap);
+                            }, "GeneratingMap", doAsynchronously: false, GameAndMapInitExceptionHandlers.ErrorWhileGeneratingMap);
                     },
                     null
                     );
