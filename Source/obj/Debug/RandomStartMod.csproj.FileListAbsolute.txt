@@ -1,0 +1,11 @@
+C:\Users\wsach\Documents\RandomStart\Source\obj\Debug\RandomStartMod.csproj.AssemblyReference.cache
+C:\Users\wsach\Documents\RandomStart\Source\obj\Debug\RandomStartMod.csproj.CoreCompileInputs.cache
+C:\Users\wsach\Documents\RandomStart\1.4\Assemblies\RandomStartMod.dll
+C:\Users\wsach\Documents\RandomStart\Source\obj\Debug\RandomStartMod.csproj.CopyComplete
+C:\Users\wsach\Documents\RandomStart\Source\obj\Debug\RandomStartMod.dll
+C:\Users\wsach\Documents\RandomStart\1.5\Assemblies\RandomStartMod.dll
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\RandomStart\1.5\Assemblies\RandomStartMod.dll
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\RandomStart\Source\obj\Debug\RandomStartMod.csproj.AssemblyReference.cache
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\RandomStart\Source\obj\Debug\RandomStartMod.csproj.CoreCompileInputs.cache
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\RandomStart\Source\obj\Debug\RandomStartMod.csproj.CopyComplete
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\RandomStart\Source\obj\Debug\RandomStartMod.dll
