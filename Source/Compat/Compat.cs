@@ -1,4 +1,5 @@
 ﻿using RimWorld;
+using SaveOurShip2;
 using System.Collections.Generic;
 using System.Linq;
 using Verse;
@@ -9,7 +10,7 @@ namespace RandomStartMod.Compat
     {
         public static void SetupForKCSG()
         {
-            Util.LogMessage("[Compat] Setting up for KCSG AddStartingStructure");
+            Util.LogMessage("[VECoreCompat] Setting up for KCSG AddStartingStructure");
             if (Current.Game.Scenario.AllParts.ToList().Any((ScenPart s) => s.def.defName == "VFEC_AddStartingStructure"))
             {
                 KCSG.PrepareCarefully_Util.pcScenariosSave.Clear();
@@ -31,7 +32,7 @@ namespace RandomStartMod.Compat
 
             if (Current.Game.Scenario.AllParts.Count((ScenPart s) => s.def.defName == "VFEE_SpawnRaid") > 0)
             {
-                Util.LogMessage("[Compat] Adding Mandatory Deserter faction");
+                Util.LogMessage("[VFEECompat] Adding Mandatory Deserter faction");
                 FactionDef deserterFactionDef = DefDatabase<FactionDef>.AllDefsListForReading.First((FactionDef f) => f.defName == "VFEE_Deserters");
                 if (deserterFactionDef != null)
                 {
@@ -51,12 +52,32 @@ namespace RandomStartMod.Compat
 
             if (Current.Game.Scenario.AllParts.Count((ScenPart s) => s.def.defName == "VFED_StartDeserting") > 0)
             {
-                Util.LogMessage("[Compat] Adding Mandatory Deserter faction");
+                Util.LogMessage("[VFEDCompat] Adding Mandatory Deserter faction");
                 FactionDef deserterFactionDef = DefDatabase<FactionDef>.AllDefsListForReading.First((FactionDef f) => f.defName == "VFEE_Deserters");
                 if (deserterFactionDef != null)
                 {
                     factions.Add(deserterFactionDef);
 
+                }
+            }
+        }
+    }
+
+    public static class SOS2Compat
+    {
+        public static void SetupForStartInSpace()
+        {
+            foreach (ScenPart part in Find.Scenario.AllParts)
+            {
+                {
+                    if (part is ScenPart_LoadShip p && p.HasValidFilename())
+                    {
+                        p.DoEarlyInit();
+                    }
+                    else if (part is ScenPart_StartInSpace s)
+                    {
+                        s.DoEarlyInit();
+                    }
                 }
             }
         }

@@ -16,13 +16,7 @@ namespace RandomStartMod
         public bool randomisePopulation = true;
         public bool randomisePollution = false;
         public bool randomiseSeason = false;
-        public bool randomiseFactions = false;
-
-        public bool alwaysAddInsects = false;
-        public bool alwaysAddHostileAncients = false;
-        public bool alwaysAddNeutralAncients = false;
-        public bool alwaysAddMechanoidHive = false;
-        public bool alwaysAddMechanoid = false;
+        public bool randomiseFactions = true;
 
         public int rainfall = 3;
         public int temperature = 3;
@@ -33,12 +27,11 @@ namespace RandomStartMod
         public int minimumFactions = 5;
         public int maximumFactions = 15;
 
-        public bool enableCustomScenarios = false;
-        public bool enableSteamWorkshopScenarios = false;
+        public bool enableCustomScenarios = true;
+        public bool enableSteamWorkshopScenarios = true;
 
         public List<string> disabledStorytellers = new List<string>();
         public List<string> disabledScenarios = new List<string>() { "Tutorial" };
-        public List<string> disabledFactions = new List<string>();
         public List<string> factionsAlwaysAdd = new List<string>()
         {
             "Ancients",
@@ -47,7 +40,8 @@ namespace RandomStartMod
             "Insect",
             "Empire",
             "HoraxCult",
-            "Entities"
+            "Entities",
+            "VFEE_Deserters"
         };
         public List<string> factionsRandomlyAdd = new List<string>()
         {
@@ -67,7 +61,6 @@ namespace RandomStartMod
             "OutlanderRoughPig",
             "PirateWaster",
             "Sanguophages",
-            "HoraxCult"
         };
 
         public Vector2 scrollPosition;
@@ -89,13 +82,13 @@ namespace RandomStartMod
             Scribe_Values.Look(ref randomisePopulation, "randomisePopulation", true);
             Scribe_Values.Look(ref randomisePollution, "randomisePollution", false);
             Scribe_Values.Look(ref randomiseSeason, "randomiseSeason", false);
-            Scribe_Values.Look(ref randomiseFactions, "randomiseFactions", false);
+            Scribe_Values.Look(ref randomiseFactions, "randomiseFactions", true);
 
-            Scribe_Values.Look(ref enableCustomScenarios, "enableCustomScenarios", false);
+            Scribe_Values.Look(ref enableCustomScenarios, "enableCustomScenarios", true);
             Scribe_Values.Look(
                 ref enableSteamWorkshopScenarios,
                 "enableSteamWorkshopScenarios",
-                false
+                true
             );
 
             Scribe_Values.Look(ref rainfall, "rainfall", 3);
@@ -117,12 +110,6 @@ namespace RandomStartMod
                 new List<string>() { "Tutorial" }
             );
             Scribe_Collections.Look(
-                ref disabledFactions,
-                "disabledFactions",
-                LookMode.Value,
-                new List<string>()
-            );
-            Scribe_Collections.Look(
                 ref factionsAlwaysAdd,
                 "factionsAlwaysAdd",
                 LookMode.Value,
@@ -134,7 +121,8 @@ namespace RandomStartMod
                     "Insect",
                     "Empire",
                     "HoraxCult",
-                    "Entities"
+                    "Entities",
+                    "VFEE_Deserters"
                 }
             );
             Scribe_Collections.Look(
@@ -159,7 +147,6 @@ namespace RandomStartMod
                     "OutlanderRoughPig",
                     "PirateWaster",
                     "Sanguophages",
-                    "HoraxCult"
                 }
             );
 

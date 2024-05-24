@@ -3,6 +3,7 @@ using RimWorld.Planet;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using Verse;
 
@@ -117,41 +118,32 @@ namespace RandomStartMod
             if (settings.randomisePollution)
                 pollution = Rand.Range(0f, 1f);
 
-            List<FactionDef> selectedFactions = DefDatabase<FactionDef>.AllDefsListForReading.Where((FactionDef f) => !settings.disabledFactions.Contains(f.defName)).ToList();
             List<FactionDef> worldFactions = new List<FactionDef>();
 
-            if (settings.randomiseFactions)
+            IEnumerable<FactionDef> allFactionDefs = DefDatabase<FactionDef>.AllDefsListForReading.Where((FactionDef x) => x.isPlayer);
+
+            foreach (string factionDefName in settings.factionsAlwaysAdd)
             {
-                IEnumerable<FactionDef> allFactionDefs = DefDatabase<FactionDef>.AllDefsListForReading.Where((FactionDef x) => x.isPlayer);
-
-                foreach (string factionDefName in settings.factionsAlwaysAdd)
-                {
-                    FactionDef faction = DefDatabase<FactionDef>.GetNamed(factionDefName, false);
-                    if (faction == null)
-                        continue;
-                    worldFactions.Add(faction);
-                }
-                if (settings.factionsRandomlyAdd.Count > 0)
-                {
-                    int factionCount = worldFactions.Count((FactionDef x) => !x.hidden);
-                    int diff = 11 - factionCount;
-                    if (diff > 0)
-                    {
-                        for (int i = 0; i < diff; i++)
-                        {
-                            FactionDef faction = DefDatabase<FactionDef>.GetNamed(settings.factionsRandomlyAdd[Rand.Range(0, settings.factionsRandomlyAdd.Count)], false);
-                            if (faction == null)
-                                continue;
-                            worldFactions.Add(faction);
-                        }
-                    }
-
-                }
-
+                FactionDef faction = DefDatabase<FactionDef>.GetNamed(factionDefName, false);
+                if (faction == null)
+                    continue;
+                worldFactions.Add(faction);
             }
-            else
+            if (settings.factionsRandomlyAdd.Count > 0)
             {
-                worldFactions = null;
+                int factionCount = worldFactions.Count((FactionDef x) => !x.hidden);
+                int diff = 11 - factionCount;
+                if (diff > 0)
+                {
+                    for (int i = 0; i < diff; i++)
+                    {
+                        FactionDef faction = DefDatabase<FactionDef>.GetNamed(settings.factionsRandomlyAdd[Rand.Range(0, settings.factionsRandomlyAdd.Count)], false);
+                        if (faction == null)
+                            continue;
+                        worldFactions.Add(faction);
+                    }
+                }
+
             }
 
             if (Util.IsModRunning("Vanilla Factions Expanded - Empire"))
@@ -162,6 +154,11 @@ namespace RandomStartMod
             if (Util.IsModRunning("Vanilla Factions Expanded - Deserters"))
             {
                 Compat.VFEDCompat.EnsureScenarioFactions(worldFactions);
+            }
+
+            if (Util.IsModRunning("Save Our Ship 2") && Util.IsScenarioFromMod("Save Our Ship 2"))
+            {
+                Compat.SOS2Compat.SetupForStartInSpace();
             }
 
             Current.Game.World = WorldGenerator.GenerateWorld(settings.planetCoverage, GenText.RandomSeedString(), rainfall, temperature, population, worldFactions, pollution);

@@ -494,11 +494,11 @@ namespace RandomStartMod
             {
                 stringBuilder.AppendLine("Warning".Translate() + ": " + "AncientsHostileDisabledContentWarning".Translate(FactionDefOf.AncientsHostile.label));
             }
-            if (!factionsAlwaysAdd.Contains(FactionDefOf.HoraxCult))
+            if (ModsConfig.AnomalyActive && !factionsAlwaysAdd.Contains(FactionDefOf.HoraxCult))
             {
                 stringBuilder.AppendLine("Warning".Translate() + ": " + "HoraxCultHostileDisabledContentWarning".Translate(FactionDefOf.HoraxCult.label));
             }
-            if (!factionsAlwaysAdd.Contains(FactionDefOf.Entities))
+            if (ModsConfig.AnomalyActive && !factionsAlwaysAdd.Contains(FactionDefOf.Entities))
             {
                 stringBuilder.AppendLine("Warning".Translate() + ": " + "EntitiesHostileDisabledContentWarning".Translate(FactionDefOf.Entities.label));
             }

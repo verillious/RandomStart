@@ -45,4 +45,14 @@ namespace RandomStartMod
             }
         }
     }
+
+    //[HarmonyPatch(typeof(ScenPart), "PostGameStart")]
+    //public class ScenarioPart_Patch
+    //{
+    //    [HarmonyPostfix]
+    //    public static void Postfix(ScenPart __instance)
+    //    {
+    //        Util.LogMessage(__instance.def.defName);
+    //    }
+    //}
 }
