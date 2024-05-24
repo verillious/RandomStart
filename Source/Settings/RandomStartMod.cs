@@ -7,7 +7,6 @@ using System.Text;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
-using static UnityEngine.Scripting.GarbageCollector;
 
 namespace RandomStartMod
 {

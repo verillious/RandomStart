@@ -5,6 +5,8 @@ using Verse;
 
 namespace RandomStartMod
 {
+
+
     [HarmonyPatch(typeof(OptionListingUtility), "DrawOptionListing")]
     public class OptionListingUtility_Patch
     {
@@ -32,7 +34,8 @@ namespace RandomStartMod
                 {
                     ListableOption newOption = new ListableOption(
                     "Random".Translate(),
-                    delegate {
+                    delegate
+                    {
                         LongEventHandler.QueueLongEvent(delegate
                             {
                                 RandomScenario.SetupForRandomPlay();

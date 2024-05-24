@@ -1,8 +1,4 @@
-using RimWorld;
-using RimWorld.Planet;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using Verse;
 
@@ -28,7 +24,6 @@ namespace RandomStartMod
         public bool alwaysAddMechanoidHive = false;
         public bool alwaysAddMechanoid = false;
 
-
         public int rainfall = 3;
         public int temperature = 3;
         public int population = 3;
@@ -44,8 +39,36 @@ namespace RandomStartMod
         public List<string> disabledStorytellers = new List<string>();
         public List<string> disabledScenarios = new List<string>() { "Tutorial" };
         public List<string> disabledFactions = new List<string>();
-        public List<string> factionsAlwaysAdd = new List<string>() { "Ancients", "AncientsHostile", "Mechanoid", "Insect", "Empire", "HoraxCult", "Entities" };
-        public List<string> factionsRandomlyAdd = new List<string>() {"OutlanderCivil", "OutlanderRough","TribeCivil", "TribeRough", "TribeSavage", "Pirate", "Empire", "CannibalPirate", "NudistTribe", "TribeCannibal", "TribeRoughNeanderthal", "PirateYttakin", "TribeSavageImpid", "OutlanderRoughPig", "PirateWaster", "Sanguophages", "HoraxCult" };
+        public List<string> factionsAlwaysAdd = new List<string>()
+        {
+            "Ancients",
+            "AncientsHostile",
+            "Mechanoid",
+            "Insect",
+            "Empire",
+            "HoraxCult",
+            "Entities"
+        };
+        public List<string> factionsRandomlyAdd = new List<string>()
+        {
+            "OutlanderCivil",
+            "OutlanderRough",
+            "TribeCivil",
+            "TribeRough",
+            "TribeSavage",
+            "Pirate",
+            "Empire",
+            "CannibalPirate",
+            "NudistTribe",
+            "TribeCannibal",
+            "TribeRoughNeanderthal",
+            "PirateYttakin",
+            "TribeSavageImpid",
+            "OutlanderRoughPig",
+            "PirateWaster",
+            "Sanguophages",
+            "HoraxCult"
+        };
 
         public Vector2 scrollPosition;
 
@@ -54,7 +77,6 @@ namespace RandomStartMod
         public float anomalyThreatsActiveFraction = 0.3f;
         public float studyEfficiencyFactor = 1.0f;
         public float overrideAnomalyThreatsFraction = 0.15f;
-
 
         public override void ExposeData()
         {
@@ -69,9 +91,12 @@ namespace RandomStartMod
             Scribe_Values.Look(ref randomiseSeason, "randomiseSeason", false);
             Scribe_Values.Look(ref randomiseFactions, "randomiseFactions", false);
 
-
             Scribe_Values.Look(ref enableCustomScenarios, "enableCustomScenarios", false);
-            Scribe_Values.Look(ref enableSteamWorkshopScenarios, "enableSteamWorkshopScenarios", false);
+            Scribe_Values.Look(
+                ref enableSteamWorkshopScenarios,
+                "enableSteamWorkshopScenarios",
+                false
+            );
 
             Scribe_Values.Look(ref rainfall, "rainfall", 3);
             Scribe_Values.Look(ref temperature, "temperature", 3);
@@ -79,17 +104,82 @@ namespace RandomStartMod
             Scribe_Values.Look(ref pollution, "pollution", 0.05f);
             Scribe_Values.Look(ref startingSeason, "startingSeason", 2);
 
-            Scribe_Collections.Look(ref disabledStorytellers, "disabledStorytellers", LookMode.Value, new List<string>());
-            Scribe_Collections.Look(ref disabledScenarios, "disabledScenarios", LookMode.Value, new List<string>() { "Tutorial" });
-            Scribe_Collections.Look(ref disabledFactions, "disabledFactions", LookMode.Value, new List<string>());
-            Scribe_Collections.Look(ref factionsAlwaysAdd, "factionsAlwaysAdd", LookMode.Value, new List<string>() { "Ancients", "AncientsHostile", "Mechanoid", "Insect", "Empire", "HoraxCult", "Entities" });
-            Scribe_Collections.Look(ref factionsRandomlyAdd, "factionsRandomlyAdd", LookMode.Value, new List<string>() { "OutlanderCivil", "OutlanderRough", "TribeCivil", "TribeRough", "TribeSavage", "Pirate", "Empire", "CannibalPirate", "NudistTribe", "TribeCannibal", "TribeRoughNeanderthal", "PirateYttakin", "TribeSavageImpid", "OutlanderRoughPig", "PirateWaster", "Sanguophages", "HoraxCult" });
+            Scribe_Collections.Look(
+                ref disabledStorytellers,
+                "disabledStorytellers",
+                LookMode.Value,
+                new List<string>()
+            );
+            Scribe_Collections.Look(
+                ref disabledScenarios,
+                "disabledScenarios",
+                LookMode.Value,
+                new List<string>() { "Tutorial" }
+            );
+            Scribe_Collections.Look(
+                ref disabledFactions,
+                "disabledFactions",
+                LookMode.Value,
+                new List<string>()
+            );
+            Scribe_Collections.Look(
+                ref factionsAlwaysAdd,
+                "factionsAlwaysAdd",
+                LookMode.Value,
+                new List<string>()
+                {
+                    "Ancients",
+                    "AncientsHostile",
+                    "Mechanoid",
+                    "Insect",
+                    "Empire",
+                    "HoraxCult",
+                    "Entities"
+                }
+            );
+            Scribe_Collections.Look(
+                ref factionsRandomlyAdd,
+                "factionsRandomlyAdd",
+                LookMode.Value,
+                new List<string>()
+                {
+                    "OutlanderCivil",
+                    "OutlanderRough",
+                    "TribeCivil",
+                    "TribeRough",
+                    "TribeSavage",
+                    "Pirate",
+                    "Empire",
+                    "CannibalPirate",
+                    "NudistTribe",
+                    "TribeCannibal",
+                    "TribeRoughNeanderthal",
+                    "PirateYttakin",
+                    "TribeSavageImpid",
+                    "OutlanderRoughPig",
+                    "PirateWaster",
+                    "Sanguophages",
+                    "HoraxCult"
+                }
+            );
 
             Scribe_Values.Look(ref anomalyPlaystyle, "anomalyPlaystyle", "Standard");
-            Scribe_Values.Look(ref anomalyThreatsInactiveFraction, "anomalyThreatsInactiveFraction", 0.08f);
-            Scribe_Values.Look(ref anomalyThreatsActiveFraction, "anomalyThreatsActiveFraction", 0.3f);
+            Scribe_Values.Look(
+                ref anomalyThreatsInactiveFraction,
+                "anomalyThreatsInactiveFraction",
+                0.08f
+            );
+            Scribe_Values.Look(
+                ref anomalyThreatsActiveFraction,
+                "anomalyThreatsActiveFraction",
+                0.3f
+            );
             Scribe_Values.Look(ref studyEfficiencyFactor, "studyEfficiencyFactor", 0.05f);
-            Scribe_Values.Look(ref overrideAnomalyThreatsFraction, "overrideAnomalyThreatsFraction", 0.15f);
+            Scribe_Values.Look(
+                ref overrideAnomalyThreatsFraction,
+                "overrideAnomalyThreatsFraction",
+                0.15f
+            );
 
             base.ExposeData();
         }

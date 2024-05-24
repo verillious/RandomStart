@@ -1,12 +1,8 @@
 ﻿using RimWorld;
 using RimWorld.Planet;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime;
-using UnityEngine.SceneManagement;
 using Verse;
-using Verse.Profile;
 
 namespace RandomStartMod
 {    public static class RandomScenario
@@ -160,7 +156,10 @@ namespace RandomStartMod
             Find.GameInitData.startingSeason = startingSeason;
             Find.GameInitData.mapSize = settings.mapSize;
             Find.GameInitData.permadeath = settings.permadeath;
-
+            if (Compat.VECoreCompat.Running())
+            {
+                Compat.VECoreCompat.SetupForKCSG();
+            }
             Find.Scenario.PostIdeoChosen();
             Find.GameInitData.startedFromEntry = true;
             PageUtility.InitGameStart();
