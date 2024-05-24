@@ -2,19 +2,17 @@
 using RimWorld.Planet;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime;
+using System.Security.Cryptography;
 using Verse;
 
 namespace RandomStartMod
 {    public static class RandomScenario
     {
-        public static void LogMessage(string message)
-        {
-            Log.Message($"[{"RandomStartMod.Title".Translate()}] {message}");
-        }
         public static void SetupForRandomPlay()
         {
 
-            Log.Message($"[{"RandomStartMod.Title".Translate()}] Randomising Scenario");
+            Util.LogMessage($"Randomising Scenario");
             RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
 
             Current.ProgramState = ProgramState.Entry;
@@ -28,15 +26,24 @@ namespace RandomStartMod
             {
                 if (!settings.disabledScenarios.Contains(item.defName) && item.scenario.showInUI)
                 {
-                    Log.Message($"[{"RandomStartMod.Title".Translate()}] Adding {item.LabelCap} to possible scenarios");
                     possibleScenarios.Add(item);
                 }
             }
 
-            int scenarioIndex = Rand.Range(0, possibleScenarios.Count);
-            chosenScenario = possibleScenarios[scenarioIndex];
+            if (possibleScenarios.Count > 0)
+            {
+                int scenarioIndex = Rand.Range(0, possibleScenarios.Count);
+                chosenScenario = possibleScenarios[scenarioIndex];
+            }
+            else
+            {
+                settings.disabledScenarios.Remove(chosenScenario.defName);
+            }
+
 
             Current.Game.Scenario = chosenScenario.scenario;
+
+            Util.LogMessage($"Starting {Current.Game.Scenario}");
 
             DifficultyDef chosenDifficulty = DifficultyDefOf.Rough;
 
@@ -60,9 +67,16 @@ namespace RandomStartMod
                 }
             }
 
-            int storytellerIndex = Rand.Range(0, possibleStorytellers.Count);
+            if(possibleStorytellers.Count > 0)
+            {
+                int storytellerIndex = Rand.Range(0, possibleStorytellers.Count);
+                chosenStoryteller = possibleStorytellers[storytellerIndex];
+            }
+            else
+            {
+                settings.disabledStorytellers.Remove(chosenStoryteller.defName);
+            }
 
-            chosenStoryteller = possibleStorytellers[storytellerIndex];
             chosenStoryteller.tutorialMode = false;
 
             Current.Game.storyteller = new Storyteller(chosenStoryteller, chosenDifficulty);
@@ -116,8 +130,6 @@ namespace RandomStartMod
                     if (faction == null)
                         continue;
                     worldFactions.Add(faction);
-                    Log.Message($"[{"RandomStartMod.Title".Translate()}] Added mandatory faction: {faction.LabelCap}");
-
                 }
                 if (settings.factionsRandomlyAdd.Count > 0)
                 {
@@ -130,7 +142,6 @@ namespace RandomStartMod
                             FactionDef faction = DefDatabase<FactionDef>.GetNamed(settings.factionsRandomlyAdd[Rand.Range(0, settings.factionsRandomlyAdd.Count)], false);
                             if (faction == null)
                                 continue;
-                            Log.Message($"[{"RandomStartMod.Title".Translate()}] Adding Faction {faction.LabelCap}");
                             worldFactions.Add(faction);
                         }
                     }
@@ -138,30 +149,42 @@ namespace RandomStartMod
                 }
 
             }
-
             else
             {
                 worldFactions = null;
             }
 
+            if (Util.IsModRunning("Vanilla Factions Expanded - Empire"))
+            {
+                Compat.VFEECompat.EnsureScenarioFactions(worldFactions);
+            }
+
+            if (Util.IsModRunning("Vanilla Factions Expanded - Deserters"))
+            {
+                Compat.VFEDCompat.EnsureScenarioFactions(worldFactions);
+            }
 
             Current.Game.World = WorldGenerator.GenerateWorld(settings.planetCoverage, GenText.RandomSeedString(), rainfall, temperature, population, worldFactions, pollution);
-
 
             Find.GameInitData.ChooseRandomStartingTile();
 
             Season startingSeason = (Season)settings.startingSeason;
             if (settings.randomiseSeason)
                 startingSeason = (Season)Rand.Range(1, 6);
+
             Find.GameInitData.startingSeason = startingSeason;
             Find.GameInitData.mapSize = settings.mapSize;
             Find.GameInitData.permadeath = settings.permadeath;
-            if (Compat.VECoreCompat.Running())
+            
+            if (Util.IsModRunning("Vanilla Expanded Framework"))
             {
                 Compat.VECoreCompat.SetupForKCSG();
             }
+
             Find.Scenario.PostIdeoChosen();
+
             Find.GameInitData.startedFromEntry = true;
+
             PageUtility.InitGameStart();
         }
     }

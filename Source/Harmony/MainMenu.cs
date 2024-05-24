@@ -5,8 +5,6 @@ using Verse;
 
 namespace RandomStartMod
 {
-
-
     [HarmonyPatch(typeof(OptionListingUtility), "DrawOptionListing")]
     public class OptionListingUtility_Patch
     {
@@ -26,10 +24,8 @@ namespace RandomStartMod
                 justEnteredMainMenu = true;
             }
 
-            // Iterate over each option in the optList collection
             foreach (ListableOption opt in optList)
             {
-                // Check if the option has a non-null action, indicating that are the main menu buttons
                 if (opt.action != null)
                 {
                     ListableOption newOption = new ListableOption(
