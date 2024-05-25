@@ -8,7 +8,8 @@ using System.Security.Cryptography;
 using Verse;
 
 namespace RandomStartMod
-{    public static class RandomScenario
+{
+    public static class RandomScenario
     {
         public static void SetupForRandomPlay()
         {
@@ -45,30 +46,67 @@ namespace RandomStartMod
             Current.Game.Scenario = chosenScenario.scenario;
 
             Util.LogMessage($"Starting {Current.Game.Scenario}");
-
-            DifficultyDef chosenDifficulty = DifficultyDefOf.Rough;
-
-            foreach (DifficultyDef item in DefDatabase<DifficultyDef>.AllDefs)
+            DifficultyDef chosenDifficultyDef = DefDatabase<DifficultyDef>.AllDefs.First((DifficultyDef d) => d.defName == settings.difficulty);
+            if (chosenDifficultyDef.isCustom)
             {
-                if (item.defName == settings.difficulty)
-                {
-                    chosenDifficulty = item;
-                    break;
-                }
+                chosenDifficultyDef.threatScale = settings.threatScale;
+                chosenDifficultyDef.allowBigThreats = settings.allowBigThreats;
+                chosenDifficultyDef.allowIntroThreats = settings.allowIntroThreats;
+                chosenDifficultyDef.allowCaveHives = settings.allowCaveHives;
+                chosenDifficultyDef.peacefulTemples = settings.peacefulTemples;
+                chosenDifficultyDef.allowViolentQuests = settings.allowViolentQuests;
+                chosenDifficultyDef.predatorsHuntHumanlikes = settings.predatorsHuntHumanlikes;
+                chosenDifficultyDef.scariaRotChance = settings.scariaRotChance;
+                chosenDifficultyDef.colonistMoodOffset = settings.colonistMoodOffset;
+                chosenDifficultyDef.tradePriceFactorLoss = settings.tradePriceFactorLoss;
+                chosenDifficultyDef.cropYieldFactor = settings.cropYieldFactor;
+                chosenDifficultyDef.mineYieldFactor = settings.mineYieldFactor;
+                chosenDifficultyDef.butcherYieldFactor = settings.butcherYieldFactor;
+                chosenDifficultyDef.researchSpeedFactor = settings.researchSpeedFactor;
+                chosenDifficultyDef.diseaseIntervalFactor = settings.diseaseIntervalFactor;
+                chosenDifficultyDef.enemyReproductionRateFactor = settings.enemyReproductionRateFactor;
+                chosenDifficultyDef.playerPawnInfectionChanceFactor = settings.playerPawnInfectionChanceFactor;
+                chosenDifficultyDef.manhunterChanceOnDamageFactor = settings.manhunterChanceOnDamageFactor;
+                chosenDifficultyDef.deepDrillInfestationChanceFactor = settings.deepDrillInfestationChanceFactor;
+                chosenDifficultyDef.wastepackInfestationChanceFactor = settings.wastepackInfestationChanceFactor;
+                chosenDifficultyDef.foodPoisonChanceFactor = settings.foodPoisonChanceFactor;
+                chosenDifficultyDef.maintenanceCostFactor = settings.maintenanceCostFactor;
+                chosenDifficultyDef.enemyDeathOnDownedChanceFactor = settings.enemyDeathOnDownedChanceFactor;
+                chosenDifficultyDef.adaptationGrowthRateFactorOverZero = settings.adaptationGrowthRateFactorOverZero;
+                chosenDifficultyDef.adaptationEffectFactor = settings.adaptationEffectFactor;
+                chosenDifficultyDef.questRewardValueFactor = settings.questRewardValueFactor;
+                chosenDifficultyDef.raidLootPointsFactor = settings.raidLootPointsFactor;
+                chosenDifficultyDef.allowTraps = settings.allowTraps;
+                chosenDifficultyDef.allowTurrets = settings.allowTurrets;
+                chosenDifficultyDef.allowMortars = settings.allowMortars;
+                chosenDifficultyDef.classicMortars = settings.classicMortars;
+                chosenDifficultyDef.allowExtremeWeatherIncidents = settings.allowExtremeWeatherIncidents;
+                chosenDifficultyDef.fixedWealthMode = settings.fixedWealthMode;
+                chosenDifficultyDef.lowPopConversionBoost = settings.lowPopConversionBoost;
+                chosenDifficultyDef.minThreatPointsRangeCeiling = settings.minThreatPointsRangeCeiling;
+                chosenDifficultyDef.babiesAreHealthy = settings.babiesAreHealthy;
+                chosenDifficultyDef.noBabiesOrChildren = settings.noBabiesOrChildren;
+                chosenDifficultyDef.childAgingRate = settings.childAgingRate;
+                chosenDifficultyDef.adultAgingRate = settings.adultAgingRate;
+                chosenDifficultyDef.unwaveringPrisoners = settings.unwaveringPrisoners;
+                chosenDifficultyDef.childRaidersAllowed = settings.childRaidersAllowed;
+                chosenDifficultyDef.anomalyThreatsInactiveFraction = settings.anomalyThreatsInactiveFraction;
+                chosenDifficultyDef.anomalyThreatsActiveFraction = settings.anomalyThreatsActiveFraction;
+                chosenDifficultyDef.studyEfficiencyFactor = settings.studyEfficiencyFactor;
             }
-            
+
             StorytellerDef chosenStoryteller = StorytellerDefOf.Cassandra;
             List<StorytellerDef> possibleStorytellers = new List<StorytellerDef>();
 
             foreach (StorytellerDef item in DefDatabase<StorytellerDef>.AllDefs)
             {
-                if (!settings.disabledStorytellers.Contains(item.defName))
+                if (!settings.disabledStorytellers.Contains(item.defName) && item.listVisible)
                 {
                     possibleStorytellers.Add(item);
                 }
             }
 
-            if(possibleStorytellers.Count > 0)
+            if (possibleStorytellers.Count > 0)
             {
                 int storytellerIndex = Rand.Range(0, possibleStorytellers.Count);
                 chosenStoryteller = possibleStorytellers[storytellerIndex];
@@ -80,9 +118,15 @@ namespace RandomStartMod
 
             chosenStoryteller.tutorialMode = false;
 
-            Current.Game.storyteller = new Storyteller(chosenStoryteller, chosenDifficulty);
+            Current.Game.storyteller = new Storyteller(chosenStoryteller, chosenDifficultyDef);
 
-
+            if (chosenDifficultyDef.isCustom)
+            {
+                Difficulty difficulty = Current.Game.storyteller.difficulty;
+                difficulty.fixedWealthTimeFactor = settings.fixedWealthTimeFactor;
+                difficulty.friendlyFireChanceFactor = settings.friendlyFireChanceFactor;
+                difficulty.allowInstantKillChance = settings.allowInstantKillChance;
+            }
 
             if (ModsConfig.AnomalyActive)
             {
@@ -172,7 +216,7 @@ namespace RandomStartMod
             Find.GameInitData.startingSeason = startingSeason;
             Find.GameInitData.mapSize = settings.mapSize;
             Find.GameInitData.permadeath = settings.permadeath;
-            
+
             if (Util.IsModRunning("Vanilla Expanded Framework"))
             {
                 Compat.VECoreCompat.SetupForKCSG();

@@ -2,9 +2,7 @@
 using HarmonyLib;
 using RimWorld;
 using Verse;
-using System.Collections.Generic;
 using UnityEngine;
-using Verse.Steam;
 using System.Linq;
 
 namespace RandomStartMod
@@ -32,20 +30,24 @@ namespace RandomStartMod
             {
                 if (opt.action != null)
                 {
+                    RandomStartMod randomStartMod = (RandomStartMod)LoadedModManager.ModHandles.First((Mod m) => m.Content.Name == "Random Start");
                     ListableOption newOption = new ListableOption(
                     "Random".Translate(),
                     delegate
                     {
                         if (Input.GetMouseButtonUp(0))
                         {
-                            LongEventHandler.QueueLongEvent(delegate
+                            if (randomStartMod.CheckFirstTimeDialog())
                             {
-                                RandomScenario.SetupForRandomPlay();
-                            }, "GeneratingMap", doAsynchronously: false, GameAndMapInitExceptionHandlers.ErrorWhileGeneratingMap);
+                                LongEventHandler.QueueLongEvent(delegate
+                                {
+                                    RandomScenario.SetupForRandomPlay();
+                                }, "GeneratingMap", doAsynchronously: false, GameAndMapInitExceptionHandlers.ErrorWhileGeneratingMap);
+                            }
+
                         }
                         else
                         {
-                            Mod randomStartMod = LoadedModManager.ModHandles.First((Mod m) => m.Content.Name == "Random Start");
                             Find.WindowStack.Add(new Dialog_ModSettings(randomStartMod));
                         }
                     },
