@@ -23,6 +23,7 @@ namespace RandomStartMod.Compat
             }
         }
     }
+
     public static class VFEECompat
     {
         public static void EnsureScenarioFactions(List<FactionDef> factions)
@@ -67,17 +68,16 @@ namespace RandomStartMod.Compat
     {
         public static void SetupForStartInSpace()
         {
+            Util.LogMessage("[SOS2Compat] Running DoEarlyInit on SOS2 ScenParts");
             foreach (ScenPart part in Find.Scenario.AllParts)
             {
+                if (part is ScenPart_LoadShip p && p.HasValidFilename())
                 {
-                    if (part is ScenPart_LoadShip p && p.HasValidFilename())
-                    {
-                        p.DoEarlyInit();
-                    }
-                    else if (part is ScenPart_StartInSpace s)
-                    {
-                        s.DoEarlyInit();
-                    }
+                    p.DoEarlyInit();
+                }
+                else if (part is ScenPart_StartInSpace s)
+                {
+                    s.DoEarlyInit();
                 }
             }
         }

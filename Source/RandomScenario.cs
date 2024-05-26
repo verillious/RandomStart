@@ -223,6 +223,48 @@ namespace RandomStartMod
             }
 
             Find.Scenario.PostIdeoChosen();
+            if (ModsConfig.BiotechActive)
+            {
+                if (settings.enableRandomXenotypes)
+                {
+                    foreach (Pawn p in Find.GameInitData.startingAndOptionalPawns)
+                    {
+                        XenotypeDef xenotype = DefDatabase<XenotypeDef>.AllDefsListForReading.RandomElement();
+                        p.genes.SetXenotype(xenotype);
+                    }
+                }
+
+                if (settings.enableRandomCustomXenotypes)
+                {
+                    foreach (Pawn p in Find.GameInitData.startingAndOptionalPawns)
+                    {
+                        List<GeneDef> selectedGenes = new List<GeneDef>();
+                        for (int i = 0; i < Rand.Range(10, 30); i++)
+                        {
+                            selectedGenes.Add(DefDatabase<GeneDef>.AllDefsListForReading.RandomElement());
+                        }
+                        if (selectedGenes.Count > 0)
+                        {
+                            p.genes.xenotypeName = GeneUtility.GenerateXenotypeNameFromGenes(selectedGenes);
+                            p.genes.iconDef = DefDatabase<XenotypeIconDef>.GetRandom();
+
+                            foreach (GeneDef geneDef in selectedGenes)
+                            {
+                                Gene gene = GeneMaker.MakeGene(geneDef, p);
+                                p.genes.AddGene(gene, Rand.Bool);
+                                p.genes.OverrideAllConflicting(gene);
+                            }
+                            foreach (Gene gene in p.genes.GenesListForReading)
+                            {
+                                if (gene.Overridden)
+                                {
+                                    p.genes.RemoveGene(gene);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             Find.GameInitData.startedFromEntry = true;
 

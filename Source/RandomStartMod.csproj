@@ -82,7 +82,7 @@
     <Compile Include="Compat\Compat.cs" />
     <Compile Include="RandomScenario.cs" />
     <Compile Include="Harmony\HarmonyPatcher.cs" />
-    <Compile Include="Harmony\MainMenu.cs" />
+    <Compile Include="Harmony\OptionListingUtility_Patch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings\RandomStartMod.cs" />
     <Compile Include="Settings\RandomStartSettings.cs" />

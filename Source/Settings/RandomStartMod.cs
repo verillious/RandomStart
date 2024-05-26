@@ -28,19 +28,14 @@ namespace RandomStartMod
         private static float planetListingHeight;
         private static float storytellerListingHeight;
         private static float scenarioListingHeight;
+        private static float optionalFeaturesListingHeight;
 
         private static float sectionHeightThreats = 0f;
-
         private static float sectionHeightGeneral = 0f;
-
         private static float sectionHeightPlayerTools = 0f;
-
         private static float sectionHeightEconomy = 0f;
-
         private static float sectionHeightAdaptation = 0f;
-
         private static float sectionHeightIdeology = 0f;
-
         private static float sectionHeightChildren = 0f;
 
 
@@ -72,16 +67,6 @@ namespace RandomStartMod
                     currentTab = 0;
                     WriteSettings();
                 }, currentTab == 0),
-                new TabRecord("Factions".Translate(), () =>
-                {
-                    currentTab = 1;
-                    WriteSettings();
-                }, currentTab == 1),
-                new TabRecord("TabPlanet".Translate(), () =>
-                {
-                    currentTab = 2;
-                    WriteSettings();
-                }, currentTab == 2),
                 new TabRecord("Storyteller".Translate(), () =>
                 {
                     currentTab = 3;
@@ -92,6 +77,21 @@ namespace RandomStartMod
                     currentTab = 4;
                     WriteSettings();
                 }, currentTab == 4),
+                new TabRecord("TabPlanet".Translate(), () =>
+                {
+                    currentTab = 2;
+                    WriteSettings();
+                }, currentTab == 2),
+                new TabRecord("Factions".Translate(), () =>
+                {
+                    currentTab = 1;
+                    WriteSettings();
+                }, currentTab == 1),
+                new TabRecord("Unstable Features".Translate(), () =>
+                {
+                    currentTab = 5;
+                    WriteSettings();
+                }, currentTab == 5),
             };
             TabDrawer.DrawTabs(tabRect, tabs);
 
@@ -114,6 +114,10 @@ namespace RandomStartMod
             else if (currentTab == 4)
             {
                 DoScenarioSettingsTabContents(mainRect.ContractedBy(15f));
+            }
+            else if (currentTab == 5)
+            {
+                DoOptionalFeaturesTabContents(mainRect.ContractedBy(15f));
             }
 
         }
@@ -239,7 +243,7 @@ namespace RandomStartMod
                 Listing_Standard listing_Standard = new Listing_Standard();
                 float num3 = listingStandard.ColumnWidth;
                 listing_Standard.ColumnWidth = num3 / 2f - 17f;
-                Rect rect4 = listingStandard.GetRect(9999f);
+                Rect rect4 = listingStandard.GetRect(1200f);
                 listing_Standard.Begin(rect4);
                 listing_Standard.Gap();
                 float curHeight = listing_Standard.CurHeight;
@@ -251,13 +255,11 @@ namespace RandomStartMod
                 DrawCustomRight(listing_Standard);
                 listing_Standard.Gap(gapHeight);
                 listing_Standard.End();
-                mainListingHeight += 9999f;
+                mainListingHeight += 1200f;
             }
 
             listingStandard.End();
             Widgets.EndScrollView();
-            base.DoSettingsWindowContents(inRect);
-
         }
 
         private void DoScenarioSettingsTabContents(Rect inRect)
@@ -728,13 +730,28 @@ namespace RandomStartMod
                 {
                     settings.startingSeason = (int)Season.PermanentWinter;
                 }
-                storytellerListingHeight += 32f * 6;
-
+                planetListingHeight += 32f * 6;
             }
             listingStandard.End();
             Widgets.EndScrollView();
         }
 
+        private void DoOptionalFeaturesTabContents(Rect inRect)
+        {
+            Rect rect = new Rect(0f, 60f, inRect.width, optionalFeaturesListingHeight);
+            optionalFeaturesListingHeight = 0f;
+            Widgets.BeginScrollView(inRect, ref mainScrollPosition, rect, false);
+
+            Listing_Standard listingStandard = new Listing_Standard();
+            listingStandard.Begin(rect);
+
+            DoOptionalFeatureRow(listingStandard.GetRect(24f), "EnableRandomXenotypes".Translate(), "Randomising pawn Xenotypes is currently unstable but working.", ref settings.enableRandomXenotypes);
+            optionalFeaturesListingHeight += 24f;
+            DoOptionalFeatureRow(listingStandard.GetRect(24f), "EnableRandomCustomXenotypes".Translate(), "Randomising pawn Xenotypes is currently unstable but working.", ref settings.enableRandomCustomXenotypes);
+            optionalFeaturesListingHeight += 24f;
+            listingStandard.End();
+            Widgets.EndScrollView();
+        }
 
         private void DrawCustomLeft(Listing_Standard listing)
         {
@@ -932,36 +949,6 @@ namespace RandomStartMod
             value = num;
         }
 
-        private static void DrawCustomDifficultySlider(Listing_Standard listing, string label, string tooltip, ref float value, ToStringStyle style, ToStringNumberSense numberSense, float min, float max, float precision = 0.01f, bool reciprocate = false, float reciprocalCutoff = 1000f)
-        {
-            DrawCustomDifficultySlider(listing, label, null, tooltip, ref value, style, numberSense, min, max, precision, reciprocate, reciprocalCutoff);
-        }
-
-        private static void DrawCustomDifficultySlider(Listing_Standard listing, string label, string labelSuffix, string tooltip, ref float value, ToStringStyle style, ToStringNumberSense numberSense, float min, float max, float precision = 0.01f, bool reciprocate = false, float reciprocalCutoff = 1000f)
-        {
-            float num = value;
-            if (reciprocate)
-            {
-                num = Reciprocal(num, reciprocalCutoff);
-            }
-            label = label.CapitalizeFirst() + ": " + num.ToStringByStyle(style, numberSense);
-            if (!labelSuffix.NullOrEmpty())
-            {
-                label = label + " - " + labelSuffix;
-            }
-            listing.Label(label, -1f, tooltip.CapitalizeFirst());
-            float num2 = listing.Slider(num, min, max);
-            if (num2 != num)
-            {
-                num = GenMath.RoundTo(num2, precision);
-            }
-            if (reciprocate)
-            {
-                num = Reciprocal(num, reciprocalCutoff);
-            }
-            value = num;
-        }
-
         private static void DrawCustomDifficultyCheckbox(Listing_Standard listing, string optionName, ref bool value, bool invert = false, bool showTooltip = true)
         {
             string text = (invert ? "_Inverted" : "");
@@ -1088,6 +1075,25 @@ namespace RandomStartMod
                 Widgets.DrawHighlight(rect2);
             }
             return result;
+        }
+
+        public void DoOptionalFeatureRow(Rect rect, string label, string description, ref bool checkOn)
+        {
+
+            Widgets.BeginGroup(rect);
+            WidgetRow widgetRow = new WidgetRow(6f, 0f);
+            widgetRow.Gap(4f);
+            Text.Anchor = TextAnchor.MiddleCenter;
+            widgetRow.Label(label);
+            Text.Anchor = TextAnchor.UpperLeft;
+
+            Widgets.Checkbox(new Vector2(rect.width - 24f - 6f, 0f), ref checkOn);
+            Widgets.EndGroup();
+            if (Mouse.IsOver(rect))
+            {
+                TooltipHandler.TipRegion(rect, label + "\n" + description);
+                Widgets.DrawHighlight(rect);
+            }
         }
 
         public ModMetaData GetSourceModMetaData(Def def)

@@ -1,3 +1,4 @@
+using MonoMod.Core.Platforms;
 using RimWorld;
 using System;
 using System.Collections.Generic;
@@ -121,6 +122,13 @@ namespace RandomStartMod
         public float friendlyFireChanceFactor = 0.4f;
         public float allowInstantKillChance = 0f;
         public float fixedWealthTimeFactor = 1f;
+
+
+        //Feature Flags
+
+        public bool enableRandomXenotypes = false;
+        public bool enableRandomCustomXenotypes = false;
+        public bool enableSkipRuins = false;
 
         public override void ExposeData()
         {
@@ -265,6 +273,9 @@ namespace RandomStartMod
             Scribe_Values.Look(ref anomalyThreatsInactiveFraction, "anomalyThreatsInactiveFraction", 0.08f);
             Scribe_Values.Look(ref anomalyThreatsActiveFraction, "anomalyThreatsActiveFraction", 0.3f);
             Scribe_Values.Look(ref studyEfficiencyFactor, "studyEfficiencyFactor", 1f);
+
+            Scribe_Values.Look(ref enableRandomXenotypes, "enableRandomXenotypes", false);
+            Scribe_Values.Look(ref enableRandomCustomXenotypes, "enableRandomCustomXenotypes", false);
 
             base.ExposeData();
         }
