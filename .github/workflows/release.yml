@@ -3,14 +3,14 @@ name: Release
 env:
   # Change this to point to your solution, or the folder in which your solution 
   # can be found.
-  SLN_PATH: Source/
+  SLN_PATH: Source/RandomStart.sln
   # Change this to what you want your folder name to be in people's Mods/
   # folder. It should be unique to your mod.
-  MOD_NAME: RimCI
+  MOD_NAME: RandomStart
   # These two environment variables control whether all releases created by the
   # release job are drafts or prereleases.
-  RELEASE_DRAFT: true
-  RELEASE_PRERELEASE: false
+  RELEASE_DRAFT: false
+  RELEASE_PRERELEASE: true
 
 on:
   push:
