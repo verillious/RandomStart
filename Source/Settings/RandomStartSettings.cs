@@ -128,7 +128,6 @@ namespace RandomStartMod
 
         public bool enableRandomXenotypes = false;
         public bool enableRandomCustomXenotypes = false;
-        public bool enableSkipRuins = false;
 
         public override void ExposeData()
         {
@@ -278,6 +277,128 @@ namespace RandomStartMod
             Scribe_Values.Look(ref enableRandomCustomXenotypes, "enableRandomCustomXenotypes", false);
 
             base.ExposeData();
+        }
+
+        public void ResetDifficulty()
+        {
+            difficulty = "Rough";
+            anomalyPlaystyle = "Standard";
+            allowBigThreats = true;
+            allowIntroThreats = true;
+            allowCaveHives = true;
+            peacefulTemples = false;
+            allowViolentQuests = true;
+            predatorsHuntHumanlikes = true;
+            babiesAreHealthy = false;
+            noBabiesOrChildren = false;
+            allowTraps = true;
+            allowTurrets = true;
+            allowMortars = true;
+            classicMortars = false;
+            allowExtremeWeatherIncidents = true;
+            fixedWealthMode = false;
+            unwaveringPrisoners = true;
+            childRaidersAllowed = false;
+            childShamblersAllowed = false;
+            threatScale = 1f;
+            scariaRotChance = 0.4f;
+            colonistMoodOffset = 0f;
+            tradePriceFactorLoss = 0f;
+            cropYieldFactor = 1f;
+            mineYieldFactor = 1f;
+            butcherYieldFactor = 1f;
+            researchSpeedFactor = 1f;
+            diseaseIntervalFactor = 1f;
+            enemyReproductionRateFactor = 1f;
+            playerPawnInfectionChanceFactor = 1f;
+            manhunterChanceOnDamageFactor = 1f;
+            deepDrillInfestationChanceFactor = 1f;
+            wastepackInfestationChanceFactor = 1f;
+            foodPoisonChanceFactor = 1f;
+            maintenanceCostFactor = 1f;
+            enemyDeathOnDownedChanceFactor = 1f;
+            adaptationGrowthRateFactorOverZero = 1f;
+            adaptationEffectFactor = 1f;
+            questRewardValueFactor = 1f;
+            raidLootPointsFactor = 1f;
+            lowPopConversionBoost = 3f;
+            minThreatPointsRangeCeiling = 70f;
+            childAgingRate = 4f;
+            adultAgingRate = 1f;
+            anomalyThreatsInactiveFraction = 0.08f;
+            anomalyThreatsActiveFraction = 0.3f;
+            overrideAnomalyThreatsFraction = 0.15f;
+            studyEfficiencyFactor = 1f;
+            friendlyFireChanceFactor = 0.4f;
+            allowInstantKillChance = 0f;
+            fixedWealthTimeFactor = 1f;
+        }
+        public void ResetPlanet()
+        {
+            mapSize = 250;
+            planetCoverage = 0.3f;
+            permadeath = false;
+            randomiseRainfall = true;
+            randomiseTemperature = true;
+            randomisePopulation = true;
+            randomisePollution = false;
+            randomiseSeason = false;
+            randomiseFactions = true;
+            rainfall = 3;
+            temperature = 3;
+            population = 3;
+            pollution = 0.05f;
+            startingSeason = 2;
+        }
+        public void ResetFactions()
+        {
+            factionsAlwaysAdd = new List<string>()
+            {
+                "Ancients",
+                "AncientsHostile",
+                "Mechanoid",
+                "Insect",
+                "Empire",
+                "HoraxCult",
+                "Entities",
+                "VFEE_Deserters"
+            };
+            factionsRandomlyAdd = new List<string>()
+            {
+                "OutlanderCivil",
+                "OutlanderRough",
+                "TribeCivil",
+                "TribeRough",
+                "TribeSavage",
+                "Pirate",
+                "Empire",
+                "CannibalPirate",
+                "NudistTribe",
+                "TribeCannibal",
+                "TribeRoughNeanderthal",
+                "PirateYttakin",
+                "TribeSavageImpid",
+                "OutlanderRoughPig",
+                "PirateWaster",
+                "Sanguophages",
+            };
+
+        }
+        public void ResetScenarios()
+        {
+            enableCustomScenarios = true;
+            enableSteamWorkshopScenarios = true;
+            disabledScenarios = new List<string>() { "Tutorial" };
+        }
+        public void ResetStorytellers()
+        {
+            disabledStorytellers = new List<string>() { "Tutorial" };
+        }
+
+        public void ResetFeatures()
+        {
+            enableRandomXenotypes = false;
+            enableRandomCustomXenotypes = false;
         }
     }
 }

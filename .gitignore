@@ -2,3 +2,4 @@ packages/
 .vs/
 Source/obj/
 Source/bin/
+.config/
