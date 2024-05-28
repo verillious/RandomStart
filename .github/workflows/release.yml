@@ -36,7 +36,7 @@ jobs:
     - name: Setup Dotnet
       uses: actions/setup-dotnet@3
       with:
-        dotnet-version: 4.7.x
+        dotnet-version: 6.0.x
       
     - name: Install Mod Dependencies
       run: dotnet restore ${{ env.SLN_PATH }}
