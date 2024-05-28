@@ -28,7 +28,7 @@ jobs:
     strategy:
       matrix:
         # You can configure operating systems to build on here. It shouldn't make a difference 
-        operating-system: [ubuntu-latest, windows-latest, macOS-latest]
+        operating-system: [ubuntu-latest]
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
