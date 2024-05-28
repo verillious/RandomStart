@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
 	<RandomStartMod.Title>Random Start</RandomStartMod.Title>
-	<RandomStartMod.AlwaysSpawn>Always spawn</RandomStartMod.AlwaysSpawn>
-	<RandomStartMod.RandomlySpawn>Randomly spawn from</RandomStartMod.RandomlySpawn>
-	<RandomStartMod.RandomlyPick>Randomly pick from</RandomStartMod.RandomlyPick>
+	<RandomStartMod.LaunchingWithoutConfiguring>You are launching {0} but you haven't configured it yet.</RandomStartMod.LaunchingWithoutConfiguring>
+	<RandomStartMod.SettingsAccess>(You can access the settings by right-clicking the <b>Random</b> button)</RandomStartMod.SettingsAccess>
 </LanguageData>

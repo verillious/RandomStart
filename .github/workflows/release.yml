@@ -1,0 +1,33 @@
+name: Build Release
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Version
+        id: update-version
+        uses: MathieuSoysal/replace-string-in-file@v1.0.0
+        with:
+          file: About.xml
+          old-string: MODVERSION
+          new-string: ${{ github.event.release.tag_name }}
+      - name: Package
+        id: package
+        run: |
+          mkdir RandomStart
+          cp -r About/ 1.5/ LoadFolders.xml LICENSE README.md RandomStart
+          zip -9 -r RandomStart.zip RandomStart
+      - name: Upload Package
+        id: upload-package
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: RandomStart.zip
+          asset_name: RandomStart-${{ github.event.release.tag_name }}.zip
+          asset_content_type: application/octet-stream

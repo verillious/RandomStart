@@ -2,11 +2,11 @@
 using HarmonyLib;
 using RimWorld;
 using Verse;
+using UnityEngine;
+using System.Linq;
 
 namespace RandomStartMod
 {
-
-
     [HarmonyPatch(typeof(OptionListingUtility), "DrawOptionListing")]
     public class OptionListingUtility_Patch
     {
@@ -26,20 +26,30 @@ namespace RandomStartMod
                 justEnteredMainMenu = true;
             }
 
-            // Iterate over each option in the optList collection
             foreach (ListableOption opt in optList)
             {
-                // Check if the option has a non-null action, indicating that are the main menu buttons
                 if (opt.action != null)
                 {
+                    RandomStartMod randomStartMod = (RandomStartMod)LoadedModManager.ModHandles.First((Mod m) => m.Content.Name == "Random Start");
                     ListableOption newOption = new ListableOption(
                     "Random".Translate(),
                     delegate
                     {
-                        LongEventHandler.QueueLongEvent(delegate
+                        if (Input.GetMouseButtonUp(0))
+                        {
+                            if (randomStartMod.CheckFirstTimeDialog())
                             {
-                                RandomScenario.SetupForRandomPlay();
-                            }, "GeneratingMap", doAsynchronously: false, GameAndMapInitExceptionHandlers.ErrorWhileGeneratingMap);
+                                LongEventHandler.QueueLongEvent(delegate
+                                {
+                                    RandomScenario.SetupForRandomPlay();
+                                }, "GeneratingMap", doAsynchronously: false, GameAndMapInitExceptionHandlers.ErrorWhileGeneratingMap);
+                            }
+
+                        }
+                        else
+                        {
+                            Find.WindowStack.Add(new Dialog_ModSettings(randomStartMod));
+                        }
                     },
                     null
                     );

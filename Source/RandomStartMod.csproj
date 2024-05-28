@@ -49,6 +49,14 @@
       <CopyLocal>False</CopyLocal>
       <Private>False</Private>
     </Reference>
+    <Reference Include="ShipsHaveInsides">
+      <HintPath>..\..\..\..\..\workshop\content\294100\1909914131\1.5\Assemblies\ShipsHaveInsides.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>..\..\..\RimWorldWin64_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="VFECore">
       <HintPath>..\..\..\..\..\workshop\content\294100\2023507013\1.5\Assemblies\VFECore.dll</HintPath>
       <CopyLocal>False</CopyLocal>
@@ -72,13 +80,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Compat\VECoreCompat.cs" />
+    <Compile Include="Compat\Compat.cs" />
     <Compile Include="RandomScenario.cs" />
-    <Compile Include="HarmonyPatcher.cs" />
-    <Compile Include="MainMenu.cs" />
+    <Compile Include="Harmony\HarmonyPatcher.cs" />
+    <Compile Include="Harmony\OptionListingUtility_Patch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings\RandomStartMod.cs" />
     <Compile Include="Settings\RandomStartSettings.cs" />
+    <Compile Include="Util\Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
