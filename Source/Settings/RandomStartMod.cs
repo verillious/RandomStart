@@ -88,11 +88,11 @@ namespace RandomStartMod
                     currentTab = 1;
                     WriteSettings();
                 }, currentTab == 1),
-                new TabRecord("RandomStartMod.UnstableFeatures".Translate(), () =>
-                {
-                    currentTab = 5;
-                    WriteSettings();
-                }, currentTab == 5),
+                //new TabRecord("Unstable".Translate(), () =>
+                //{
+                //    currentTab = 5;
+                //    WriteSettings();
+                //}, currentTab == 5),
             };
             TabDrawer.DrawTabs(tabRect, tabs);
 
@@ -756,8 +756,9 @@ namespace RandomStartMod
                 planetListingHeight += 12f + 32f;
                 listingStandard.Outdent();
             }
+
             listingStandard.Gap();
-            listingStandard.CheckboxLabeled("PlanetPollution".Translate(), ref settings.randomisePollution, 12f);
+            listingStandard.CheckboxLabeled("Pollution_Label".Translate(), ref settings.randomisePollution, 12f);
             planetListingHeight += 12f + 32f;
             if (!settings.randomisePollution)
             {
@@ -818,11 +819,14 @@ namespace RandomStartMod
 
             Listing_Standard listingStandard = new Listing_Standard();
             listingStandard.Begin(rect);
+            if (ModsConfig.BiotechActive)
+            {
+                DoOptionalFeatureRow(listingStandard.GetRect(24f), $"{"Randomize".Translate()}: {"Xenotype".Translate()}", null, ref settings.enableRandomXenotypes);
+                optionalFeaturesListingHeight += 24f;
+                DoOptionalFeatureRow(listingStandard.GetRect(24f), $"{"Randomize".Translate()}: {"Genes".Translate().CapitalizeFirst()}", null, ref settings.enableRandomCustomXenotypes);
+                optionalFeaturesListingHeight += 24f;
+            }
 
-            DoOptionalFeatureRow(listingStandard.GetRect(24f), $"{"Randomize".Translate()}: {"Xenotype".Translate()}", null, ref settings.enableRandomXenotypes);
-            optionalFeaturesListingHeight += 24f;
-            DoOptionalFeatureRow(listingStandard.GetRect(24f), $"{"Randomize".Translate()}: {"Genes".Translate().CapitalizeFirst()}", null, ref settings.enableRandomCustomXenotypes);
-            optionalFeaturesListingHeight += 24f;
 
             listingStandard.Gap();
             optionalFeaturesListingHeight += 12f;
