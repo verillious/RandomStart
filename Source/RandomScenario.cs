@@ -267,7 +267,7 @@ namespace RandomStartMod
             }
 
             Find.GameInitData.startedFromEntry = true;
-            if (settings.disableIdeo)
+            if (ModsConfig.IdeologyActive && settings.disableIdeo)
             {
                 Find.IdeoManager.classicMode = true;
                 IdeoGenerationParms genParms = new IdeoGenerationParms(Find.FactionManager.OfPlayer.def);

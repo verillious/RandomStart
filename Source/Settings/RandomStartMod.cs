@@ -88,12 +88,17 @@ namespace RandomStartMod
                     currentTab = 1;
                     WriteSettings();
                 }, currentTab == 1),
-                new TabRecord("Unstable".Translate(), () =>
-                {
-                    currentTab = 5;
-                    WriteSettings();
-                }, currentTab == 5),
-            };
+        };
+            if (ModsConfig.BiotechActive || ModsConfig.IdeologyActive)
+            {
+                tabs.Add(
+                    new TabRecord("MiscRecordsCategory".Translate(), () =>
+                    {
+                        currentTab = 5;
+                        WriteSettings();
+                    }, currentTab == 5)
+                );
+            }
             TabDrawer.DrawTabs(tabRect, tabs);
 
             if (currentTab == 0)
