@@ -26,6 +26,13 @@ namespace RandomStartMod
                 justEnteredMainMenu = true;
             }
 
+            int index = 0;
+
+            if (Util.IsModRunning("Continue Button"))
+            {
+                index = 1;
+            }
+
             foreach (ListableOption opt in optList)
             {
                 if (opt.action != null)
@@ -53,7 +60,7 @@ namespace RandomStartMod
                     },
                     null
                     );
-                    optList.Insert(0, newOption);
+                    optList.Insert(index, newOption);
                     break;
                 }
             }
