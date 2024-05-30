@@ -22,6 +22,7 @@ namespace RandomStartMod
         public bool randomisePollution = false;
         public bool randomiseSeason = false;
         public bool randomiseFactions = true;
+        public bool disableIdeo = false;
 
         public int rainfall = 3;
         public int temperature = 3;
@@ -275,6 +276,7 @@ namespace RandomStartMod
 
             Scribe_Values.Look(ref enableRandomXenotypes, "enableRandomXenotypes", false);
             Scribe_Values.Look(ref enableRandomCustomXenotypes, "enableRandomCustomXenotypes", false);
+            Scribe_Values.Look(ref disableIdeo, "disableIdeo", false);
 
             base.ExposeData();
         }
@@ -399,6 +401,7 @@ namespace RandomStartMod
         {
             enableRandomXenotypes = false;
             enableRandomCustomXenotypes = false;
+            disableIdeo = false;
         }
     }
 }

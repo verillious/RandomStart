@@ -267,6 +267,26 @@ namespace RandomStartMod
             }
 
             Find.GameInitData.startedFromEntry = true;
+            if (settings.disableIdeo)
+            {
+                Find.IdeoManager.classicMode = true;
+                IdeoGenerationParms genParms = new IdeoGenerationParms(Find.FactionManager.OfPlayer.def);
+                if (!DefDatabase<CultureDef>.AllDefs.Where((CultureDef x) => Find.FactionManager.OfPlayer.def.allowedCultures.Contains(x)).TryRandomElement(out var result))
+                {
+                    result = DefDatabase<CultureDef>.AllDefs.RandomElement();
+                }
+                Ideo classicIdeo = IdeoGenerator.GenerateClassicIdeo(result, genParms, noExpansionIdeo: false);
+                foreach (Faction allFaction in Find.FactionManager.AllFactions)
+                {
+                    if (allFaction.ideos != null)
+                    {
+                        allFaction.ideos.RemoveAll();
+                        allFaction.ideos.SetPrimary(classicIdeo);
+                    }
+                }
+                Find.IdeoManager.RemoveUnusedStartingIdeos();
+                Find.Scenario.PostIdeoChosen();
+            }
 
             PageUtility.InitGameStart();
         }

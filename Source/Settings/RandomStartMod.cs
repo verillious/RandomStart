@@ -88,11 +88,11 @@ namespace RandomStartMod
                     currentTab = 1;
                     WriteSettings();
                 }, currentTab == 1),
-                //new TabRecord("Unstable".Translate(), () =>
-                //{
-                //    currentTab = 5;
-                //    WriteSettings();
-                //}, currentTab == 5),
+                new TabRecord("Unstable".Translate(), () =>
+                {
+                    currentTab = 5;
+                    WriteSettings();
+                }, currentTab == 5),
             };
             TabDrawer.DrawTabs(tabRect, tabs);
 
@@ -824,6 +824,11 @@ namespace RandomStartMod
                 DoOptionalFeatureRow(listingStandard.GetRect(24f), $"{"Randomize".Translate()}: {"Xenotype".Translate()}", null, ref settings.enableRandomXenotypes);
                 optionalFeaturesListingHeight += 24f;
                 DoOptionalFeatureRow(listingStandard.GetRect(24f), $"{"Randomize".Translate()}: {"Genes".Translate().CapitalizeFirst()}", null, ref settings.enableRandomCustomXenotypes);
+                optionalFeaturesListingHeight += 24f;
+            }
+            if (ModsConfig.IdeologyActive)
+            {
+                DoOptionalFeatureRow(listingStandard.GetRect(24f), "PlayClassic".Translate(), null, ref settings.disableIdeo);
                 optionalFeaturesListingHeight += 24f;
             }
 
