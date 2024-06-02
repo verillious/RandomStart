@@ -1,4 +1,3 @@
-using FxResources.System.ValueTuple;
 using RimWorld;
 using RimWorld.Planet;
 using System;
@@ -295,28 +294,77 @@ namespace RandomStartMod
             scenarioListingHeight += 24f + Text.LineHeight;
             Text.Font = GameFont.Small;
 
-            List<ScenarioDef> enabledScenarios = DefDatabase<ScenarioDef>.AllDefsListForReading.Where((ScenarioDef item) => !settings.disabledScenarios.Contains(item.defName) && item.scenario.showInUI).ToList();
+            List<ScenarioDef> enabledScenarioDefs = DefDatabase<ScenarioDef>.AllDefsListForReading.Where((ScenarioDef item) => !settings.disabledScenarios.Contains(item.scenario.name) && item.scenario.showInUI).ToList();
+            List<Scenario> enabledCustomScenarios = ScenarioLister.ScenariosInCategory(ScenarioCategory.CustomLocal).Where((Scenario item) => !settings.disabledScenarios.Contains(item.name)).ToList();
+            List<Scenario> enabledWorkshopScenarios = ScenarioLister.ScenariosInCategory(ScenarioCategory.SteamWorkshop).Where((Scenario item) => !settings.disabledScenarios.Contains(item.name)).ToList();
 
-            for (int i = 0; i < enabledScenarios.Count; i++)
-            {
-                listingStandard.Gap(4f);
-                if (DoScenarioRow(listingStandard.GetRect(24f), enabledScenarios[i], i, enabledScenarios.Count))
-                {
-                    i--;
-                }
-                listingStandard.Gap(4f);
-                scenarioListingHeight += 32f;
-            }
+            int index = 0;
+            int totalCount = enabledScenarioDefs.Count + enabledCustomScenarios.Count + enabledWorkshopScenarios.Count;
 
             var floatMenuOptions = new List<FloatMenuOption>();
             if (settings.disabledScenarios.NullOrEmpty())
                 settings.disabledScenarios = new List<string>();
 
-            foreach (ScenarioDef item in DefDatabase<ScenarioDef>.AllDefs)
+            foreach (ScenarioDef scenarioDef in DefDatabase<ScenarioDef>.AllDefsListForReading)
             {
-                if (settings.disabledScenarios.Contains(item.defName) && item.scenario.showInUI)
+                if (!scenarioDef.scenario.showInUI)
+                    continue;
+
+                Texture2D tex = GetSourceIcon(scenarioDef);
+                string source = GetSourceModMetaData(scenarioDef).Name;
+                if (!settings.disabledScenarios.Contains(scenarioDef.scenario.name))
                 {
-                    floatMenuOptions.Add(new FloatMenuOption(item.LabelCap, () => settings.disabledScenarios.Remove(item.defName), GetSourceIcon(item), Color.white, MenuOptionPriority.Default, null, null, 24f, (Rect r) => Widgets.InfoCardButton(r.x, r.y + 3f, item), null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true));
+                    listingStandard.Gap(4f);
+                    DoScenarioRow(listingStandard.GetRect(24f), scenarioDef.scenario, index, totalCount, tex, source);
+                    listingStandard.Gap(4f);
+                    scenarioListingHeight += 32f;
+                    index++;
+                }
+                else
+                {
+                    floatMenuOptions.Add(new FloatMenuOption(scenarioDef.LabelCap, () => settings.disabledScenarios.Remove(scenarioDef.scenario.name), tex, Color.white, MenuOptionPriority.Default, null, null, 24f, (Rect r) => Widgets.InfoCardButton(r.x, r.y + 3f, scenarioDef), null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true));
+                }
+            }
+
+            foreach (Scenario scenario in ScenarioLister.ScenariosInCategory(ScenarioCategory.CustomLocal))
+            {
+                if (!scenario.showInUI)
+                    continue;
+
+                Texture2D tex = ContentFinder<Texture2D>.Get("UI/Buttons/Dev/Save");
+                string source = "Custom".Translate().CapitalizeFirst();
+                if (!settings.disabledScenarios.Contains(scenario.name))
+                {
+                    listingStandard.Gap(4f);
+                    DoScenarioRow(listingStandard.GetRect(24f), scenario, index, totalCount, tex, source);
+                    listingStandard.Gap(4f);
+                    scenarioListingHeight += 32f;
+                    index++;
+                }
+                else
+                {
+                    floatMenuOptions.Add(new FloatMenuOption(scenario.name, () => settings.disabledScenarios.Remove(scenario.name), tex, Color.white, MenuOptionPriority.Default, null, null, 24f, null, null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true));
+                }
+            }
+
+            foreach (Scenario scenario in ScenarioLister.ScenariosInCategory(ScenarioCategory.SteamWorkshop))
+            {
+                if (!scenario.showInUI)
+                    continue;
+
+                Texture2D tex = ContentFinder<Texture2D>.Get("UI/Icons/ContentSources/SteamWorkshop");
+                string source = "Workshop".Translate();
+                if (!settings.disabledScenarios.Contains(scenario.name))
+                {
+                    listingStandard.Gap(4f);
+                    DoScenarioRow(listingStandard.GetRect(24f), scenario, index, totalCount, tex, source);
+                    listingStandard.Gap(4f);
+                    scenarioListingHeight += 32f;
+                    index++;
+                }
+                else
+                {
+                    floatMenuOptions.Add(new FloatMenuOption(scenario.name, () => settings.disabledScenarios.Remove(scenario.name), tex, Color.white, MenuOptionPriority.Default, null, null, 24f, null, null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true));
                 }
             }
 
@@ -414,16 +462,6 @@ namespace RandomStartMod
 
             Listing_Standard listingStandard = new Listing_Standard();
             listingStandard.Begin(rect);
-
-            listingStandard.CheckboxLabeled("Randomize".Translate(), ref settings.randomiseFactions, 0f);
-            factionListingHeight += 32f;
-
-            if (!settings.randomiseFactions)
-            {
-                listingStandard.End();
-                Widgets.EndScrollView();
-                return;
-            }
 
             listingStandard.Gap();
             Text.Font = GameFont.Medium;
@@ -826,25 +864,55 @@ namespace RandomStartMod
             listingStandard.Begin(rect);
             if (ModsConfig.BiotechActive)
             {
+                listingStandard.Gap();
+                Text.Font = GameFont.Medium;
+                listingStandard.Label("Genes".Translate().CapitalizeFirst());
+                listingStandard.GapLine();
+                optionalFeaturesListingHeight += 24f + Text.LineHeight;
+                Text.Font = GameFont.Small;
                 DoOptionalFeatureRow(listingStandard.GetRect(24f), $"{"Randomize".Translate()}: {"Xenotype".Translate()}", null, ref settings.enableRandomXenotypes);
+                optionalFeaturesListingHeight += 24f;
+                DoOptionalFeatureRow(listingStandard.GetRect(24f), "RandomStartMod.RespectMemberXenotypes".Translate(), null, ref settings.respectFactionXenotypes);
                 optionalFeaturesListingHeight += 24f;
                 DoOptionalFeatureRow(listingStandard.GetRect(24f), $"{"Randomize".Translate()}: {"Genes".Translate().CapitalizeFirst()}", null, ref settings.enableRandomCustomXenotypes);
                 optionalFeaturesListingHeight += 24f;
             }
             if (ModsConfig.IdeologyActive)
             {
+                listingStandard.Gap();
+                Text.Font = GameFont.Medium;
+                listingStandard.Label("DifficultyIdeologySection".Translate());
+                listingStandard.GapLine();
+                optionalFeaturesListingHeight += 24f + Text.LineHeight;
+                Text.Font = GameFont.Small;
                 DoOptionalFeatureRow(listingStandard.GetRect(24f), "PlayClassic".Translate(), null, ref settings.disableIdeo);
                 optionalFeaturesListingHeight += 24f;
+                DoOptionalFeatureRow(listingStandard.GetRect(24f), "CreateFluid".Translate(), "FluidIdeoTip".Translate(), ref settings.fluidIdeo);
+                optionalFeaturesListingHeight += 24f;
             }
-
 
             listingStandard.Gap();
             optionalFeaturesListingHeight += 12f;
             if (listingStandard.ButtonText("RestoreToDefaultSettings".Translate()))
             {
-                settings.ResetFeatures();
+                settings.ResetOptionalFeatures();
             }
             optionalFeaturesListingHeight += 32f;
+
+            if (Util.IsModRunning("My Little Planet"))
+            {
+                listingStandard.Gap();
+                Text.Font = GameFont.Medium;
+                listingStandard.Label("My Little Planet");
+                listingStandard.GapLine();
+                optionalFeaturesListingHeight += 12f + 24f + Text.LineHeight;
+                Text.Font = GameFont.Small;
+                listingStandard.Label("MLPWorldPlanetSize".Translate());
+                optionalFeaturesListingHeight += Text.LineHeight;
+                Rect mlpRect = listingStandard.GetRect(30f);
+                Compat.MLPCompat.DrawMLPSlider(mlpRect);
+                optionalFeaturesListingHeight += 30f;
+            }
 
             listingStandard.End();
             Widgets.EndScrollView();
@@ -1068,7 +1136,7 @@ namespace RandomStartMod
             GUI.color = color;
         }
 
-        public bool DoScenarioRow(Rect rect, ScenarioDef scenarioDef, int index, int scenarioCount)
+        public bool DoScenarioRow(Rect rect, Scenario scenario, int index, int scenarioCount, Texture2D icon, string source)
         {
             bool result = false;
             Rect rect2 = new Rect(rect.x, rect.y - 4f, rect.width, rect.height + 8f);
@@ -1080,26 +1148,26 @@ namespace RandomStartMod
             WidgetRow widgetRow = new WidgetRow(6f, 0f);
             GUI.color = Color.white;
 
-            widgetRow.Icon(GetSourceIcon(scenarioDef));
+            widgetRow.Icon(icon);
 
             GUI.color = Color.white;
             widgetRow.Gap(4f);
             Text.Anchor = TextAnchor.MiddleCenter;
-            widgetRow.Label(scenarioDef.LabelCap);
+            widgetRow.Label(scenario.name);
             Text.Anchor = TextAnchor.UpperLeft;
             if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
             {
                 SoundDefOf.Click.PlayOneShotOnCamera();
                 if (scenarioCount > 1)
                 {
-                    settings.disabledScenarios.Add(scenarioDef.defName);
+                    settings.disabledScenarios.Add(scenario.name);
                     result = true;
                 }
             }
             Widgets.EndGroup();
             if (Mouse.IsOver(rect2))
             {
-                TooltipHandler.TipRegion(rect2, scenarioDef.LabelCap.AsTipTitle() + "\n" + scenarioDef.description + "\n" + "\n" + GetSourceModMetaData(scenarioDef).Name.AsTipTitle());
+                TooltipHandler.TipRegion(rect2, scenario.name.AsTipTitle() + "\n" + scenario.description + "\n" + "\n" + source.AsTipTitle());
                 Widgets.DrawHighlight(rect2);
             }
             return result;

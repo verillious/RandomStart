@@ -1,7 +1,7 @@
 ﻿using RimWorld;
-using SaveOurShip2;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using Verse;
 
 namespace RandomStartMod.Compat
@@ -71,15 +71,23 @@ namespace RandomStartMod.Compat
             Util.LogMessage("[SOS2Compat] Running DoEarlyInit on SOS2 ScenParts");
             foreach (ScenPart part in Find.Scenario.AllParts)
             {
-                if (part is ScenPart_LoadShip p && p.HasValidFilename())
+                if (part is SaveOurShip2.ScenPart_LoadShip p && p.HasValidFilename())
                 {
                     p.DoEarlyInit();
                 }
-                else if (part is ScenPart_StartInSpace s)
+                else if (part is SaveOurShip2.ScenPart_StartInSpace s)
                 {
                     s.DoEarlyInit();
                 }
             }
+        }
+    }
+
+    public static class MLPCompat
+    {
+        public static void DrawMLPSlider(Rect rect)
+        {
+            WorldGenRules.RulesOverrider.subcount = Mathf.RoundToInt(Widgets.HorizontalSlider(rect, WorldGenRules.RulesOverrider.subcount, 6f, 10f, middleAlignment: true, null, "MLPWorldTiny".Translate(), "MLPWorldDefault".Translate(), 1f));
         }
     }
 }

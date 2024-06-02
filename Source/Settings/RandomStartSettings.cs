@@ -1,6 +1,3 @@
-using MonoMod.Core.Platforms;
-using RimWorld;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Verse;
@@ -21,7 +18,6 @@ namespace RandomStartMod
         public bool randomisePopulation = true;
         public bool randomisePollution = false;
         public bool randomiseSeason = false;
-        public bool randomiseFactions = true;
         public bool disableIdeo = false;
 
         public int rainfall = 3;
@@ -129,6 +125,9 @@ namespace RandomStartMod
 
         public bool enableRandomXenotypes = false;
         public bool enableRandomCustomXenotypes = false;
+        public bool respectFactionXenotypes = true;
+
+        public bool fluidIdeo = false;
 
         public override void ExposeData()
         {
@@ -142,7 +141,6 @@ namespace RandomStartMod
             Scribe_Values.Look(ref randomisePopulation, "randomisePopulation", true);
             Scribe_Values.Look(ref randomisePollution, "randomisePollution", false);
             Scribe_Values.Look(ref randomiseSeason, "randomiseSeason", false);
-            Scribe_Values.Look(ref randomiseFactions, "randomiseFactions", true);
 
             Scribe_Values.Look(ref enableCustomScenarios, "enableCustomScenarios", true);
             Scribe_Values.Look(
@@ -167,7 +165,7 @@ namespace RandomStartMod
                 ref disabledScenarios,
                 "disabledScenarios",
                 LookMode.Value,
-                new List<string>() { "Tutorial" }
+                new List<string>() { "tutorial" }
             );
             Scribe_Collections.Look(
                 ref factionsAlwaysAdd,
@@ -276,7 +274,9 @@ namespace RandomStartMod
 
             Scribe_Values.Look(ref enableRandomXenotypes, "enableRandomXenotypes", false);
             Scribe_Values.Look(ref enableRandomCustomXenotypes, "enableRandomCustomXenotypes", false);
+            Scribe_Values.Look(ref respectFactionXenotypes, "respectFactionXenotypes", true);
             Scribe_Values.Look(ref disableIdeo, "disableIdeo", false);
+            Scribe_Values.Look(ref fluidIdeo, "fluidIdeo", false);
 
             base.ExposeData();
         }
@@ -345,7 +345,6 @@ namespace RandomStartMod
             randomisePopulation = true;
             randomisePollution = false;
             randomiseSeason = false;
-            randomiseFactions = true;
             rainfall = 3;
             temperature = 3;
             population = 3;
@@ -390,18 +389,30 @@ namespace RandomStartMod
         {
             enableCustomScenarios = true;
             enableSteamWorkshopScenarios = true;
-            disabledScenarios = new List<string>() { "Tutorial" };
+            disabledScenarios = new List<string>() { "tutorial" };
         }
         public void ResetStorytellers()
         {
-            disabledStorytellers = new List<string>() { "Tutorial" };
+            disabledStorytellers = new List<string>() { "tutorial" };
         }
 
-        public void ResetFeatures()
+        public void ResetOptionalFeatures()
+        {
+            ResetGenes();
+            ResetIdeo();
+        }
+
+        public void ResetGenes()
         {
             enableRandomXenotypes = false;
             enableRandomCustomXenotypes = false;
+            respectFactionXenotypes = true;
+        }
+
+        public void ResetIdeo()
+        {
             disableIdeo = false;
+            fluidIdeo = false;
         }
     }
 }

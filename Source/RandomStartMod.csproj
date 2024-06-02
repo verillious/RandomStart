@@ -10,6 +10,7 @@
     <RootNamespace>RandomStartMod</RootNamespace>
     <AssemblyName>RandomStartMod</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <ResolveAssemblyReferenceIgnoreTargetFrameworkAttributeVersionMismatch>true</ResolveAssemblyReferenceIgnoreTargetFrameworkAttributeVersionMismatch>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <NuGetPackageImportStamp>
@@ -45,6 +46,10 @@
     <Reference Include="KCSG">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\..\..\workshop\content\294100\2023507013\1.5\Assemblies\KCSG.dll</HintPath>
       <CopyLocal>False</CopyLocal>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MyLittlePlanet">
+      <HintPath>..\..\..\..\..\workshop\content\294100\1117406550\1.4\Assemblies\MyLittlePlanet.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="ShipsHaveInsides">

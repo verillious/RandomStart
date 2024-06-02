@@ -2,9 +2,6 @@
 using RimWorld.Planet;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using Verse;
 
 namespace RandomStartMod
@@ -21,29 +18,11 @@ namespace RandomStartMod
             Current.Game = new Game();
             Current.Game.InitData = new GameInitData();
 
-            ScenarioDef chosenScenario = ScenarioDefOf.Crashlanded;
-            List<ScenarioDef> possibleScenarios = new List<ScenarioDef>();
-
-            foreach (ScenarioDef item in DefDatabase<ScenarioDef>.AllDefs)
+            Current.Game.Scenario = ScenarioLister.AllScenarios().Where((Scenario scenario) => !settings.disabledScenarios.Contains(scenario.name)).RandomElement();
+            if (Current.Game.Scenario == null)
             {
-                if (!settings.disabledScenarios.Contains(item.defName) && item.scenario.showInUI)
-                {
-                    possibleScenarios.Add(item);
-                }
+                Current.Game.Scenario = ScenarioDefOf.Crashlanded.scenario;
             }
-
-            if (possibleScenarios.Count > 0)
-            {
-                int scenarioIndex = Rand.Range(0, possibleScenarios.Count);
-                chosenScenario = possibleScenarios[scenarioIndex];
-            }
-            else
-            {
-                settings.disabledScenarios.Remove(chosenScenario.defName);
-            }
-
-
-            Current.Game.Scenario = chosenScenario.scenario;
 
             Util.LogMessage($"Starting {Current.Game.Scenario}");
             DifficultyDef chosenDifficultyDef = DefDatabase<DifficultyDef>.AllDefs.First((DifficultyDef d) => d.defName == settings.difficulty);
@@ -229,9 +208,14 @@ namespace RandomStartMod
                 {
                     foreach (Pawn p in Find.GameInitData.startingAndOptionalPawns)
                     {
-                        XenotypeDef xenotype = DefDatabase<XenotypeDef>.AllDefsListForReading.RandomElement();
+                        IEnumerable<XenotypeDef> xenotypes = DefDatabase<XenotypeDef>.AllDefsListForReading;
+                        if (settings.respectFactionXenotypes && Find.FactionManager.OfPlayer.def.basicMemberKind.xenotypeSet != null)
+                            xenotypes = xenotypes.Where((XenotypeDef x) => Find.FactionManager.OfPlayer.def.basicMemberKind.xenotypeSet.Contains(x));
+                        XenotypeDef xenotype = xenotypes.RandomElement();
                         p.genes.SetXenotype(xenotype);
                     }
+
+
                 }
 
                 if (settings.enableRandomCustomXenotypes)
@@ -241,7 +225,7 @@ namespace RandomStartMod
                         List<GeneDef> selectedGenes = new List<GeneDef>();
                         for (int i = 0; i < Rand.Range(10, 30); i++)
                         {
-                            selectedGenes.Add(DefDatabase<GeneDef>.AllDefsListForReading.RandomElement());
+                            selectedGenes.Add(DefDatabase<GeneDef>.AllDefsListForReading.Where((GeneDef g) => g.canGenerateInGeneSet).RandomElement());
                         }
                         if (selectedGenes.Count > 0)
                         {
@@ -286,6 +270,12 @@ namespace RandomStartMod
                 }
                 Find.IdeoManager.RemoveUnusedStartingIdeos();
                 Find.Scenario.PostIdeoChosen();
+            }
+
+            if (ModsConfig.IdeologyActive && settings.fluidIdeo)
+            {
+                Ideo playerIdeo = Find.FactionManager.OfPlayer.ideos.AllIdeos.FirstOrDefault();
+                playerIdeo.Fluid = true;
             }
 
             PageUtility.InitGameStart();

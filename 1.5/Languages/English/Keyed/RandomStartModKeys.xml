@@ -3,4 +3,5 @@
 	<RandomStartMod.Title>Random Start</RandomStartMod.Title>
 	<RandomStartMod.LaunchingWithoutConfiguring>You are launching {0} but you haven't configured it yet.</RandomStartMod.LaunchingWithoutConfiguring>
 	<RandomStartMod.SettingsAccess>(You can access the settings by right-clicking the <b>Random</b> button)</RandomStartMod.SettingsAccess>
+	<RandomStartMod.RespectMemberXenotypes>Only choose from player faction xenotypes</RandomStartMod.RespectMemberXenotypes>
 </LanguageData>
