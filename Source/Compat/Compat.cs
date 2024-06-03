@@ -1,6 +1,5 @@
 ﻿using RimWorld;
 using RimWorld.Planet;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -120,7 +119,18 @@ namespace RandomStartMod.Compat
 
         public static void GenerateRealisticPlanetWorld(float planetCoverage, string seedString, OverallRainfall overallRainfall, OverallTemperature overallTemperature, OverallPopulation population, List<FactionDef> factions = null, float pollution = 0f, int worldType = -1)
         {
-            Planets_Code.Planets_GameComponent.subcount = WorldGenRules.RulesOverrider.subcount;
+            Util.LogMessage("[RealisticPlanetsCompat] Generating Realistic Planets World");
+            RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
+
+            if (Util.IsModRunning("My Little Planet"))
+            {
+                Util.LogMessage("[RealisticPlanetsCompat] My Little Planet is running");
+                Planets_Code.Planets_GameComponent.subcount = settings.myLittlePlanetSubcount;
+            }
+            else
+            {
+                Planets_Code.Planets_GameComponent.subcount = 10;
+            }
 
             Planets_Code.Planets_GameComponent.axialTilt = Planets_Code.Planets_Random.GetRandomAxialTilt();
             if (worldType != -1)
@@ -160,6 +170,25 @@ namespace RandomStartMod.Compat
 
             Current.Game.World = WorldGenerator.GenerateWorld(planetCoverage, seedString, rainfall, overallTemperature, population, factions, pollution);
 
+        }
+    }
+
+    public static class RealRuinsCompat
+    {
+        public static void CreatePOIs()
+        {
+            RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
+
+            Util.LogMessage("[RealRuinsCompat] Generating POIs");
+            RealRuins.Page_PlanetaryRuinsLoader page = new RealRuins.Page_PlanetaryRuinsLoader();
+            page.mode = RealRuins.RuinsPageMode.FullAuto;
+            page.downloadLimit = RealRuins.RealRuins_ModSettings.planetaryRuinsOptions.downloadLimit;
+            page.transferLimit = RealRuins.RealRuins_ModSettings.planetaryRuinsOptions.transferLimit;
+            page.abandonedPercentage = (int)RealRuins.RealRuins_ModSettings.planetaryRuinsOptions.abandonedLocations;
+            page.aggressiveDiscard = RealRuins.RealRuins_ModSettings.planetaryRuinsOptions.excludePlainRuins;
+            page.biomeStrict = settings.realRuinsBiomeFilter;
+            page.StartLoadingList();
+            page.Close(false);
         }
     }
 }

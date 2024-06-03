@@ -56,6 +56,10 @@
       <HintPath>..\..\..\..\..\workshop\content\294100\3225521979\1.5\Assemblies\Realistic_Planets_Continued.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="RealRuins">
+      <HintPath>..\..\..\..\..\workshop\content\294100\1552146295\1.5\Assemblies\RealRuins.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="ShipsHaveInsides">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\..\..\workshop\content\294100\1909914131\1.5\Assemblies\ShipsHaveInsides.dll</HintPath>
       <Private>False</Private>

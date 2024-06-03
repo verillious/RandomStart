@@ -300,6 +300,11 @@ namespace RandomStartMod
             }
 
             PageUtility.InitGameStart();
+
+            if (Util.IsModRunning("Real Ruins") && settings.enableAutoRealRuins)
+            {
+                Compat.RealRuinsCompat.CreatePOIs();
+            }
         }
     }
 }

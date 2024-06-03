@@ -888,6 +888,20 @@ namespace RandomStartMod
 
             }
 
+            if (Util.IsModRunning("Real Ruins"))
+            {
+                listingStandard.Gap();
+                Text.Font = GameFont.Medium;
+                listingStandard.Label("Real Ruins");
+                listingStandard.GapLine();
+                planetListingHeight += 12f + 24f + Text.LineHeight;
+                Text.Font = GameFont.Small;
+                listingStandard.CheckboxLabeled("RunInBackground".Translate(), ref settings.enableAutoRealRuins);
+                planetListingHeight += 32f;
+                listingStandard.CheckboxLabeled("RealRuins.BiomeFiltering".Translate(), ref settings.realRuinsBiomeFilter, "RealRuins.BiomeFilteringTT".Translate());
+                planetListingHeight += 32f;
+            }
+
             listingStandard.Gap();
             planetListingHeight += 12f;
             if (listingStandard.ButtonText("RestoreToDefaultSettings".Translate()))

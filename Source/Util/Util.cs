@@ -13,7 +13,7 @@ namespace RandomStartMod
 
         public static bool IsModRunning(string modName)
         {
-            return LoadedModManager.RunningMods.Count((ModContentPack m) => m.Name == modName) > 0;
+            return ModsConfig.ActiveModsInLoadOrder.Any(mod => mod.Name.Contains(modName));
         }
 
         public static bool IsScenarioFromMod(string modName)

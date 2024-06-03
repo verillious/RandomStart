@@ -140,6 +140,9 @@ namespace RandomStartMod
         public int realisticPlanetsWorldType = 3;
         public bool randomiseRealisticPlanets = true;
 
+        public bool enableAutoRealRuins = true;
+        public bool realRuinsBiomeFilter = false;
+
         public override void ExposeData()
         {
             Scribe_Values.Look(ref openedSettings, "openedSettings", false);
@@ -297,6 +300,10 @@ namespace RandomStartMod
             Scribe_Values.Look(ref realisticPlanetsWorldType, "realisticPlanetsWorldType", 3);
             Scribe_Values.Look(ref randomiseRealisticPlanets, "randomiseRealisticPlanets", true);
 
+
+            Scribe_Values.Look(ref enableAutoRealRuins, "enableAutoRealRuins", true);
+            Scribe_Values.Look(ref realRuinsBiomeFilter, "realRuinsBiomeFilter", false);
+
             base.ExposeData();
         }
 
@@ -372,6 +379,8 @@ namespace RandomStartMod
             myLittlePlanetSubcount = 10;
             randomiseRealisticPlanets = true;
             realisticPlanetsWorldType = 3;
+            enableAutoRealRuins = true;
+            realRuinsBiomeFilter = false;
         }
         public void ResetFactions()
         {
