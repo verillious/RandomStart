@@ -19,6 +19,8 @@ namespace RandomStartMod
         public bool randomisePollution = false;
         public bool randomiseSeason = false;
         public bool disableIdeo = false;
+        public bool overrideIdeo = false;
+        public string customIdeoOverrideFile = null;
 
         public int rainfall = 3;
         public int temperature = 3;
@@ -298,6 +300,8 @@ namespace RandomStartMod
             Scribe_Values.Look(ref respectFactionXenotypes, "respectFactionXenotypes", true);
             Scribe_Values.Look(ref disableIdeo, "disableIdeo", false);
             Scribe_Values.Look(ref fluidIdeo, "fluidIdeo", false);
+            Scribe_Values.Look(ref overrideIdeo, "overrideIdeo", false);
+            Scribe_Values.Look(ref customIdeoOverrideFile, "customIdeoOverrideFile", null);
 
             Scribe_Values.Look(ref myLittlePlanetSubcount, "myLittlePlanetSubcount", 10);
             Scribe_Values.Look(ref realisticPlanetsWorldType, "realisticPlanetsWorldType", 3);
@@ -457,6 +461,8 @@ namespace RandomStartMod
         {
             disableIdeo = false;
             fluidIdeo = false;
+            overrideIdeo = false;
+            customIdeoOverrideFile = null;
         }
     }
 }

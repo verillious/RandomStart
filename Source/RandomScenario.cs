@@ -1,7 +1,9 @@
 ﻿using RimWorld;
 using RimWorld.Planet;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using Verse;
 
 namespace RandomStartMod
@@ -277,32 +279,66 @@ namespace RandomStartMod
             }
 
             Find.GameInitData.startedFromEntry = true;
-            if (ModsConfig.IdeologyActive && settings.disableIdeo)
+            if (ModsConfig.IdeologyActive)
             {
-                Find.IdeoManager.classicMode = true;
-                IdeoGenerationParms genParms = new IdeoGenerationParms(Find.FactionManager.OfPlayer.def);
-                if (!DefDatabase<CultureDef>.AllDefs.Where((CultureDef x) => Find.FactionManager.OfPlayer.def.allowedCultures.Contains(x)).TryRandomElement(out var result))
+                if (settings.disableIdeo)
                 {
-                    result = DefDatabase<CultureDef>.AllDefs.RandomElement();
-                }
-                Ideo classicIdeo = IdeoGenerator.GenerateClassicIdeo(result, genParms, noExpansionIdeo: false);
-                foreach (Faction allFaction in Find.FactionManager.AllFactions)
-                {
-                    if (allFaction.ideos != null)
+                    Find.IdeoManager.classicMode = true;
+                    IdeoGenerationParms genParms = new IdeoGenerationParms(Find.FactionManager.OfPlayer.def);
+                    if (!DefDatabase<CultureDef>.AllDefs.Where((CultureDef x) => Find.FactionManager.OfPlayer.def.allowedCultures.Contains(x)).TryRandomElement(out var result))
                     {
-                        allFaction.ideos.RemoveAll();
-                        allFaction.ideos.SetPrimary(classicIdeo);
+                        result = DefDatabase<CultureDef>.AllDefs.RandomElement();
+                    }
+                    Ideo classicIdeo = IdeoGenerator.GenerateClassicIdeo(result, genParms, noExpansionIdeo: false);
+                    foreach (Faction allFaction in Find.FactionManager.AllFactions)
+                    {
+                        if (allFaction.ideos != null)
+                        {
+                            allFaction.ideos.RemoveAll();
+                            allFaction.ideos.SetPrimary(classicIdeo);
+                        }
+                    }
+                    Find.IdeoManager.RemoveUnusedStartingIdeos();
+                    Find.Scenario.PostIdeoChosen();
+                }
+                else
+                {
+                    if (settings.overrideIdeo && File.Exists(settings.customIdeoOverrideFile))
+                    {
+                        Util.LogMessage("Attempting to load ideo file");
+                        Ideo newIdeo = null;
+                        PreLoadUtility.CheckVersionAndLoad(settings.customIdeoOverrideFile, ScribeMetaHeaderUtility.ScribeHeaderMode.Ideo, delegate
+                        {
+                            if (GameDataSaveLoader.TryLoadIdeo(settings.customIdeoOverrideFile, out var ideo))
+                            {
+                                newIdeo = IdeoGenerator.InitLoadedIdeo(ideo);
+                            }
+                        });
+
+                        if (newIdeo != null)
+                        {
+                            Util.LogMessage("Loaded ideo file");
+                            Find.FactionManager.OfPlayer.ideos.RemoveAll();
+                            Find.FactionManager.OfPlayer.ideos.SetPrimary(newIdeo);
+                            Find.IdeoManager.RemoveUnusedStartingIdeos();
+                            Find.Scenario.PostIdeoChosen();
+                        }
+                        else
+                        {
+                            Log.Warning($"[Random Start] Couldn't load ideo file {settings.customIdeoOverrideFile} - are mods missing?");
+                        }
+
+
+                    }
+                    if (settings.fluidIdeo)
+                    {
+                        Ideo playerIdeo = Find.FactionManager.OfPlayer.ideos.AllIdeos.FirstOrDefault();
+                        playerIdeo.Fluid = true;
                     }
                 }
-                Find.IdeoManager.RemoveUnusedStartingIdeos();
-                Find.Scenario.PostIdeoChosen();
             }
 
-            if (ModsConfig.IdeologyActive && settings.fluidIdeo)
-            {
-                Ideo playerIdeo = Find.FactionManager.OfPlayer.ideos.AllIdeos.FirstOrDefault();
-                playerIdeo.Fluid = true;
-            }
+
 
             PageUtility.InitGameStart();
 

@@ -2,6 +2,7 @@ using RimWorld;
 using RimWorld.Planet;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -961,8 +962,46 @@ namespace RandomStartMod
                 Text.Font = GameFont.Small;
                 DoOptionalFeatureRow(listingStandard.GetRect(24f), "PlayClassic".Translate(), null, ref settings.disableIdeo);
                 optionalFeaturesListingHeight += 24f;
-                DoOptionalFeatureRow(listingStandard.GetRect(24f), "CreateFluid".Translate(), "FluidIdeoTip".Translate(), ref settings.fluidIdeo);
-                optionalFeaturesListingHeight += 24f;
+                if (!settings.disableIdeo)
+                {
+                    DoOptionalFeatureRow(listingStandard.GetRect(24f), "CreateFluid".Translate(), "FluidIdeoTip".Translate(), ref settings.fluidIdeo);
+                    optionalFeaturesListingHeight += 24f;
+                    if (GenFilePaths.AllCustomIdeoFiles.Any())
+                    {
+                        DoOptionalFeatureRow(listingStandard.GetRect(24f), "LoadExistingIdeoligion".Translate(), null, ref settings.overrideIdeo);
+                        optionalFeaturesListingHeight += 24f;
+                        if (settings.overrideIdeo)
+                        {
+
+                            string text = "ModClickToSelect".Translate();
+                            if (File.Exists(settings.customIdeoOverrideFile))
+                            {
+                                FileInfo currentFile = new FileInfo(settings.customIdeoOverrideFile);
+                                text = currentFile.Name.Replace(".rid", "");
+                            }
+                            if (listingStandard.ButtonText(text))
+                            {
+
+                                List<FloatMenuOption> list = new List<FloatMenuOption>();
+                                foreach (System.IO.FileInfo fileInfo in GenFilePaths.AllCustomIdeoFiles)
+                                {
+                                    text = fileInfo.Name.Replace(".rid", "");
+                                    FloatMenuOption item = new FloatMenuOption(text, delegate
+                                    {
+                                        if (settings.customIdeoOverrideFile != fileInfo.FullPath)
+                                        {
+                                            settings.customIdeoOverrideFile = fileInfo.FullPath;
+                                        }
+                                    });
+                                    list.Add(item);
+                                }
+                                Find.WindowStack.Add(new FloatMenu(list));
+                            }
+                            optionalFeaturesListingHeight += 32f;
+                        }
+                    }
+                }
+
             }
 
             listingStandard.Gap();
