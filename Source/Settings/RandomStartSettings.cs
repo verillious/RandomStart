@@ -26,8 +26,10 @@ namespace RandomStartMod
         public float pollution = 0.05f;
         public int startingSeason = 2;
 
+        public IntRange randomFactionRange = new IntRange(5, 15);
         public int minimumFactions = 5;
         public int maximumFactions = 15;
+        public bool uniqueFactions = false;
 
         public bool enableCustomScenarios = true;
         public bool enableSteamWorkshopScenarios = true;
@@ -125,9 +127,18 @@ namespace RandomStartMod
 
         public bool enableRandomXenotypes = false;
         public bool enableRandomCustomXenotypes = false;
+        public IntRange randomGeneRange = new IntRange(5, 15);
         public bool respectFactionXenotypes = true;
 
         public bool fluidIdeo = false;
+
+
+        //Compat
+
+        public int myLittlePlanetSubcount = 10;
+
+        public int realisticPlanetsWorldType = 3;
+        public bool randomiseRealisticPlanets = true;
 
         public override void ExposeData()
         {
@@ -208,6 +219,9 @@ namespace RandomStartMod
                 }
             );
 
+            Scribe_Values.Look(ref randomFactionRange, "randomFactionRange", new IntRange(5, 15));
+            Scribe_Values.Look(ref uniqueFactions, "uniqueFactions", false);
+
             Scribe_Values.Look(ref anomalyPlaystyle, "anomalyPlaystyle", "Standard");
             Scribe_Values.Look(
                 ref anomalyThreatsInactiveFraction,
@@ -274,9 +288,14 @@ namespace RandomStartMod
 
             Scribe_Values.Look(ref enableRandomXenotypes, "enableRandomXenotypes", false);
             Scribe_Values.Look(ref enableRandomCustomXenotypes, "enableRandomCustomXenotypes", false);
+            Scribe_Values.Look(ref randomGeneRange, "randomGeneRange", new IntRange(5, 15));
             Scribe_Values.Look(ref respectFactionXenotypes, "respectFactionXenotypes", true);
             Scribe_Values.Look(ref disableIdeo, "disableIdeo", false);
             Scribe_Values.Look(ref fluidIdeo, "fluidIdeo", false);
+
+            Scribe_Values.Look(ref myLittlePlanetSubcount, "myLittlePlanetSubcount", 10);
+            Scribe_Values.Look(ref realisticPlanetsWorldType, "realisticPlanetsWorldType", 3);
+            Scribe_Values.Look(ref randomiseRealisticPlanets, "randomiseRealisticPlanets", true);
 
             base.ExposeData();
         }
@@ -350,6 +369,9 @@ namespace RandomStartMod
             population = 3;
             pollution = 0.05f;
             startingSeason = 2;
+            myLittlePlanetSubcount = 10;
+            randomiseRealisticPlanets = true;
+            realisticPlanetsWorldType = 3;
         }
         public void ResetFactions()
         {
@@ -384,6 +406,8 @@ namespace RandomStartMod
                 "Sanguophages",
             };
 
+            randomFactionRange = new IntRange(5, 15);
+            uniqueFactions = false;
         }
         public void ResetScenarios()
         {
@@ -407,6 +431,7 @@ namespace RandomStartMod
             enableRandomXenotypes = false;
             enableRandomCustomXenotypes = false;
             respectFactionXenotypes = true;
+            randomGeneRange = new IntRange(5, 15);
         }
 
         public void ResetIdeo()

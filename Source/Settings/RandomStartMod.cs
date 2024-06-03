@@ -538,6 +538,17 @@ namespace RandomStartMod
             factionListingHeight += 24f + Text.LineHeight;
             Text.Font = GameFont.Small;
 
+            listingStandard.Label("PenFoodTab_Count".Translate() + ":");
+            factionListingHeight += Text.LineHeight;
+            Widgets.IntRange(listingStandard.GetRect(32f), 1823998654, ref settings.randomFactionRange, 0, 20);
+            factionListingHeight += 32f;
+
+            listingStandard.CheckboxLabeled("Unique".Translate().CapitalizeFirst(), ref settings.uniqueFactions);
+            factionListingHeight += 32f;
+
+            listingStandard.Gap();
+            factionListingHeight += 12f;
+
             List<FactionDef> factionsRandomlyAdd = new List<FactionDef>();
             foreach (string factionDefName in settings.factionsRandomlyAdd)
             {
@@ -607,6 +618,7 @@ namespace RandomStartMod
             }
 
             factionListingHeight += 28f;
+
 
             StringBuilder stringBuilder = new StringBuilder();
             if (ModsConfig.RoyaltyActive && !factionsAlwaysAdd.Contains(FactionDefOf.Empire))
@@ -842,6 +854,40 @@ namespace RandomStartMod
                 }
                 planetListingHeight += 32f;
             }
+
+            if (Util.IsModRunning("My Little Planet"))
+            {
+                listingStandard.Gap();
+                Text.Font = GameFont.Medium;
+                listingStandard.Label("My Little Planet");
+                listingStandard.GapLine();
+                planetListingHeight += 12f + 24f + Text.LineHeight;
+                Text.Font = GameFont.Small;
+                listingStandard.Label("MLPWorldPlanetSize".Translate());
+                planetListingHeight += Text.LineHeight;
+                Rect mlpRect = listingStandard.GetRect(30f);
+                Compat.MLPCompat.DrawMLPSlider(mlpRect);
+                planetListingHeight += 30f;
+            }
+
+            if (Util.IsModRunning("Realistic Planets Continued"))
+            {
+                listingStandard.Gap();
+                Text.Font = GameFont.Medium;
+                listingStandard.Label("Realistic Planets Continued");
+                listingStandard.GapLine();
+                planetListingHeight += 12f + 24f + Text.LineHeight;
+                Text.Font = GameFont.Small;
+                listingStandard.CheckboxLabeled("Randomize".Translate(), ref settings.randomiseRealisticPlanets);
+                planetListingHeight += 32f;
+                if (!settings.randomiseRealisticPlanets)
+                {
+                    Compat.RealisticPlanetsCompat.DoWorldTypeSelectionButton(listingStandard);
+                    planetListingHeight += 32f;
+                }
+
+            }
+
             listingStandard.Gap();
             planetListingHeight += 12f;
             if (listingStandard.ButtonText("RestoreToDefaultSettings".Translate()))
@@ -864,7 +910,6 @@ namespace RandomStartMod
             listingStandard.Begin(rect);
             if (ModsConfig.BiotechActive)
             {
-                listingStandard.Gap();
                 Text.Font = GameFont.Medium;
                 listingStandard.Label("Genes".Translate().CapitalizeFirst());
                 listingStandard.GapLine();
@@ -876,6 +921,13 @@ namespace RandomStartMod
                 optionalFeaturesListingHeight += 24f;
                 DoOptionalFeatureRow(listingStandard.GetRect(24f), $"{"Randomize".Translate()}: {"Genes".Translate().CapitalizeFirst()}", null, ref settings.enableRandomCustomXenotypes);
                 optionalFeaturesListingHeight += 24f;
+                if (settings.enableRandomCustomXenotypes)
+                {
+                    listingStandard.Label("PenFoodTab_Count".Translate() + ":");
+                    optionalFeaturesListingHeight += Text.LineHeight;
+                    Widgets.IntRange(listingStandard.GetRect(32f), 382399865, ref settings.randomGeneRange, 0, 20);
+                    optionalFeaturesListingHeight += 32f;
+                }
             }
             if (ModsConfig.IdeologyActive)
             {
@@ -898,21 +950,6 @@ namespace RandomStartMod
                 settings.ResetOptionalFeatures();
             }
             optionalFeaturesListingHeight += 32f;
-
-            if (Util.IsModRunning("My Little Planet"))
-            {
-                listingStandard.Gap();
-                Text.Font = GameFont.Medium;
-                listingStandard.Label("My Little Planet");
-                listingStandard.GapLine();
-                optionalFeaturesListingHeight += 12f + 24f + Text.LineHeight;
-                Text.Font = GameFont.Small;
-                listingStandard.Label("MLPWorldPlanetSize".Translate());
-                optionalFeaturesListingHeight += Text.LineHeight;
-                Rect mlpRect = listingStandard.GetRect(30f);
-                Compat.MLPCompat.DrawMLPSlider(mlpRect);
-                optionalFeaturesListingHeight += 30f;
-            }
 
             listingStandard.End();
             Widgets.EndScrollView();

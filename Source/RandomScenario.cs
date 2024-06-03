@@ -18,7 +18,16 @@ namespace RandomStartMod
             Current.Game = new Game();
             Current.Game.InitData = new GameInitData();
 
-            Current.Game.Scenario = ScenarioLister.AllScenarios().Where((Scenario scenario) => !settings.disabledScenarios.Contains(scenario.name)).RandomElement();
+            List<Scenario> scenarios = new List<Scenario>();
+
+            scenarios.AddRange(ScenarioLister.AllScenarios().Where((Scenario scenario) => !settings.disabledScenarios.Contains(scenario.name)));
+            if (settings.enableCustomScenarios)
+                scenarios.AddRange(ScenarioLister.ScenariosInCategory(ScenarioCategory.CustomLocal).Where((Scenario item) => !settings.disabledScenarios.Contains(item.name)));
+            if (settings.enableSteamWorkshopScenarios)
+                scenarios.AddRange(ScenarioLister.ScenariosInCategory(ScenarioCategory.SteamWorkshop).Where((Scenario item) => !settings.disabledScenarios.Contains(item.name)));
+
+
+            Current.Game.Scenario = scenarios.RandomElement();
             if (Current.Game.Scenario == null)
             {
                 Current.Game.Scenario = ScenarioDefOf.Crashlanded.scenario;
@@ -154,19 +163,22 @@ namespace RandomStartMod
             }
             if (settings.factionsRandomlyAdd.Count > 0)
             {
-                int factionCount = worldFactions.Count((FactionDef x) => !x.hidden);
-                int diff = 11 - factionCount;
-                if (diff > 0)
+                List<string> randomFactions = settings.factionsRandomlyAdd;
+                for (int i = 0; i < settings.randomFactionRange.RandomInRange; i++)
                 {
-                    for (int i = 0; i < diff; i++)
+                    string randomFaction = randomFactions.RandomElement();
+                    FactionDef faction = DefDatabase<FactionDef>.GetNamed(randomFaction, false);
+
+                    if (faction == null)
+                        continue;
+                    worldFactions.Add(faction);
+                    if (settings.uniqueFactions)
                     {
-                        FactionDef faction = DefDatabase<FactionDef>.GetNamed(settings.factionsRandomlyAdd[Rand.Range(0, settings.factionsRandomlyAdd.Count)], false);
-                        if (faction == null)
-                            continue;
-                        worldFactions.Add(faction);
+                        randomFactions.Remove(randomFaction);
+                        if (randomFactions.Count == 0)
+                            break;
                     }
                 }
-
             }
 
             if (Util.IsModRunning("Vanilla Factions Expanded - Empire"))
@@ -183,8 +195,17 @@ namespace RandomStartMod
             {
                 Compat.SOS2Compat.SetupForStartInSpace();
             }
-
-            Current.Game.World = WorldGenerator.GenerateWorld(settings.planetCoverage, GenText.RandomSeedString(), rainfall, temperature, population, worldFactions, pollution);
+            if (Util.IsModRunning("Realistic Planets Continued"))
+            {
+                int worldType = settings.realisticPlanetsWorldType;
+                if (settings.randomiseRealisticPlanets)
+                    worldType = -1;
+                Compat.RealisticPlanetsCompat.GenerateRealisticPlanetWorld(settings.planetCoverage, GenText.RandomSeedString(), rainfall, temperature, population, worldFactions, pollution, worldType);
+            }
+            else
+            {
+                Current.Game.World = WorldGenerator.GenerateWorld(settings.planetCoverage, GenText.RandomSeedString(), rainfall, temperature, population, worldFactions, pollution);
+            }
 
             Find.GameInitData.ChooseRandomStartingTile();
 
@@ -223,7 +244,7 @@ namespace RandomStartMod
                     foreach (Pawn p in Find.GameInitData.startingAndOptionalPawns)
                     {
                         List<GeneDef> selectedGenes = new List<GeneDef>();
-                        for (int i = 0; i < Rand.Range(10, 30); i++)
+                        for (int i = 0; i < settings.randomGeneRange.RandomInRange; i++)
                         {
                             selectedGenes.Add(DefDatabase<GeneDef>.AllDefsListForReading.Where((GeneDef g) => g.canGenerateInGeneSet).RandomElement());
                         }

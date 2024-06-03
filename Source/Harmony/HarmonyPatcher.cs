@@ -11,7 +11,7 @@ namespace RandomStartMod
         {
             var harmony = new Harmony("com.bogknight.RandomStart");
             harmony.PatchAll();
-            Log.Message($"[{"RandomStartMod.Title".Translate()}] 1.0.0");
+            Log.Message($"[{"RandomStartMod.Title".Translate()}] Patched successfully!");
         }
     }
 }

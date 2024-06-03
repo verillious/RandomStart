@@ -1,4 +1,6 @@
 ﻿using RimWorld;
+using RimWorld.Planet;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -87,7 +89,77 @@ namespace RandomStartMod.Compat
     {
         public static void DrawMLPSlider(Rect rect)
         {
-            WorldGenRules.RulesOverrider.subcount = Mathf.RoundToInt(Widgets.HorizontalSlider(rect, WorldGenRules.RulesOverrider.subcount, 6f, 10f, middleAlignment: true, null, "MLPWorldTiny".Translate(), "MLPWorldDefault".Translate(), 1f));
+            RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
+            settings.myLittlePlanetSubcount = Mathf.RoundToInt(Widgets.HorizontalSlider(rect, settings.myLittlePlanetSubcount, 6f, 10f, middleAlignment: true, null, "MLPWorldTiny".Translate(), "MLPWorldDefault".Translate(), 1f));
+            WorldGenRules.RulesOverrider.subcount = settings.myLittlePlanetSubcount;
+        }
+    }
+
+    public static class RealisticPlanetsCompat
+    {
+        public static void DoWorldTypeSelectionButton(Listing_Standard listingStandard)
+        {
+            RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
+
+            listingStandard.Label("Planets.WorldPresets".Translate());
+            if (listingStandard.ButtonText(((Planets_Code.WorldType)settings.realisticPlanetsWorldType).ToString()))
+            {
+                List<FloatMenuOption> floatMenuOptions = new List<FloatMenuOption>();
+                for (int i = 0; i < 7; i++)
+                {
+                    Planets_Code.WorldType type = (Planets_Code.WorldType)i;
+                    FloatMenuOption floatMenuOption = new FloatMenuOption(type.ToString(), () =>
+                    {
+                        settings.realisticPlanetsWorldType = (int)type;
+                    }, MenuOptionPriority.Default, mouseoverGuiAction: null, revalidateClickTarget: null, extraPartWidth: 0f, extraPartOnGUI: null, revalidateWorldClickTarget: null);
+                    floatMenuOptions.Add(floatMenuOption);
+                }
+                Find.WindowStack.Add(new FloatMenu(floatMenuOptions));
+            }
+        }
+
+        public static void GenerateRealisticPlanetWorld(float planetCoverage, string seedString, OverallRainfall overallRainfall, OverallTemperature overallTemperature, OverallPopulation population, List<FactionDef> factions = null, float pollution = 0f, int worldType = -1)
+        {
+            Planets_Code.Planets_GameComponent.subcount = WorldGenRules.RulesOverrider.subcount;
+
+            Planets_Code.Planets_GameComponent.axialTilt = Planets_Code.Planets_Random.GetRandomAxialTilt();
+            if (worldType != -1)
+            {
+                Planets_Code.Planets_GameComponent.worldType = (Planets_Code.WorldType)worldType;
+            }
+            else
+            {
+                Planets_Code.Planets_GameComponent.worldType = Planets_Code.Planets_Random.GetRandomWorldType();
+            }
+            Planets_Code.Controller.Settings.randomPlanet = true;
+
+            Planets_Code.RainfallModifier rainfallMod = Planets_Code.RainfallModifier.Little;
+
+            if (overallRainfall == OverallRainfall.LittleBitLess)
+                rainfallMod = Planets_Code.RainfallModifier.LittleBitLess;
+
+            if (overallRainfall == OverallRainfall.Normal)
+                rainfallMod = Planets_Code.RainfallModifier.Normal;
+
+            if (overallRainfall == OverallRainfall.LittleBitMore)
+                rainfallMod = Planets_Code.RainfallModifier.LittleBitMore;
+
+            if (overallRainfall == OverallRainfall.High)
+                rainfallMod = Planets_Code.RainfallModifier.High;
+
+            if (overallRainfall == OverallRainfall.AlmostNone)
+                rainfallMod = Planets_Code.RainfallModifier.Little;
+
+            if (overallRainfall == OverallRainfall.VeryHigh)
+                rainfallMod = Planets_Code.RainfallModifier.High;
+
+            OverallRainfall rainfall = Planets_Code.RainfallModifierUtility.GetModifiedRainfall(Planets_Code.Planets_GameComponent.worldType, rainfallMod);
+
+            Planets_Code.Planets_TemperatureTuning.SetSeasonalCurve();
+            Find.GameInitData.ResetWorldRelatedMapInitData();
+
+            Current.Game.World = WorldGenerator.GenerateWorld(planetCoverage, seedString, rainfall, overallTemperature, population, factions, pollution);
+
         }
     }
 }
