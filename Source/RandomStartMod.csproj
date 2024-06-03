@@ -52,6 +52,10 @@
       <HintPath>..\..\..\..\..\workshop\content\294100\1117406550\1.4\Assemblies\MyLittlePlanet.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="NoPauseChallenge">
+      <HintPath>..\..\..\..\..\workshop\content\294100\1517419925\1.5\Assemblies\NoPauseChallenge.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Realistic_Planets_Continued">
       <HintPath>..\..\..\..\..\workshop\content\294100\3225521979\1.5\Assemblies\Realistic_Planets_Continued.dll</HintPath>
       <Private>False</Private>

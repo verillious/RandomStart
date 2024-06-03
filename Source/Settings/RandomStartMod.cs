@@ -170,6 +170,14 @@ namespace RandomStartMod
             {
                 settings.permadeath = true;
             }
+            if (Util.IsModRunning("No Pause Challenge"))
+            {
+                listingStandard.Gap(3f);
+                listingStandard.CheckboxLabeled("No Pause Challenge", ref settings.noPauseEnabled);
+                listingStandard.CheckboxLabeled("Half Speed enabled", ref settings.noPauseHalfSpeedEnabled);
+                mainListingHeight += 3f + 32f + 32f;
+            }
+
             mainListingHeight += 15f + 32f + 3f + 32f;
 
             if (ModsConfig.AnomalyActive)

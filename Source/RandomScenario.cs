@@ -106,6 +106,11 @@ namespace RandomStartMod
 
             chosenStoryteller.tutorialMode = false;
 
+            if (Util.IsModRunning("No Pause Challenge"))
+            {
+                Compat.NoPauseCompat.SetupForNoPause();
+            }
+
             Current.Game.storyteller = new Storyteller(chosenStoryteller, chosenDifficultyDef);
 
             if (chosenDifficultyDef.isCustom)

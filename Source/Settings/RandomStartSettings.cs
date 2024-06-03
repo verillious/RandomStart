@@ -143,6 +143,9 @@ namespace RandomStartMod
         public bool enableAutoRealRuins = true;
         public bool realRuinsBiomeFilter = false;
 
+        public bool noPauseEnabled = true;
+        public bool noPauseHalfSpeedEnabled = false;
+
         public override void ExposeData()
         {
             Scribe_Values.Look(ref openedSettings, "openedSettings", false);
@@ -304,6 +307,11 @@ namespace RandomStartMod
             Scribe_Values.Look(ref enableAutoRealRuins, "enableAutoRealRuins", true);
             Scribe_Values.Look(ref realRuinsBiomeFilter, "realRuinsBiomeFilter", false);
 
+            Scribe_Values.Look(ref noPauseEnabled, "noPauseEnabled", true);
+            Scribe_Values.Look(ref noPauseHalfSpeedEnabled, "noPauseHalfSpeedEnabled", false);
+
+
+
             base.ExposeData();
         }
 
@@ -360,6 +368,8 @@ namespace RandomStartMod
             friendlyFireChanceFactor = 0.4f;
             allowInstantKillChance = 0f;
             fixedWealthTimeFactor = 1f;
+            noPauseEnabled = true;
+            noPauseHalfSpeedEnabled = false;
         }
         public void ResetPlanet()
         {

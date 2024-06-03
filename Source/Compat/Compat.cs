@@ -191,4 +191,14 @@ namespace RandomStartMod.Compat
             page.Close(false);
         }
     }
+
+    public static class NoPauseCompat
+    {
+        public static void SetupForNoPause()
+        {
+            RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
+            NoPauseChallenge.Main.noPauseEnabled = settings.noPauseEnabled;
+            NoPauseChallenge.Main.halfSpeedActive = settings.noPauseHalfSpeedEnabled;
+        }
+    }
 }
