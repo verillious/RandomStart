@@ -149,19 +149,19 @@ namespace RandomStartMod
 
             OverallRainfall rainfall = (OverallRainfall)settings.rainfall;
             if (settings.randomiseRainfall)
-                rainfall = (OverallRainfall)Rand.Range(0, 6);
+                rainfall = (OverallRainfall)settings.randomiseRainfallRange.RandomInRange;
 
             OverallTemperature temperature = (OverallTemperature)settings.temperature;
             if (settings.randomiseTemperature)
-                temperature = (OverallTemperature)Rand.Range(0, 6);
+                temperature = (OverallTemperature)settings.randomiseTemperatureRange.RandomInRange;
 
             OverallPopulation population = (OverallPopulation)settings.population;
             if (settings.randomisePopulation)
-                population = (OverallPopulation)Rand.Range(0, 6);
+                population = (OverallPopulation)settings.randomisePopulationRange.RandomInRange;
 
             float pollution = settings.pollution;
             if (settings.randomisePollution)
-                pollution = Rand.Range(0f, 1f);
+                pollution = settings.randomisePollutionRange.RandomInRange;
 
             List<FactionDef> worldFactions = new List<FactionDef>();
 

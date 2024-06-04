@@ -39,7 +39,6 @@ namespace RandomStartMod
         private static float sectionHeightIdeology = 0f;
         private static float sectionHeightChildren = 0f;
 
-
         public int currentTab = 0;
         public RandomStartMod(ModContentPack content) : base(content)
         {
@@ -777,6 +776,7 @@ namespace RandomStartMod
             listingStandard.Label("Randomize".Translate() + ":");
             listingStandard.Gap();
             planetListingHeight += 12f;
+
             listingStandard.CheckboxLabeled("PlanetRainfall".Translate(), ref settings.randomiseRainfall, 12f);
             planetListingHeight += 32f + Text.LineHeight;
 
@@ -792,6 +792,12 @@ namespace RandomStartMod
                 listingStandard.Outdent();
 
             }
+            else
+            {
+                Widgets.IntRange(listingStandard.GetRect(32f), 1623498654, ref settings.randomiseRainfallRange, 0, 6, Util.GetIntRangeLabel(settings.randomiseRainfallRange));
+                planetListingHeight += 12f + 32f;
+            }
+
             listingStandard.Gap();
             listingStandard.CheckboxLabeled("PlanetTemperature".Translate(), ref settings.randomiseTemperature, 12f);
             planetListingHeight += 12f + 32f;
@@ -807,6 +813,11 @@ namespace RandomStartMod
                 listingStandard.Outdent();
 
             }
+            else
+            {
+                Widgets.IntRange(listingStandard.GetRect(32f), 1623498655, ref settings.randomiseTemperatureRange, 0, 6, Util.GetIntRangeLabel(settings.randomiseTemperatureRange).Translate());
+                planetListingHeight += 12f + 32f;
+            }
             listingStandard.Gap();
             listingStandard.CheckboxLabeled("PlanetPopulation".Translate(), ref settings.randomisePopulation, 12f);
             planetListingHeight += 12f + 32f;
@@ -819,6 +830,11 @@ namespace RandomStartMod
                 settings.population = Mathf.RoundToInt(Widgets.HorizontalSlider(populationRect, (float)settings.population, 0f, OverallPopulationUtility.EnumValuesCount - 1, middleAlignment: true, "PlanetPopulation_Normal".Translate(), "PlanetPopulation_Low".Translate(), "PlanetPopulation_High".Translate(), 1f));
                 planetListingHeight += 12f + 32f;
                 listingStandard.Outdent();
+            }
+            else
+            {
+                Widgets.IntRange(listingStandard.GetRect(32f), 1623498656, ref settings.randomisePopulationRange, 0, 6, Util.GetIntRangeLabel(settings.randomisePopulationRange).Translate());
+                planetListingHeight += 12f + 32f;
             }
 
             listingStandard.Gap();
@@ -834,6 +850,12 @@ namespace RandomStartMod
                 planetListingHeight += 12f + 32f;
                 listingStandard.Outdent();
             }
+            else
+            {
+                Widgets.FloatRange(listingStandard.GetRect(32f), 1623498651, ref settings.randomisePollutionRange, 0.0f, 1.0f, Util.GetFloatRangeLabelPercent(settings.randomisePollutionRange));
+                planetListingHeight += 12f + 32f;
+            }
+
             listingStandard.Gap();
             listingStandard.CheckboxLabeled("MapStartSeason".Translate(), ref settings.randomiseSeason, 12f);
             planetListingHeight += 12f + 32f;

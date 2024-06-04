@@ -13,10 +13,16 @@ namespace RandomStartMod
         public float planetCoverage = 0.3f;
 
         public bool permadeath = false;
+
+        public IntRange randomiseRainfallRange = new IntRange(2, 4);
+        public IntRange randomiseTemperatureRange = new IntRange(2, 4);
+        public IntRange randomisePopulationRange = new IntRange(2, 4);
+        public FloatRange randomisePollutionRange = new FloatRange(0.05f, 0.25f);
+
         public bool randomiseRainfall = true;
         public bool randomiseTemperature = true;
         public bool randomisePopulation = true;
-        public bool randomisePollution = false;
+        public bool randomisePollution = true;
         public bool randomiseSeason = false;
         public bool disableIdeo = false;
         public bool overrideIdeo = false;
@@ -155,10 +161,14 @@ namespace RandomStartMod
             Scribe_Values.Look(ref mapSize, "mapSize", 250);
             Scribe_Values.Look(ref planetCoverage, "planetCoverage", 0.3f);
             Scribe_Values.Look(ref permadeath, "permadeath", false);
+            Scribe_Values.Look(ref randomiseRainfallRange, "randomiseRainfallRange", new IntRange(2, 4));
+            Scribe_Values.Look(ref randomiseTemperatureRange, "randomiseTemperatureRange", new IntRange(2, 4));
+            Scribe_Values.Look(ref randomisePopulationRange, "randomisePopulationRange", new IntRange(2, 4));
+            Scribe_Values.Look(ref randomisePollutionRange, "randomisePollutionRange", new FloatRange(0.05f, 0.25f));
             Scribe_Values.Look(ref randomiseRainfall, "randomiseRainfall", true);
             Scribe_Values.Look(ref randomiseTemperature, "randomiseTemperature", true);
             Scribe_Values.Look(ref randomisePopulation, "randomisePopulation", true);
-            Scribe_Values.Look(ref randomisePollution, "randomisePollution", false);
+            Scribe_Values.Look(ref randomisePollution, "randomisePollution", true);
             Scribe_Values.Look(ref randomiseSeason, "randomiseSeason", false);
 
             Scribe_Values.Look(ref enableCustomScenarios, "enableCustomScenarios", true);
@@ -383,7 +393,11 @@ namespace RandomStartMod
             randomiseRainfall = true;
             randomiseTemperature = true;
             randomisePopulation = true;
-            randomisePollution = false;
+            randomisePollution = true;
+            randomiseRainfallRange = new IntRange(2, 4);
+            randomiseTemperatureRange = new IntRange(2, 4);
+            randomisePopulationRange = new IntRange(2, 4);
+            randomisePollutionRange = new FloatRange(0.05f, 0.25f);
             randomiseSeason = false;
             rainfall = 3;
             temperature = 3;
