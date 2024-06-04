@@ -37,7 +37,7 @@ namespace RandomStartMod
         public bool enableSteamWorkshopScenarios = true;
 
         public List<string> disabledStorytellers = new List<string>();
-        public List<string> disabledScenarios = new List<string>() { "Tutorial" };
+        public List<string> disabledScenarios = new List<string>() { "tutorial" };
         public List<string> factionsAlwaysAdd = new List<string>()
         {
             "Ancients",

@@ -98,19 +98,36 @@ namespace RandomStartMod.Compat
     {
         public static void DoWorldTypeSelectionButton(Listing_Standard listingStandard)
         {
+            List<string> worldTypeNames = new List<string>() {
+            "Barren",
+            "Very Dry",
+            "Dry",
+            "Vanilla",
+            "Earthlike",
+            "Islands",
+            "Waterworld"
+        };
             RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
 
             listingStandard.Label("Planets.WorldPresets".Translate());
-            if (listingStandard.ButtonText(((Planets_Code.WorldType)settings.realisticPlanetsWorldType).ToString()))
+            int currentWorldType = settings.realisticPlanetsWorldType;
+
+            if (currentWorldType >= worldTypeNames.Count)
+            {
+                currentWorldType = 3;
+                settings.realisticPlanetsWorldType = 3;
+            }
+
+            if (listingStandard.ButtonText(worldTypeNames[currentWorldType]))
             {
                 List<FloatMenuOption> floatMenuOptions = new List<FloatMenuOption>();
-                for (int i = 0; i < 7; i++)
+                for (int i = 0; i < worldTypeNames.Count; i++)
                 {
-                    Planets_Code.WorldType type = (Planets_Code.WorldType)i;
-                    FloatMenuOption floatMenuOption = new FloatMenuOption(type.ToString(), () =>
+                    int worldType = i;
+                    FloatMenuOption floatMenuOption = new FloatMenuOption(worldTypeNames[i], delegate
                     {
-                        settings.realisticPlanetsWorldType = (int)type;
-                    }, MenuOptionPriority.Default, mouseoverGuiAction: null, revalidateClickTarget: null, extraPartWidth: 0f, extraPartOnGUI: null, revalidateWorldClickTarget: null);
+                        settings.realisticPlanetsWorldType = worldType;
+                    });
                     floatMenuOptions.Add(floatMenuOption);
                 }
                 Find.WindowStack.Add(new FloatMenu(floatMenuOptions));
@@ -122,7 +139,7 @@ namespace RandomStartMod.Compat
             Util.LogMessage("[RealisticPlanetsCompat] Generating Realistic Planets World");
             RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
 
-            if (Util.IsModRunning("My Little Planet"))
+            if (ModsConfig.IsActive("Oblitus.MyLittlePlanet"))
             {
                 Util.LogMessage("[RealisticPlanetsCompat] My Little Planet is running");
                 Planets_Code.Planets_GameComponent.subcount = settings.myLittlePlanetSubcount;
@@ -196,6 +213,7 @@ namespace RandomStartMod.Compat
     {
         public static void SetupForNoPause()
         {
+            Util.LogMessage("[NoPauseCompat] Setting up for no pause challenge");
             RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
             NoPauseChallenge.Main.noPauseEnabled = settings.noPauseEnabled;
             NoPauseChallenge.Main.halfSpeedActive = settings.noPauseHalfSpeedEnabled;

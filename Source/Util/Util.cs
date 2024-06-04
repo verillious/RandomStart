@@ -11,11 +11,6 @@ namespace RandomStartMod
             Log.Message($"[{"RandomStartMod.Title".Translate()}] {message}");
         }
 
-        public static bool IsModRunning(string modName)
-        {
-            return ModsConfig.ActiveModsInLoadOrder.Any(mod => mod.Name.Contains(modName));
-        }
-
         public static bool IsScenarioFromMod(string modName)
         {
             ScenarioDef scenarioDef = DefDatabase<ScenarioDef>.AllDefsListForReading.First((ScenarioDef s) => s.scenario == Find.Scenario);

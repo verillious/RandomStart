@@ -22,16 +22,22 @@ namespace RandomStartMod
 
             List<Scenario> scenarios = new List<Scenario>();
 
-            scenarios.AddRange(ScenarioLister.AllScenarios().Where((Scenario scenario) => !settings.disabledScenarios.Contains(scenario.name)));
+            scenarios.AddRange(ScenarioLister.AllScenarios().Where((Scenario scenario) => !settings.disabledScenarios.Contains(scenario.name) && scenario.showInUI));
             if (settings.enableCustomScenarios)
-                scenarios.AddRange(ScenarioLister.ScenariosInCategory(ScenarioCategory.CustomLocal).Where((Scenario item) => !settings.disabledScenarios.Contains(item.name)));
+                scenarios.AddRange(ScenarioLister.ScenariosInCategory(ScenarioCategory.CustomLocal).Where((Scenario scenario) => !settings.disabledScenarios.Contains(scenario.name) && scenario.showInUI));
             if (settings.enableSteamWorkshopScenarios)
-                scenarios.AddRange(ScenarioLister.ScenariosInCategory(ScenarioCategory.SteamWorkshop).Where((Scenario item) => !settings.disabledScenarios.Contains(item.name)));
+                scenarios.AddRange(ScenarioLister.ScenariosInCategory(ScenarioCategory.SteamWorkshop).Where((Scenario scenario) => !settings.disabledScenarios.Contains(scenario.name) && scenario.showInUI));
 
 
             Current.Game.Scenario = scenarios.RandomElement();
             if (Current.Game.Scenario == null)
             {
+                string errorString = "[Random Start] Could not find valid Scenario from:";
+                foreach (Scenario s in scenarios)
+                {
+                    errorString += "\n" + "    - " + s.name;
+                }
+                Log.Error(errorString);
                 Current.Game.Scenario = ScenarioDefOf.Crashlanded.scenario;
             }
 
@@ -108,7 +114,7 @@ namespace RandomStartMod
 
             chosenStoryteller.tutorialMode = false;
 
-            if (Util.IsModRunning("No Pause Challenge"))
+            if (ModsConfig.IsActive("brrainz.nopausechallenge"))
             {
                 Compat.NoPauseCompat.SetupForNoPause();
             }
@@ -188,21 +194,22 @@ namespace RandomStartMod
                 }
             }
 
-            if (Util.IsModRunning("Vanilla Factions Expanded - Empire"))
+            if (ModsConfig.IsActive("OskarPotocki.VFE.Empire"))
             {
                 Compat.VFEECompat.EnsureScenarioFactions(worldFactions);
             }
 
-            if (Util.IsModRunning("Vanilla Factions Expanded - Deserters"))
+            if (ModsConfig.IsActive("OskarPotocki.VFE.Deserters"))
             {
                 Compat.VFEDCompat.EnsureScenarioFactions(worldFactions);
             }
 
-            if (Util.IsModRunning("Save Our Ship 2") && Util.IsScenarioFromMod("Save Our Ship 2"))
+            if (ModsConfig.IsActive("kentington.saveourship2") && Util.IsScenarioFromMod("Save Our Ship 2"))
             {
                 Compat.SOS2Compat.SetupForStartInSpace();
             }
-            if (Util.IsModRunning("Realistic Planets Continued"))
+
+            if (ModsConfig.IsActive("zvq.RealisticPlanetsContinued"))
             {
                 int worldType = settings.realisticPlanetsWorldType;
                 if (settings.randomiseRealisticPlanets)
@@ -224,7 +231,7 @@ namespace RandomStartMod
             Find.GameInitData.mapSize = settings.mapSize;
             Find.GameInitData.permadeath = settings.permadeath;
 
-            if (Util.IsModRunning("Vanilla Expanded Framework"))
+            if (ModsConfig.IsActive("OskarPotocki.VanillaFactionsExpanded.Core"))
             {
                 Compat.VECoreCompat.SetupForKCSG();
             }
@@ -325,7 +332,7 @@ namespace RandomStartMod
                         }
                         else
                         {
-                            Log.Warning($"[Random Start] Couldn't load ideo file {settings.customIdeoOverrideFile} - are mods missing?");
+                            Log.Error($"[Random Start] Couldn't load ideo file {settings.customIdeoOverrideFile.Split('\\').Last()} - was it saved with different mods?");
                         }
 
 
@@ -342,7 +349,7 @@ namespace RandomStartMod
 
             PageUtility.InitGameStart();
 
-            if (Util.IsModRunning("Real Ruins") && settings.enableAutoRealRuins)
+            if (ModsConfig.IsActive("Woolstrand.RealRuins") && settings.enableAutoRealRuins)
             {
                 Compat.RealRuinsCompat.CreatePOIs();
             }

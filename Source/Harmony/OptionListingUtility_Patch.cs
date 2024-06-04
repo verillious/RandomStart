@@ -28,7 +28,7 @@ namespace RandomStartMod
 
             int index = 0;
 
-            if (Util.IsModRunning("Continue Button"))
+            if (ModsConfig.IsActive("phoenix.ContinueButton"))
             {
                 index = 1;
             }

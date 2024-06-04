@@ -171,7 +171,7 @@ namespace RandomStartMod
             {
                 settings.permadeath = true;
             }
-            if (Util.IsModRunning("No Pause Challenge"))
+            if (ModsConfig.IsActive("brrainz.nopausechallenge"))
             {
                 listingStandard.Gap(3f);
                 listingStandard.CheckboxLabeled("No Pause Challenge", ref settings.noPauseEnabled);
@@ -864,7 +864,7 @@ namespace RandomStartMod
                 planetListingHeight += 32f;
             }
 
-            if (Util.IsModRunning("My Little Planet"))
+            if (ModsConfig.IsActive("Oblitus.MyLittlePlanet"))
             {
                 listingStandard.Gap();
                 Text.Font = GameFont.Medium;
@@ -879,7 +879,7 @@ namespace RandomStartMod
                 planetListingHeight += 30f;
             }
 
-            if (Util.IsModRunning("Realistic Planets Continued"))
+            if (ModsConfig.IsActive("zvq.RealisticPlanetsContinued"))
             {
                 listingStandard.Gap();
                 Text.Font = GameFont.Medium;
@@ -897,7 +897,7 @@ namespace RandomStartMod
 
             }
 
-            if (Util.IsModRunning("Real Ruins"))
+            if (ModsConfig.IsActive("Woolstrand.RealRuins"))
             {
                 listingStandard.Gap();
                 Text.Font = GameFont.Medium;
