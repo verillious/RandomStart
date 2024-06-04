@@ -12,12 +12,6 @@ namespace RandomStartMod
             Log.Message($"[{"RandomStartMod.Title".Translate()}] {message}");
         }
 
-        public static bool IsScenarioFromMod(string modName)
-        {
-            ScenarioDef scenarioDef = DefDatabase<ScenarioDef>.AllDefsListForReading.First((ScenarioDef s) => s.scenario == Find.Scenario);
-            return scenarioDef.modContentPack.Name == modName;
-        }
-
         public static string GetIntRangeLabel(IntRange range)
         {
             List<string> intRangeLabels = new List<string>() { "RandomStartMod.VeryLow", "PlanetRainfall_Low", "RandomStartMod.ALittleLess", "PlanetRainfall_Normal", "RandomStartMod.ALittleMore", "PlanetRainfall_High", "RandomStartMod.VeryHigh" };

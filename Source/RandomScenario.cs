@@ -204,7 +204,7 @@ namespace RandomStartMod
                 Compat.VFEDCompat.EnsureScenarioFactions(worldFactions);
             }
 
-            if (ModsConfig.IsActive("kentington.saveourship2") && Util.IsScenarioFromMod("Save Our Ship 2"))
+            if (ModsConfig.IsActive("kentington.saveourship2"))
             {
                 Compat.SOS2Compat.SetupForStartInSpace();
             }
