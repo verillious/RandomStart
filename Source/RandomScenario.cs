@@ -176,7 +176,7 @@ namespace RandomStartMod
             }
             if (settings.factionsRandomlyAdd.Count > 0)
             {
-                List<string> randomFactions = settings.factionsRandomlyAdd;
+                List<string> randomFactions = new List<string>(settings.factionsRandomlyAdd);
                 for (int i = 0; i < settings.randomFactionRange.RandomInRange; i++)
                 {
                     string randomFaction = randomFactions.RandomElement();
