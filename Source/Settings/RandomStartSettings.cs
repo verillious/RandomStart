@@ -53,7 +53,8 @@ namespace RandomStartMod
             "Empire",
             "HoraxCult",
             "Entities",
-            "VFEE_Deserters"
+            "VFEE_Deserters",
+            "Sanguophages",
         };
         public List<string> factionsRandomlyAdd = new List<string>()
         {
@@ -72,7 +73,6 @@ namespace RandomStartMod
             "TribeSavageImpid",
             "OutlanderRoughPig",
             "PirateWaster",
-            "Sanguophages",
         };
 
         public Vector2 scrollPosition;
@@ -140,6 +140,10 @@ namespace RandomStartMod
 
         public bool fluidIdeo = false;
 
+        public bool removeStartingResearch = false;
+        public bool addRandomResearch = false;
+        public IntRange randomResearchRange = new IntRange(5, 15);
+        public int randomResearchTechLevelLimit = 4;
 
         //Compat
 
@@ -313,6 +317,11 @@ namespace RandomStartMod
             Scribe_Values.Look(ref overrideIdeo, "overrideIdeo", false);
             Scribe_Values.Look(ref customIdeoOverrideFile, "customIdeoOverrideFile", null);
 
+            Scribe_Values.Look(ref removeStartingResearch, "removeStartingResearch", false);
+            Scribe_Values.Look(ref addRandomResearch, "addRandomResearch", false);
+            Scribe_Values.Look(ref randomResearchRange, "randomResearchRange", new IntRange(5, 15));
+            Scribe_Values.Look(ref randomResearchTechLevelLimit, "randomResearchTechLevelLimit", 4);
+
             Scribe_Values.Look(ref myLittlePlanetSubcount, "myLittlePlanetSubcount", 10);
             Scribe_Values.Look(ref realisticPlanetsWorldType, "realisticPlanetsWorldType", 3);
             Scribe_Values.Look(ref randomiseRealisticPlanets, "randomiseRealisticPlanets", true);
@@ -461,6 +470,7 @@ namespace RandomStartMod
         {
             ResetGenes();
             ResetIdeo();
+            ResetResearch();
         }
 
         public void ResetGenes()
@@ -477,6 +487,14 @@ namespace RandomStartMod
             fluidIdeo = false;
             overrideIdeo = false;
             customIdeoOverrideFile = null;
+        }
+
+        public void ResetResearch()
+        {
+            removeStartingResearch = false;
+            addRandomResearch = false;
+            randomResearchRange = new IntRange(5, 15);
+            randomResearchTechLevelLimit = 4;
         }
     }
 }

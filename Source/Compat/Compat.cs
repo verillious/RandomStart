@@ -34,12 +34,16 @@ namespace RandomStartMod.Compat
 
             if (Current.Game.Scenario.AllParts.Count((ScenPart s) => s.def.defName == "VFEE_SpawnRaid") > 0)
             {
-                Util.LogMessage("[VFEECompat] Adding Mandatory Deserter faction");
+                Util.LogMessage("[VFEECompat] Adding Mandatory Empire, Deserter factions");
+                FactionDef empireFactionDef = DefDatabase<FactionDef>.AllDefsListForReading.First((FactionDef f) => f.defName == "Empire");
+                if (empireFactionDef != null)
+                {
+                    factions.Add(empireFactionDef);
+                }
                 FactionDef deserterFactionDef = DefDatabase<FactionDef>.AllDefsListForReading.First((FactionDef f) => f.defName == "VFEE_Deserters");
                 if (deserterFactionDef != null)
                 {
                     factions.Add(deserterFactionDef);
-
                 }
             }
         }
@@ -54,12 +58,16 @@ namespace RandomStartMod.Compat
 
             if (Current.Game.Scenario.AllParts.Count((ScenPart s) => s.def.defName == "VFED_StartDeserting") > 0)
             {
-                Util.LogMessage("[VFEDCompat] Adding Mandatory Deserter faction");
+                Util.LogMessage("[VFEDCompat] Adding Mandatory Deserter, Empire factions");
+                FactionDef empireFactionDef = DefDatabase<FactionDef>.AllDefsListForReading.First((FactionDef f) => f.defName == "Empire");
+                if (empireFactionDef != null)
+                {
+                    factions.Add(empireFactionDef);
+                }
                 FactionDef deserterFactionDef = DefDatabase<FactionDef>.AllDefsListForReading.First((FactionDef f) => f.defName == "VFEE_Deserters");
                 if (deserterFactionDef != null)
                 {
                     factions.Add(deserterFactionDef);
-
                 }
             }
         }

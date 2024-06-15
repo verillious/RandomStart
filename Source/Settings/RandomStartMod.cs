@@ -1026,6 +1026,36 @@ namespace RandomStartMod
 
             }
 
+            // public bool removeStartingResearch = false;
+            // public bool addRandomResearch = false;
+            // public IntRange randomResearchRange = new IntRange(5, 15);
+            // public int randomResearchTechLevelLimit = 4;
+            listingStandard.Gap();
+            Text.Font = GameFont.Medium;
+            listingStandard.Label("Research".Translate());
+            listingStandard.GapLine();
+            optionalFeaturesListingHeight += 24f + Text.LineHeight;
+            Text.Font = GameFont.Small;
+
+            DoOptionalFeatureRow(listingStandard.GetRect(24f), $"{"Remove".Translate()}: {"MedGroupDefaults".Translate()}", null, ref settings.removeStartingResearch);
+
+            DoOptionalFeatureRow(listingStandard.GetRect(24f), "Randomize".Translate(), null, ref settings.addRandomResearch);
+            optionalFeaturesListingHeight += 24f;
+            if (settings.addRandomResearch)
+            {
+                listingStandard.Label("PenFoodTab_Count".Translate() + ":");
+                optionalFeaturesListingHeight += Text.LineHeight;
+                Widgets.IntRange(listingStandard.GetRect(32f), 1823998654, ref settings.randomResearchRange, 0, 20);
+                optionalFeaturesListingHeight += 32f;
+                listingStandard.Label("MaxTier".Translate() + ":");
+                optionalFeaturesListingHeight += Text.LineHeight;
+                listingStandard.Label($"TechLevel_{(TechLevel)settings.randomResearchTechLevelLimit}".Translate().CapitalizeFirst());
+                optionalFeaturesListingHeight += Text.LineHeight;
+                settings.randomResearchTechLevelLimit = Mathf.RoundToInt(Widgets.HorizontalSlider(listingStandard.GetRect(32f), settings.randomResearchTechLevelLimit, 1, 6, middleAlignment: true, null, null, null, 1f));
+                optionalFeaturesListingHeight += 32f;
+            }
+
+
             listingStandard.Gap();
             optionalFeaturesListingHeight += 12f;
             if (listingStandard.ButtonText("RestoreToDefaultSettings".Translate()))

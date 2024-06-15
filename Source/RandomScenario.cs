@@ -1,9 +1,10 @@
-﻿using RimWorld;
-using RimWorld.Planet;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using KCSG;
+using RimWorld;
+using RimWorld.Planet;
 using Verse;
 
 namespace RandomStartMod
@@ -12,9 +13,10 @@ namespace RandomStartMod
     {
         public static void SetupForRandomPlay()
         {
-
             Util.LogMessage($"Randomising Scenario");
-            RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
+            RandomStartSettings settings = LoadedModManager
+                .GetMod<RandomStartMod>()
+                .GetSettings<RandomStartSettings>();
 
             Current.ProgramState = ProgramState.Entry;
             Current.Game = new Game();
@@ -22,12 +24,34 @@ namespace RandomStartMod
 
             List<Scenario> scenarios = new List<Scenario>();
 
-            scenarios.AddRange(ScenarioLister.AllScenarios().Where((Scenario scenario) => !settings.disabledScenarios.Contains(scenario.name) && scenario.showInUI));
+            scenarios.AddRange(
+                ScenarioLister
+                    .AllScenarios()
+                    .Where(
+                        (Scenario scenario) =>
+                            !settings.disabledScenarios.Contains(scenario.name) && scenario.showInUI
+                    )
+            );
             if (settings.enableCustomScenarios)
-                scenarios.AddRange(ScenarioLister.ScenariosInCategory(ScenarioCategory.CustomLocal).Where((Scenario scenario) => !settings.disabledScenarios.Contains(scenario.name) && scenario.showInUI));
+                scenarios.AddRange(
+                    ScenarioLister
+                        .ScenariosInCategory(ScenarioCategory.CustomLocal)
+                        .Where(
+                            (Scenario scenario) =>
+                                !settings.disabledScenarios.Contains(scenario.name)
+                                && scenario.showInUI
+                        )
+                );
             if (settings.enableSteamWorkshopScenarios)
-                scenarios.AddRange(ScenarioLister.ScenariosInCategory(ScenarioCategory.SteamWorkshop).Where((Scenario scenario) => !settings.disabledScenarios.Contains(scenario.name) && scenario.showInUI));
-
+                scenarios.AddRange(
+                    ScenarioLister
+                        .ScenariosInCategory(ScenarioCategory.SteamWorkshop)
+                        .Where(
+                            (Scenario scenario) =>
+                                !settings.disabledScenarios.Contains(scenario.name)
+                                && scenario.showInUI
+                        )
+                );
 
             Current.Game.Scenario = scenarios.RandomElement();
             if (Current.Game.Scenario == null)
@@ -42,7 +66,9 @@ namespace RandomStartMod
             }
 
             Util.LogMessage($"Starting {Current.Game.Scenario}");
-            DifficultyDef chosenDifficultyDef = DefDatabase<DifficultyDef>.AllDefs.First((DifficultyDef d) => d.defName == settings.difficulty);
+            DifficultyDef chosenDifficultyDef = DefDatabase<DifficultyDef>.AllDefs.First(
+                (DifficultyDef d) => d.defName == settings.difficulty
+            );
             if (chosenDifficultyDef.isCustom)
             {
                 chosenDifficultyDef.threatScale = settings.threatScale;
@@ -60,15 +86,22 @@ namespace RandomStartMod
                 chosenDifficultyDef.butcherYieldFactor = settings.butcherYieldFactor;
                 chosenDifficultyDef.researchSpeedFactor = settings.researchSpeedFactor;
                 chosenDifficultyDef.diseaseIntervalFactor = settings.diseaseIntervalFactor;
-                chosenDifficultyDef.enemyReproductionRateFactor = settings.enemyReproductionRateFactor;
-                chosenDifficultyDef.playerPawnInfectionChanceFactor = settings.playerPawnInfectionChanceFactor;
-                chosenDifficultyDef.manhunterChanceOnDamageFactor = settings.manhunterChanceOnDamageFactor;
-                chosenDifficultyDef.deepDrillInfestationChanceFactor = settings.deepDrillInfestationChanceFactor;
-                chosenDifficultyDef.wastepackInfestationChanceFactor = settings.wastepackInfestationChanceFactor;
+                chosenDifficultyDef.enemyReproductionRateFactor =
+                    settings.enemyReproductionRateFactor;
+                chosenDifficultyDef.playerPawnInfectionChanceFactor =
+                    settings.playerPawnInfectionChanceFactor;
+                chosenDifficultyDef.manhunterChanceOnDamageFactor =
+                    settings.manhunterChanceOnDamageFactor;
+                chosenDifficultyDef.deepDrillInfestationChanceFactor =
+                    settings.deepDrillInfestationChanceFactor;
+                chosenDifficultyDef.wastepackInfestationChanceFactor =
+                    settings.wastepackInfestationChanceFactor;
                 chosenDifficultyDef.foodPoisonChanceFactor = settings.foodPoisonChanceFactor;
                 chosenDifficultyDef.maintenanceCostFactor = settings.maintenanceCostFactor;
-                chosenDifficultyDef.enemyDeathOnDownedChanceFactor = settings.enemyDeathOnDownedChanceFactor;
-                chosenDifficultyDef.adaptationGrowthRateFactorOverZero = settings.adaptationGrowthRateFactorOverZero;
+                chosenDifficultyDef.enemyDeathOnDownedChanceFactor =
+                    settings.enemyDeathOnDownedChanceFactor;
+                chosenDifficultyDef.adaptationGrowthRateFactorOverZero =
+                    settings.adaptationGrowthRateFactorOverZero;
                 chosenDifficultyDef.adaptationEffectFactor = settings.adaptationEffectFactor;
                 chosenDifficultyDef.questRewardValueFactor = settings.questRewardValueFactor;
                 chosenDifficultyDef.raidLootPointsFactor = settings.raidLootPointsFactor;
@@ -76,18 +109,22 @@ namespace RandomStartMod
                 chosenDifficultyDef.allowTurrets = settings.allowTurrets;
                 chosenDifficultyDef.allowMortars = settings.allowMortars;
                 chosenDifficultyDef.classicMortars = settings.classicMortars;
-                chosenDifficultyDef.allowExtremeWeatherIncidents = settings.allowExtremeWeatherIncidents;
+                chosenDifficultyDef.allowExtremeWeatherIncidents =
+                    settings.allowExtremeWeatherIncidents;
                 chosenDifficultyDef.fixedWealthMode = settings.fixedWealthMode;
                 chosenDifficultyDef.lowPopConversionBoost = settings.lowPopConversionBoost;
-                chosenDifficultyDef.minThreatPointsRangeCeiling = settings.minThreatPointsRangeCeiling;
+                chosenDifficultyDef.minThreatPointsRangeCeiling =
+                    settings.minThreatPointsRangeCeiling;
                 chosenDifficultyDef.babiesAreHealthy = settings.babiesAreHealthy;
                 chosenDifficultyDef.noBabiesOrChildren = settings.noBabiesOrChildren;
                 chosenDifficultyDef.childAgingRate = settings.childAgingRate;
                 chosenDifficultyDef.adultAgingRate = settings.adultAgingRate;
                 chosenDifficultyDef.unwaveringPrisoners = settings.unwaveringPrisoners;
                 chosenDifficultyDef.childRaidersAllowed = settings.childRaidersAllowed;
-                chosenDifficultyDef.anomalyThreatsInactiveFraction = settings.anomalyThreatsInactiveFraction;
-                chosenDifficultyDef.anomalyThreatsActiveFraction = settings.anomalyThreatsActiveFraction;
+                chosenDifficultyDef.anomalyThreatsInactiveFraction =
+                    settings.anomalyThreatsInactiveFraction;
+                chosenDifficultyDef.anomalyThreatsActiveFraction =
+                    settings.anomalyThreatsActiveFraction;
                 chosenDifficultyDef.studyEfficiencyFactor = settings.studyEfficiencyFactor;
             }
 
@@ -132,10 +169,12 @@ namespace RandomStartMod
             if (ModsConfig.AnomalyActive)
             {
                 Difficulty difficulty = Current.Game.storyteller.difficulty;
-                AnomalyPlaystyleDef chosenAnomalyPlaystyleDef = DefDatabase<AnomalyPlaystyleDef>.GetNamed(settings.anomalyPlaystyle);
+                AnomalyPlaystyleDef chosenAnomalyPlaystyleDef =
+                    DefDatabase<AnomalyPlaystyleDef>.GetNamed(settings.anomalyPlaystyle);
                 if (chosenAnomalyPlaystyleDef.overrideThreatFraction)
                 {
-                    difficulty.overrideAnomalyThreatsFraction = settings.overrideAnomalyThreatsFraction;
+                    difficulty.overrideAnomalyThreatsFraction =
+                        settings.overrideAnomalyThreatsFraction;
                 }
                 else
                 {
@@ -165,7 +204,8 @@ namespace RandomStartMod
 
             List<FactionDef> worldFactions = new List<FactionDef>();
 
-            IEnumerable<FactionDef> allFactionDefs = DefDatabase<FactionDef>.AllDefsListForReading.Where((FactionDef x) => x.isPlayer);
+            IEnumerable<FactionDef> allFactionDefs =
+                DefDatabase<FactionDef>.AllDefsListForReading.Where((FactionDef x) => x.isPlayer);
 
             foreach (string factionDefName in settings.factionsAlwaysAdd)
             {
@@ -214,11 +254,28 @@ namespace RandomStartMod
                 int worldType = settings.realisticPlanetsWorldType;
                 if (settings.randomiseRealisticPlanets)
                     worldType = -1;
-                Compat.RealisticPlanetsCompat.GenerateRealisticPlanetWorld(settings.planetCoverage, GenText.RandomSeedString(), rainfall, temperature, population, worldFactions, pollution, worldType);
+                Compat.RealisticPlanetsCompat.GenerateRealisticPlanetWorld(
+                    settings.planetCoverage,
+                    GenText.RandomSeedString(),
+                    rainfall,
+                    temperature,
+                    population,
+                    worldFactions,
+                    pollution,
+                    worldType
+                );
             }
             else
             {
-                Current.Game.World = WorldGenerator.GenerateWorld(settings.planetCoverage, GenText.RandomSeedString(), rainfall, temperature, population, worldFactions, pollution);
+                Current.Game.World = WorldGenerator.GenerateWorld(
+                    settings.planetCoverage,
+                    GenText.RandomSeedString(),
+                    rainfall,
+                    temperature,
+                    population,
+                    worldFactions,
+                    pollution
+                );
             }
 
             Find.GameInitData.ChooseRandomStartingTile();
@@ -241,12 +298,25 @@ namespace RandomStartMod
                 if (settings.disableIdeo)
                 {
                     Find.IdeoManager.classicMode = true;
-                    IdeoGenerationParms genParms = new IdeoGenerationParms(Find.FactionManager.OfPlayer.def);
-                    if (!DefDatabase<CultureDef>.AllDefs.Where((CultureDef x) => Find.FactionManager.OfPlayer.def.allowedCultures.Contains(x)).TryRandomElement(out var result))
+                    IdeoGenerationParms genParms = new IdeoGenerationParms(
+                        Find.FactionManager.OfPlayer.def
+                    );
+                    if (
+                        !DefDatabase<CultureDef>
+                            .AllDefs.Where(
+                                (CultureDef x) =>
+                                    Find.FactionManager.OfPlayer.def.allowedCultures.Contains(x)
+                            )
+                            .TryRandomElement(out var result)
+                    )
                     {
                         result = DefDatabase<CultureDef>.AllDefs.RandomElement();
                     }
-                    Ideo classicIdeo = IdeoGenerator.GenerateClassicIdeo(result, genParms, noExpansionIdeo: false);
+                    Ideo classicIdeo = IdeoGenerator.GenerateClassicIdeo(
+                        result,
+                        genParms,
+                        noExpansionIdeo: false
+                    );
                     foreach (Faction allFaction in Find.FactionManager.AllFactions)
                     {
                         if (allFaction.ideos != null)
@@ -265,13 +335,22 @@ namespace RandomStartMod
                     {
                         Util.LogMessage("Attempting to load ideo file");
                         Ideo newIdeo = null;
-                        PreLoadUtility.CheckVersionAndLoad(settings.customIdeoOverrideFile, ScribeMetaHeaderUtility.ScribeHeaderMode.Ideo, delegate
-                        {
-                            if (GameDataSaveLoader.TryLoadIdeo(settings.customIdeoOverrideFile, out var ideo))
+                        PreLoadUtility.CheckVersionAndLoad(
+                            settings.customIdeoOverrideFile,
+                            ScribeMetaHeaderUtility.ScribeHeaderMode.Ideo,
+                            delegate
                             {
-                                newIdeo = IdeoGenerator.InitLoadedIdeo(ideo);
+                                if (
+                                    GameDataSaveLoader.TryLoadIdeo(
+                                        settings.customIdeoOverrideFile,
+                                        out var ideo
+                                    )
+                                )
+                                {
+                                    newIdeo = IdeoGenerator.InitLoadedIdeo(ideo);
+                                }
                             }
-                        });
+                        );
 
                         if (newIdeo != null)
                         {
@@ -284,17 +363,46 @@ namespace RandomStartMod
                         }
                         else
                         {
-                            Log.Error($"[Random Start] Couldn't load ideo file {settings.customIdeoOverrideFile.Split('\\').Last()} - was it saved with different mods?");
+                            Log.Error(
+                                $"[Random Start] Couldn't load ideo file {settings.customIdeoOverrideFile.Split('\\').Last()} - was it saved with different mods?"
+                            );
                         }
                     }
                     if (settings.fluidIdeo)
                     {
-                        Ideo playerIdeo = Find.FactionManager.OfPlayer.ideos.AllIdeos.FirstOrDefault();
+                        Ideo playerIdeo =
+                            Find.FactionManager.OfPlayer.ideos.AllIdeos.FirstOrDefault();
                         playerIdeo.Fluid = true;
                     }
                 }
             }
 
+            if (settings.removeStartingResearch)
+            {
+                Find.FactionManager.OfPlayer.def.startingResearchTags.Clear();
+            }
+            if (settings.addRandomResearch)
+            {
+                List<ResearchProjectDef> possibleProjects = DefDatabase<ResearchProjectDef>
+                    .AllDefsListForReading.Where(def =>
+                        (
+                            (int)def.techLevel <= settings.randomResearchTechLevelLimit
+                            && def.tab.label != "anomaly"
+                        )
+                    )
+                    .ToList();
+                for (int i = 0; i < settings.randomResearchRange.RandomInRange; i++)
+                {
+                    ResearchProjectDef projectDef = possibleProjects.RandomElement();
+                    possibleProjects.Remove(projectDef);
+                    Find.ResearchManager.FinishProject(
+                        projectDef,
+                        doCompletionDialog: false,
+                        null,
+                        doCompletionLetter: false
+                    );
+                }
+            }
 
             Find.Scenario.PostIdeoChosen();
             if (ModsConfig.BiotechActive)
@@ -303,14 +411,21 @@ namespace RandomStartMod
                 {
                     foreach (Pawn p in Find.GameInitData.startingAndOptionalPawns)
                     {
-                        IEnumerable<XenotypeDef> xenotypes = DefDatabase<XenotypeDef>.AllDefsListForReading;
-                        if (settings.respectFactionXenotypes && Find.FactionManager.OfPlayer.def.basicMemberKind.xenotypeSet != null)
-                            xenotypes = xenotypes.Where((XenotypeDef x) => Find.FactionManager.OfPlayer.def.basicMemberKind.xenotypeSet.Contains(x));
+                        IEnumerable<XenotypeDef> xenotypes =
+                            DefDatabase<XenotypeDef>.AllDefsListForReading;
+                        if (
+                            settings.respectFactionXenotypes
+                            && Find.FactionManager.OfPlayer.def.basicMemberKind.xenotypeSet != null
+                        )
+                            xenotypes = xenotypes.Where(
+                                (XenotypeDef x) =>
+                                    Find.FactionManager.OfPlayer.def.basicMemberKind.xenotypeSet.Contains(
+                                        x
+                                    )
+                            );
                         XenotypeDef xenotype = xenotypes.RandomElement();
                         p.genes.SetXenotype(xenotype);
                     }
-
-
                 }
 
                 if (settings.enableRandomCustomXenotypes)
@@ -320,11 +435,19 @@ namespace RandomStartMod
                         List<GeneDef> selectedGenes = new List<GeneDef>();
                         for (int i = 0; i < settings.randomGeneRange.RandomInRange; i++)
                         {
-                            selectedGenes.Add(DefDatabase<GeneDef>.AllDefsListForReading.Where((GeneDef g) => g.canGenerateInGeneSet).RandomElement());
+                            selectedGenes.Add(
+                                DefDatabase<GeneDef>
+                                    .AllDefsListForReading.Where(
+                                        (GeneDef g) => g.canGenerateInGeneSet
+                                    )
+                                    .RandomElement()
+                            );
                         }
                         if (selectedGenes.Count > 0)
                         {
-                            p.genes.xenotypeName = GeneUtility.GenerateXenotypeNameFromGenes(selectedGenes);
+                            p.genes.xenotypeName = GeneUtility.GenerateXenotypeNameFromGenes(
+                                selectedGenes
+                            );
                             p.genes.iconDef = DefDatabase<XenotypeIconDef>.GetRandom();
 
                             foreach (GeneDef geneDef in selectedGenes)
