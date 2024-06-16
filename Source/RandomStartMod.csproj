@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="packages\Krafs.Publicizer.2.2.1\build\Krafs.Publicizer.props" Condition="Exists('packages\Krafs.Publicizer.2.2.1\build\Krafs.Publicizer.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -15,12 +15,13 @@
     <Deterministic>true</Deterministic>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <BuildWithMSBuildOnMono>true</BuildWithMSBuildOnMono>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\1.5\Assemblies\</OutputPath>
+    <OutputPath>../1.5/Assemblies/</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -29,7 +30,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>../1.5/Assemblies/</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -39,58 +40,70 @@
       <HintPath>packages\Lib.Harmony.2.3.3\lib\net472\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
-      <CopyLocal>False</CopyLocal>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="KCSG">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\..\..\workshop\content\294100\2023507013\1.5\Assemblies\KCSG.dll</HintPath>
+      <HintPath>..\..\..\..\..\workshop\content\294100\2023507013\1.5\Assemblies\KCSG.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\2023507013\1.5\Assemblies\KCSG.dll</HintPath>
       <CopyLocal>False</CopyLocal>
       <Private>False</Private>
     </Reference>
     <Reference Include="MyLittlePlanet">
       <HintPath>..\..\..\..\..\workshop\content\294100\1117406550\1.4\Assemblies\MyLittlePlanet.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1117406550\1.4\Assemblies\MyLittlePlanet.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="NoPauseChallenge">
       <HintPath>..\..\..\..\..\workshop\content\294100\1517419925\1.5\Assemblies\NoPauseChallenge.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1517419925\1.5\Assemblies\NoPauseChallenge.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Realistic_Planets_Continued">
       <HintPath>..\..\..\..\..\workshop\content\294100\3225521979\1.5\Assemblies\Realistic_Planets_Continued.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\3225521979\1.5\Assemblies\Realistic_Planets_Continued.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="RealRuins">
       <HintPath>..\..\..\..\..\workshop\content\294100\1552146295\1.5\Assemblies\RealRuins.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1552146295\1.5\Assemblies\RealRuins.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="ShipsHaveInsides">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\..\..\workshop\content\294100\1909914131\1.5\Assemblies\ShipsHaveInsides.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <HintPath>..\..\..\..\..\workshop\content\294100\1909914131\1.5\Assemblies\ShipsHaveInsides.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1909914131\1.5\Assemblies\ShipsHaveInsides.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="VFECore">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\..\..\workshop\content\294100\2023507013\1.5\Assemblies\VFECore.dll</HintPath>
+      <HintPath>..\..\..\..\..\workshop\content\294100\2023507013\1.5\Assemblies\VFECore.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\2023507013\1.5\Assemblies\VFECore.dll</HintPath>
       <CopyLocal>False</CopyLocal>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\..\..\..\..\common\RimWorld\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath Condition="Exists('/Users/williamchristian/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app')">/Users/williamchristian/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Contents/Resources/Data/Managed/Assembly-CSharp.dll</HintPath>
+      <CopyLocal>False</CopyLocal>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath Condition="Exists('..\..\..\..\..\common\RimWorld\RimWorldWin64_Data')">..\..\..\..\..\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <HintPath Condition="Exists('/Users/williamchristian/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app')">/Users/williamchristian/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Contents/Resources/Data/Managed/UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\common\RimWorld\RimWorldWin64_Data')">..\..\..\..\..\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath Condition="Exists('/Users/williamchristian/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app')">/Users/williamchristian/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Contents/Resources/Data/Managed/UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
       <CopyLocal>False</CopyLocal>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\common\RimWorld\RimWorldWin64_Data')">..\..\..\..\..\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath Condition="Exists('/Users/williamchristian/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app')">/Users/williamchristian/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Contents/Resources/Data/Managed/UnityEngine.IMGUIModule.dll</HintPath>
       <CopyLocal>False</CopyLocal>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\common\RimWorld\RimWorldWin64_Data')">..\..\..\..\..\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath Condition="Exists('/Users/williamchristian/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app')">/Users/williamchristian/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Contents/Resources/Data/Managed/UnityEngine.TextRenderingModule.dll</HintPath>
       <CopyLocal>False</CopyLocal>
       <Private>False</Private>
     </Reference>

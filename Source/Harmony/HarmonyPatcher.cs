@@ -1,6 +1,7 @@
 ﻿using RimWorld;
 using Verse;
 using HarmonyLib;
+using System.Linq;
 
 namespace RandomStartMod
 {
@@ -11,7 +12,8 @@ namespace RandomStartMod
         {
             var harmony = new Harmony("com.bogknight.RandomStart");
             harmony.PatchAll();
-            Log.Message($"[{"RandomStartMod.Title".Translate()}] Patched successfully!");
+            Mod mod = LoadedModManager.ModHandles.First((Mod m) => m.Content.Name == "Random Start");
+            Log.Message($"[{"RandomStartMod.Title".Translate()}] {mod.Content.ModMetaData.ModVersion}");
         }
     }
 }
