@@ -50,9 +50,19 @@ namespace RandomStartMod
                 SetupRandomIdeology(settings);
             }
 
-            SetupRandomResearch(settings);
+            List<ResearchProjectTagDef> oldResearchTags = new List<ResearchProjectTagDef>(Find.FactionManager.OfPlayer.def.startingResearchTags);
 
-            Find.Scenario.PostIdeoChosen();
+            foreach (ScenPart allPart in Find.Scenario.AllParts)
+            {
+                if (allPart is ScenPart_StartingThing_Defined)
+                {
+                    Util.LogMessage("ScenPart: " + allPart.def.defName + " SKIPPED");
+                    continue;
+                }
+                Util.LogMessage("ScenPart: " + allPart.def.defName);
+
+                allPart.PostIdeoChosen();
+            }
 
             if (ModsConfig.BiotechActive)
             {
@@ -81,6 +91,8 @@ namespace RandomStartMod
             {
                 Compat.RealRuinsCompat.CreatePOIs();
             }
+
+            //Find.FactionManager.OfPlayer.def.startingResearchTags = oldResearchTags;
         }
 
         private static void SetupRandomScenario(RandomStartSettings settings)
@@ -441,7 +453,7 @@ namespace RandomStartMod
             Scenario newScen = Current.Game.Scenario.CopyForEditing();
             foreach (ScenPart part in newScen.AllParts.Where(x => (x is ScenPart_StartingThing_Defined)))
             {
-                
+
             }
         }
 
@@ -510,10 +522,6 @@ namespace RandomStartMod
 
         private static void SetupRandomResearch(RandomStartSettings settings)
         {
-            if (settings.removeStartingResearch)
-            {
-                Find.FactionManager.OfPlayer.def.startingResearchTags.Clear();
-            }
             if (settings.addRandomResearch)
             {
                 List<ResearchProjectDef> possibleProjects = DefDatabase<ResearchProjectDef>
@@ -524,17 +532,21 @@ namespace RandomStartMod
                         )
                     )
                     .ToList();
-                for (int i = 0; i < settings.randomResearchRange.RandomInRange; i++)
+                if (possibleProjects.Count > 0)
                 {
-                    ResearchProjectDef projectDef = possibleProjects.RandomElement();
-                    possibleProjects.Remove(projectDef);
-                    Find.ResearchManager.FinishProject(
-                        projectDef,
-                        doCompletionDialog: false,
-                        null,
-                        doCompletionLetter: false
-                    );
+                    for (int i = 0; i < settings.randomResearchRange.RandomInRange; i++)
+                    {
+                        ResearchProjectDef projectDef = possibleProjects.RandomElement();
+                        possibleProjects.Remove(projectDef);
+                        Find.ResearchManager.FinishProject(
+                            projectDef,
+                            doCompletionDialog: false,
+                            null,
+                            doCompletionLetter: false
+                        );
+                    }
                 }
+
             }
         }
     }

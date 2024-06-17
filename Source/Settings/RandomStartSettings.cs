@@ -145,6 +145,11 @@ namespace RandomStartMod
         public IntRange randomResearchRange = new IntRange(5, 15);
         public int randomResearchTechLevelLimit = 4;
 
+        public bool removeStartingItems = false;
+        public bool addRandomItems = false;
+        public IntRange randomItemRange = new IntRange(5, 15);
+        public int randomItemTechLevelLimit = 4;
+
         //Compat
 
         public int myLittlePlanetSubcount = 10;
@@ -322,6 +327,11 @@ namespace RandomStartMod
             Scribe_Values.Look(ref randomResearchRange, "randomResearchRange", new IntRange(5, 15));
             Scribe_Values.Look(ref randomResearchTechLevelLimit, "randomResearchTechLevelLimit", 4);
 
+            Scribe_Values.Look(ref removeStartingItems, "removeStartingItems", false);
+            Scribe_Values.Look(ref addRandomItems, "addRandomItems", false);
+            Scribe_Values.Look(ref randomItemRange, "randomItemRange", new IntRange(5, 15));
+            Scribe_Values.Look(ref randomItemTechLevelLimit, "randomItemTechLevelLimit", 4);
+
             Scribe_Values.Look(ref myLittlePlanetSubcount, "myLittlePlanetSubcount", 10);
             Scribe_Values.Look(ref realisticPlanetsWorldType, "realisticPlanetsWorldType", 3);
             Scribe_Values.Look(ref randomiseRealisticPlanets, "randomiseRealisticPlanets", true);
@@ -471,6 +481,7 @@ namespace RandomStartMod
             ResetGenes();
             ResetIdeo();
             ResetResearch();
+            ResetItems();
         }
 
         public void ResetGenes()
@@ -495,6 +506,14 @@ namespace RandomStartMod
             addRandomResearch = false;
             randomResearchRange = new IntRange(5, 15);
             randomResearchTechLevelLimit = 4;
+        }
+
+        public void ResetItems()
+        {
+            removeStartingItems = false;
+            addRandomItems = false;
+            randomItemRange = new IntRange(5, 15);
+            randomItemTechLevelLimit = 4;
         }
     }
 }

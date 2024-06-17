@@ -1038,7 +1038,7 @@ namespace RandomStartMod
             Text.Font = GameFont.Small;
 
             DoOptionalFeatureRow(listingStandard.GetRect(24f), $"{"Remove".Translate()}: {"MedGroupDefaults".Translate()}", null, ref settings.removeStartingResearch);
-
+            optionalFeaturesListingHeight += 24f;
             DoOptionalFeatureRow(listingStandard.GetRect(24f), "Randomize".Translate(), null, ref settings.addRandomResearch);
             optionalFeaturesListingHeight += 24f;
             if (settings.addRandomResearch)
@@ -1051,10 +1051,42 @@ namespace RandomStartMod
                 optionalFeaturesListingHeight += Text.LineHeight;
                 listingStandard.Label($"TechLevel_{(TechLevel)settings.randomResearchTechLevelLimit}".Translate().CapitalizeFirst());
                 optionalFeaturesListingHeight += Text.LineHeight;
-                settings.randomResearchTechLevelLimit = Mathf.RoundToInt(Widgets.HorizontalSlider(listingStandard.GetRect(32f), settings.randomResearchTechLevelLimit, 1, 6, middleAlignment: true, null, null, null, 1f));
+                settings.randomResearchTechLevelLimit = Mathf.RoundToInt(Widgets.HorizontalSlider(listingStandard.GetRect(32f), settings.randomResearchTechLevelLimit, 2, 6, middleAlignment: true, null, null, null, 1f));
                 optionalFeaturesListingHeight += 32f;
             }
 
+            // removeStartingItems = false;
+            // addRandomItems = false;
+            // randomItemRange = new IntRange(5, 15);
+            // randomItemTechLevelLimit = 4;
+
+            listingStandard.Gap();
+            Text.Font = GameFont.Medium;
+            listingStandard.Label("Items".Translate());
+            listingStandard.GapLine();
+            optionalFeaturesListingHeight += 24f + Text.LineHeight;
+            Text.Font = GameFont.Small;
+
+            DoOptionalFeatureRow(listingStandard.GetRect(24f), $"{"Remove".Translate()}: {"MedGroupDefaults".Translate()}", null, ref settings.removeStartingItems);
+            optionalFeaturesListingHeight += 24f;
+            DoOptionalFeatureRow(listingStandard.GetRect(24f), "Randomize".Translate(), null, ref settings.addRandomItems);
+            optionalFeaturesListingHeight += 24f;
+
+
+            if (settings.addRandomItems)
+            {
+                listingStandard.Label("PenFoodTab_Count".Translate() + ":");
+                optionalFeaturesListingHeight += Text.LineHeight;
+                Widgets.IntRange(listingStandard.GetRect(32f), 1823288654, ref settings.randomItemRange, 0, 20);
+                optionalFeaturesListingHeight += 32f;
+                listingStandard.Label("MaxTier".Translate() + ":");
+                optionalFeaturesListingHeight += Text.LineHeight;
+                listingStandard.Label($"TechLevel_{(TechLevel)settings.randomItemTechLevelLimit}".Translate().CapitalizeFirst());
+                optionalFeaturesListingHeight += Text.LineHeight;
+                settings.randomItemTechLevelLimit = Mathf.RoundToInt(Widgets.HorizontalSlider(listingStandard.GetRect(32f), settings.randomItemTechLevelLimit, 2, 6, middleAlignment: true, null, null, null, 1f));
+                optionalFeaturesListingHeight += 32f;
+            }
+            
 
             listingStandard.Gap();
             optionalFeaturesListingHeight += 12f;
