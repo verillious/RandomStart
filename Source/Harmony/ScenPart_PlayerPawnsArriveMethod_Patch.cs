@@ -72,7 +72,6 @@ namespace RandomStartMod
                         num = 0;
                     }
                 }
-
             }
 
             if (settings.addRandomItems)
@@ -82,7 +81,7 @@ namespace RandomStartMod
                 {
                     //ThingSetMakerDef thingSetMakerDef = ThingSetMakerDefOf.MapGen_DefaultStockpile;
                     //randomItems.AddRange(thingSetMakerDef.root.Generate(default(ThingSetMakerParams)));
-                    ThingDef newThing = DefDatabase<ThingDef>.AllDefsListForReading.Where(x => x.category == ThingCategory.Item && !x.isUnfinishedThing && !x.IsCorpse && (int)x.techLevel <= settings.randomItemTechLevelLimit).RandomElement();
+                    ThingDef newThing = DefDatabase<ThingDef>.AllDefsListForReading.Where(x => x.category == ThingCategory.Item && !x.isUnfinishedThing && !x.IsCorpse && (int)x.techLevel <= settings.randomItemTechLevelLimit && !x.IsRawFood()).RandomElement();
                     for (int j = 0; j < newThing.stackLimit; j++)
                     {
                         Thing newItem = ThingMaker.MakeThing(newThing, GenStuff.RandomStuffFor(newThing));

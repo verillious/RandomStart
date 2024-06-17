@@ -1026,11 +1026,9 @@ namespace RandomStartMod
 
             }
 
-            // public bool removeStartingResearch = false;
-            // public bool addRandomResearch = false;
-            // public IntRange randomResearchRange = new IntRange(5, 15);
-            // public int randomResearchTechLevelLimit = 4;
+
             listingStandard.Gap();
+            optionalFeaturesListingHeight += 12f;
             Text.Font = GameFont.Medium;
             listingStandard.Label("Research".Translate());
             listingStandard.GapLine();
@@ -1055,12 +1053,9 @@ namespace RandomStartMod
                 optionalFeaturesListingHeight += 32f;
             }
 
-            // removeStartingItems = false;
-            // addRandomItems = false;
-            // randomItemRange = new IntRange(5, 15);
-            // randomItemTechLevelLimit = 4;
 
             listingStandard.Gap();
+            optionalFeaturesListingHeight += 12f;
             Text.Font = GameFont.Medium;
             listingStandard.Label("Items".Translate());
             listingStandard.GapLine();
@@ -1086,7 +1081,7 @@ namespace RandomStartMod
                 settings.randomItemTechLevelLimit = Mathf.RoundToInt(Widgets.HorizontalSlider(listingStandard.GetRect(32f), settings.randomItemTechLevelLimit, 2, 6, middleAlignment: true, null, null, null, 1f));
                 optionalFeaturesListingHeight += 32f;
             }
-            
+
 
             listingStandard.Gap();
             optionalFeaturesListingHeight += 12f;
