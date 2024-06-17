@@ -6,6 +6,7 @@ using KCSG;
 using RimWorld;
 using RimWorld.Planet;
 using Verse;
+using Verse.Profile;
 
 namespace RandomStartMod
 {
@@ -21,7 +22,69 @@ namespace RandomStartMod
             Current.ProgramState = ProgramState.Entry;
             Current.Game = new Game();
             Current.Game.InitData = new GameInitData();
+            SetupRandomScenario(settings);
+            SetupRandomDifficulty(settings);
+            SetupRandomPlanet(settings);
 
+            Find.GameInitData.ChooseRandomStartingTile();
+
+            Season startingSeason = (Season)settings.startingSeason;
+            if (settings.randomiseSeason)
+                startingSeason = (Season)Rand.Range(1, 6);
+
+            Find.GameInitData.startingSeason = startingSeason;
+            Find.GameInitData.mapSize = settings.mapSize;
+
+            if (true)
+            {
+                SetupRandomItems();
+            }
+
+            if (ModsConfig.IsActive("OskarPotocki.VanillaFactionsExpanded.Core"))
+            {
+                Compat.VECoreCompat.SetupForKCSG();
+            }
+
+            if (ModsConfig.IdeologyActive)
+            {
+                SetupRandomIdeology(settings);
+            }
+
+            SetupRandomResearch(settings);
+
+            Find.Scenario.PostIdeoChosen();
+
+            if (ModsConfig.BiotechActive)
+            {
+                SetupRandomGenes(settings);
+            }
+
+            Find.GameInitData.startedFromEntry = true;
+
+            Settlement playerSettlement;
+
+            List<Settlement> settlements = Find.WorldObjects.Settlements;
+            for (int i = 0; i < settlements.Count; i++)
+            {
+                if (settlements[i].Faction == Faction.OfPlayer)
+                {
+                    playerSettlement = settlements[i];
+                    playerSettlement.MapGeneratorDef.genSteps.Clear();
+                    break;
+                }
+            }
+
+
+            PageUtility.InitGameStart();
+
+            if (ModsConfig.IsActive("Woolstrand.RealRuins") && settings.enableAutoRealRuins)
+            {
+                Compat.RealRuinsCompat.CreatePOIs();
+            }
+        }
+
+        private static void SetupRandomScenario(RandomStartSettings settings)
+        {
             List<Scenario> scenarios = new List<Scenario>();
 
             scenarios.AddRange(
@@ -66,6 +129,10 @@ namespace RandomStartMod
             }
 
             Util.LogMessage($"Starting {Current.Game.Scenario}");
+        }
+
+        private static void SetupRandomDifficulty(RandomStartSettings settings)
+        {
             DifficultyDef chosenDifficultyDef = DefDatabase<DifficultyDef>.AllDefs.First(
                 (DifficultyDef d) => d.defName == settings.difficulty
             );
@@ -185,6 +252,12 @@ namespace RandomStartMod
                 difficulty.studyEfficiencyFactor = settings.studyEfficiencyFactor;
                 difficulty.AnomalyPlaystyleDef = chosenAnomalyPlaystyleDef;
             }
+            Find.GameInitData.permadeath = settings.permadeath;
+            Util.LogMessage($"Using {chosenStoryteller.LabelCap}, {chosenDifficultyDef.LabelCap}");
+        }
+
+        private static void SetupRandomPlanet(RandomStartSettings settings)
+        {
 
             OverallRainfall rainfall = (OverallRainfall)settings.rainfall;
             if (settings.randomiseRainfall)
@@ -277,106 +350,166 @@ namespace RandomStartMod
                     pollution
                 );
             }
+        }
 
-            Find.GameInitData.ChooseRandomStartingTile();
-
-            Season startingSeason = (Season)settings.startingSeason;
-            if (settings.randomiseSeason)
-                startingSeason = (Season)Rand.Range(1, 6);
-
-            Find.GameInitData.startingSeason = startingSeason;
-            Find.GameInitData.mapSize = settings.mapSize;
-            Find.GameInitData.permadeath = settings.permadeath;
-
-            if (ModsConfig.IsActive("OskarPotocki.VanillaFactionsExpanded.Core"))
+        private static void SetupRandomIdeology(RandomStartSettings settings)
+        {
+            if (settings.disableIdeo)
             {
-                Compat.VECoreCompat.SetupForKCSG();
-            }
-
-            if (ModsConfig.IdeologyActive)
-            {
-                if (settings.disableIdeo)
+                Find.IdeoManager.classicMode = true;
+                IdeoGenerationParms genParms = new IdeoGenerationParms(
+                    Find.FactionManager.OfPlayer.def
+                );
+                if (
+                    !DefDatabase<CultureDef>
+                        .AllDefs.Where(
+                            (CultureDef x) =>
+                                Find.FactionManager.OfPlayer.def.allowedCultures.Contains(x)
+                        )
+                        .TryRandomElement(out var result)
+                )
                 {
-                    Find.IdeoManager.classicMode = true;
-                    IdeoGenerationParms genParms = new IdeoGenerationParms(
-                        Find.FactionManager.OfPlayer.def
-                    );
-                    if (
-                        !DefDatabase<CultureDef>
-                            .AllDefs.Where(
-                                (CultureDef x) =>
-                                    Find.FactionManager.OfPlayer.def.allowedCultures.Contains(x)
-                            )
-                            .TryRandomElement(out var result)
-                    )
-                    {
-                        result = DefDatabase<CultureDef>.AllDefs.RandomElement();
-                    }
-                    Ideo classicIdeo = IdeoGenerator.GenerateClassicIdeo(
-                        result,
-                        genParms,
-                        noExpansionIdeo: false
-                    );
-                    foreach (Faction allFaction in Find.FactionManager.AllFactions)
-                    {
-                        if (allFaction.ideos != null)
-                        {
-                            allFaction.ideos.RemoveAll();
-                            allFaction.ideos.SetPrimary(classicIdeo);
-                        }
-                    }
-                    Find.IdeoManager.RemoveUnusedStartingIdeos();
-                    classicIdeo.initialPlayerIdeo = true;
-                    Find.IdeoManager.Add(classicIdeo);
+                    result = DefDatabase<CultureDef>.AllDefs.RandomElement();
                 }
-                else
+                Ideo classicIdeo = IdeoGenerator.GenerateClassicIdeo(
+                    result,
+                    genParms,
+                    noExpansionIdeo: false
+                );
+                foreach (Faction allFaction in Find.FactionManager.AllFactions)
                 {
-                    if (settings.overrideIdeo && File.Exists(settings.customIdeoOverrideFile))
+                    if (allFaction.ideos != null)
                     {
-                        Util.LogMessage("Attempting to load ideo file");
-                        Ideo newIdeo = null;
-                        PreLoadUtility.CheckVersionAndLoad(
-                            settings.customIdeoOverrideFile,
-                            ScribeMetaHeaderUtility.ScribeHeaderMode.Ideo,
-                            delegate
-                            {
-                                if (
-                                    GameDataSaveLoader.TryLoadIdeo(
-                                        settings.customIdeoOverrideFile,
-                                        out var ideo
-                                    )
+                        allFaction.ideos.RemoveAll();
+                        allFaction.ideos.SetPrimary(classicIdeo);
+                    }
+                }
+                Find.IdeoManager.RemoveUnusedStartingIdeos();
+                classicIdeo.initialPlayerIdeo = true;
+                Find.IdeoManager.Add(classicIdeo);
+            }
+            else
+            {
+                if (settings.overrideIdeo && File.Exists(settings.customIdeoOverrideFile))
+                {
+                    Util.LogMessage("Attempting to load ideo file");
+                    Ideo newIdeo = null;
+                    PreLoadUtility.CheckVersionAndLoad(
+                        settings.customIdeoOverrideFile,
+                        ScribeMetaHeaderUtility.ScribeHeaderMode.Ideo,
+                        delegate
+                        {
+                            if (
+                                GameDataSaveLoader.TryLoadIdeo(
+                                    settings.customIdeoOverrideFile,
+                                    out var ideo
                                 )
-                                {
-                                    newIdeo = IdeoGenerator.InitLoadedIdeo(ideo);
-                                }
+                            )
+                            {
+                                newIdeo = IdeoGenerator.InitLoadedIdeo(ideo);
                             }
-                        );
+                        }
+                    );
 
-                        if (newIdeo != null)
-                        {
-                            Util.LogMessage("Loaded ideo file");
-                            Find.FactionManager.OfPlayer.ideos.RemoveAll();
-                            Find.FactionManager.OfPlayer.ideos.SetPrimary(newIdeo);
-                            Find.IdeoManager.RemoveUnusedStartingIdeos();
-                            newIdeo.initialPlayerIdeo = true;
-                            Find.IdeoManager.Add(newIdeo);
-                        }
-                        else
-                        {
-                            Log.Error(
-                                $"[Random Start] Couldn't load ideo file {settings.customIdeoOverrideFile.Split('\\').Last()} - was it saved with different mods?"
-                            );
-                        }
-                    }
-                    if (settings.fluidIdeo)
+                    if (newIdeo != null)
                     {
-                        Ideo playerIdeo =
-                            Find.FactionManager.OfPlayer.ideos.AllIdeos.FirstOrDefault();
-                        playerIdeo.Fluid = true;
+                        Util.LogMessage("Loaded ideo file");
+                        Find.FactionManager.OfPlayer.ideos.RemoveAll();
+                        Find.FactionManager.OfPlayer.ideos.SetPrimary(newIdeo);
+                        Find.IdeoManager.RemoveUnusedStartingIdeos();
+                        newIdeo.initialPlayerIdeo = true;
+                        Find.IdeoManager.Add(newIdeo);
                     }
+                    else
+                    {
+                        Log.Error(
+                            $"[Random Start] Couldn't load ideo file {settings.customIdeoOverrideFile.Split('\\').Last()} - was it saved with different mods?"
+                        );
+                    }
+                }
+                if (settings.fluidIdeo)
+                {
+                    Ideo playerIdeo =
+                        Find.FactionManager.OfPlayer.ideos.AllIdeos.FirstOrDefault();
+                    playerIdeo.Fluid = true;
+                }
+            }
+        }
+
+        private static void SetupRandomItems()
+        {
+            Scenario newScen = Current.Game.Scenario.CopyForEditing();
+            foreach (ScenPart part in newScen.AllParts.Where(x => (x is ScenPart_StartingThing_Defined)))
+            {
+                
+            }
+        }
+
+        private static void SetupRandomGenes(RandomStartSettings settings)
+        {
+            if (settings.enableRandomXenotypes)
+            {
+                foreach (Pawn p in Find.GameInitData.startingAndOptionalPawns)
+                {
+                    IEnumerable<XenotypeDef> xenotypes =
+                        DefDatabase<XenotypeDef>.AllDefsListForReading;
+                    if (
+                        settings.respectFactionXenotypes
+                        && Find.FactionManager.OfPlayer.def.basicMemberKind.xenotypeSet != null
+                    )
+                        xenotypes = xenotypes.Where(
+                            (XenotypeDef x) =>
+                                Find.FactionManager.OfPlayer.def.basicMemberKind.xenotypeSet.Contains(
+                                    x
+                                )
+                        );
+                    XenotypeDef xenotype = xenotypes.RandomElement();
+                    p.genes.SetXenotype(xenotype);
                 }
             }
 
+            if (settings.enableRandomCustomXenotypes)
+            {
+                foreach (Pawn p in Find.GameInitData.startingAndOptionalPawns)
+                {
+                    List<GeneDef> selectedGenes = new List<GeneDef>();
+                    for (int i = 0; i < settings.randomGeneRange.RandomInRange; i++)
+                    {
+                        selectedGenes.Add(
+                            DefDatabase<GeneDef>
+                                .AllDefsListForReading.Where(
+                                    (GeneDef g) => g.canGenerateInGeneSet
+                                )
+                                .RandomElement()
+                        );
+                    }
+                    if (selectedGenes.Count > 0)
+                    {
+                        p.genes.xenotypeName = GeneUtility.GenerateXenotypeNameFromGenes(
+                            selectedGenes
+                        );
+                        p.genes.iconDef = DefDatabase<XenotypeIconDef>.GetRandom();
+
+                        foreach (GeneDef geneDef in selectedGenes)
+                        {
+                            Gene gene = GeneMaker.MakeGene(geneDef, p);
+                            p.genes.AddGene(gene, Rand.Bool);
+                            p.genes.OverrideAllConflicting(gene);
+                        }
+                        foreach (Gene gene in p.genes.GenesListForReading)
+                        {
+                            if (gene.Overridden)
+                            {
+                                p.genes.RemoveGene(gene);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void SetupRandomResearch(RandomStartSettings settings)
+        {
             if (settings.removeStartingResearch)
             {
                 Find.FactionManager.OfPlayer.def.startingResearchTags.Clear();
@@ -402,79 +535,6 @@ namespace RandomStartMod
                         doCompletionLetter: false
                     );
                 }
-            }
-
-            Find.Scenario.PostIdeoChosen();
-            if (ModsConfig.BiotechActive)
-            {
-                if (settings.enableRandomXenotypes)
-                {
-                    foreach (Pawn p in Find.GameInitData.startingAndOptionalPawns)
-                    {
-                        IEnumerable<XenotypeDef> xenotypes =
-                            DefDatabase<XenotypeDef>.AllDefsListForReading;
-                        if (
-                            settings.respectFactionXenotypes
-                            && Find.FactionManager.OfPlayer.def.basicMemberKind.xenotypeSet != null
-                        )
-                            xenotypes = xenotypes.Where(
-                                (XenotypeDef x) =>
-                                    Find.FactionManager.OfPlayer.def.basicMemberKind.xenotypeSet.Contains(
-                                        x
-                                    )
-                            );
-                        XenotypeDef xenotype = xenotypes.RandomElement();
-                        p.genes.SetXenotype(xenotype);
-                    }
-                }
-
-                if (settings.enableRandomCustomXenotypes)
-                {
-                    foreach (Pawn p in Find.GameInitData.startingAndOptionalPawns)
-                    {
-                        List<GeneDef> selectedGenes = new List<GeneDef>();
-                        for (int i = 0; i < settings.randomGeneRange.RandomInRange; i++)
-                        {
-                            selectedGenes.Add(
-                                DefDatabase<GeneDef>
-                                    .AllDefsListForReading.Where(
-                                        (GeneDef g) => g.canGenerateInGeneSet
-                                    )
-                                    .RandomElement()
-                            );
-                        }
-                        if (selectedGenes.Count > 0)
-                        {
-                            p.genes.xenotypeName = GeneUtility.GenerateXenotypeNameFromGenes(
-                                selectedGenes
-                            );
-                            p.genes.iconDef = DefDatabase<XenotypeIconDef>.GetRandom();
-
-                            foreach (GeneDef geneDef in selectedGenes)
-                            {
-                                Gene gene = GeneMaker.MakeGene(geneDef, p);
-                                p.genes.AddGene(gene, Rand.Bool);
-                                p.genes.OverrideAllConflicting(gene);
-                            }
-                            foreach (Gene gene in p.genes.GenesListForReading)
-                            {
-                                if (gene.Overridden)
-                                {
-                                    p.genes.RemoveGene(gene);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            Find.GameInitData.startedFromEntry = true;
-
-            PageUtility.InitGameStart();
-
-            if (ModsConfig.IsActive("Woolstrand.RealRuins") && settings.enableAutoRealRuins)
-            {
-                Compat.RealRuinsCompat.CreatePOIs();
             }
         }
     }

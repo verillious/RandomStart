@@ -42,7 +42,7 @@ namespace RandomStartMod
         public int currentTab = 0;
         public RandomStartMod(ModContentPack content) : base(content)
         {
-            this.settings = GetSettings<RandomStartSettings>();
+            settings = GetSettings<RandomStartSettings>();
         }
 
         public override void DoSettingsWindowContents(Rect inRect)
