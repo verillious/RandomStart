@@ -77,21 +77,21 @@ namespace RandomStartMod
 
             if (settings.addRandomItems)
             {
-                List<Thing> randomItems = new List<Thing>();
+                int num = 0;
                 for (int i = 0; i < settings.randomItemRange.RandomInRange; i++)
                 {
-                    ThingSetMakerDef thingSetMakerDef = ThingSetMakerDefOf.Reward_ItemsStandard;
-                    randomItems.AddRange(thingSetMakerDef.root.Generate(default(ThingSetMakerParams)));
-                }
-
-                int num = 0;
-                foreach (Thing item in randomItems)
-                {
-                    if (item.def.CanHaveFaction)
+                    //ThingSetMakerDef thingSetMakerDef = ThingSetMakerDefOf.MapGen_DefaultStockpile;
+                    //randomItems.AddRange(thingSetMakerDef.root.Generate(default(ThingSetMakerParams)));
+                    ThingDef newThing = DefDatabase<ThingDef>.AllDefsListForReading.Where(x => x.category == ThingCategory.Item && !x.isUnfinishedThing && !x.IsCorpse && (int)x.techLevel <= settings.randomItemTechLevelLimit).RandomElement();
+                    for (int j = 0; j < newThing.stackLimit; j++)
                     {
-                        item.SetFactionDirect(Faction.OfPlayer);
+                        Thing newItem = ThingMaker.MakeThing(newThing, GenStuff.RandomStuffFor(newThing));
+                        if (newItem.def.CanHaveFaction)
+                        {
+                            newItem.SetFactionDirect(Faction.OfPlayer);
+                        }
+                        list[num].Add(newItem);
                     }
-                    list[num].Add(item);
                     num++;
                     if (num >= list.Count)
                     {
