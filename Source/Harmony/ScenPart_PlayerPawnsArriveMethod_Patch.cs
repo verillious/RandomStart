@@ -12,7 +12,13 @@ namespace RandomStartMod
         [HarmonyPrefix]
         static bool Prefix(Map map, ScenPart_PlayerPawnsArriveMethod __instance)
         {
+            if(!RandomStartData.startedFromRandom)
+            {
+                return true;
+            }
+
             RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
+            int techLevelLimit = settings.randomItemTechLevelLimit;
             if (!settings.removeStartingItems && !settings.addRandomItems)
             {
                 return true;
@@ -79,9 +85,11 @@ namespace RandomStartMod
                 int num = 0;
                 for (int i = 0; i < settings.randomItemRange.RandomInRange; i++)
                 {
+                    Util.LogMessage($"Creating Item with tech level less than {(TechLevel)techLevelLimit}");
                     //ThingSetMakerDef thingSetMakerDef = ThingSetMakerDefOf.MapGen_DefaultStockpile;
                     //randomItems.AddRange(thingSetMakerDef.root.Generate(default(ThingSetMakerParams)));
-                    ThingDef newThing = DefDatabase<ThingDef>.AllDefsListForReading.Where(x => x.category == ThingCategory.Item && !x.isUnfinishedThing && !x.IsCorpse && (int)x.techLevel <= settings.randomItemTechLevelLimit && !x.IsRawFood()).RandomElement();
+                    ThingDef newThing = DefDatabase<ThingDef>.AllDefsListForReading.Where(x => x.category == ThingCategory.Item && (int)x.techLevel <= techLevelLimit && (int)x.techLevel > 0).RandomElement();
+                    Util.LogMessage($"Created {newThing.LabelCap}, tech level {newThing.techLevel}");
                     for (int j = 0; j < newThing.stackLimit; j++)
                     {
                         Thing newItem = ThingMaker.MakeThing(newThing, GenStuff.RandomStuffFor(newThing));

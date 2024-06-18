@@ -15,6 +15,7 @@ namespace RandomStartMod
         public static void SetupForRandomPlay()
         {
             Util.LogMessage($"Randomising Scenario");
+            RandomStartData.startedFromRandom = true;
             RandomStartSettings settings = LoadedModManager
                 .GetMod<RandomStartMod>()
                 .GetSettings<RandomStartSettings>();

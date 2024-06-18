@@ -120,6 +120,7 @@
     <Compile Include="Settings\RandomStartMod.cs" />
     <Compile Include="Settings\RandomStartSettings.cs" />
     <Compile Include="Util\Util.cs" />
+    <Compile Include="RandomStartData.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

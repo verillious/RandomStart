@@ -6,9 +6,9 @@ using System.Linq;
 namespace RandomStartMod
 {
     [StaticConstructorOnStartup]
-    public static class RandomStart
+    public static class RandomStartPatcher
     {
-        static RandomStart()
+        static RandomStartPatcher()
         {
             var harmony = new Harmony("com.bogknight.RandomStart");
             harmony.PatchAll();

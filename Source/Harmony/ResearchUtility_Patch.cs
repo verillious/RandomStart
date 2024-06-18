@@ -12,6 +12,10 @@ namespace RandomStartMod
         [HarmonyPrefix]
         static bool Prefix()
         {
+            if (!RandomStartData.startedFromRandom)
+            {
+                return true;
+            }
             RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
             if (!settings.removeStartingResearch && !settings.addRandomResearch)
             {

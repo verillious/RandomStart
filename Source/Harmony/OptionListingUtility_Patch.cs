@@ -24,6 +24,7 @@ namespace RandomStartMod
             if (!justEnteredMainMenu)
             {
                 justEnteredMainMenu = true;
+                RandomStartData.startedFromRandom = false;
             }
 
             int index = 0;
