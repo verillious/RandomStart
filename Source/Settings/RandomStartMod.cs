@@ -498,7 +498,9 @@ namespace RandomStartMod
             }
 
             List<FloatMenuOption> list = new List<FloatMenuOption>();
-            foreach (FactionDef configurableFaction in FactionGenerator.ConfigurableFactions)
+            IEnumerable<FactionDef> configurableFactions = FactionGenerator.ConfigurableFactions;
+
+            foreach (FactionDef configurableFaction in configurableFactions)
             {
                 FactionDef localDef = configurableFaction;
                 string text = localDef.LabelCap;
@@ -578,14 +580,14 @@ namespace RandomStartMod
 
             AcceptanceReport CanAddAlwaysFaction(FactionDef f)
             {
-                if (factionsAlwaysAdd.Count((FactionDef x) => x == f) >= f.maxConfigurableAtWorldCreation)
+                if (factionsAlwaysAdd.Count((FactionDef x) => x == f) >= Math.Abs(f.maxConfigurableAtWorldCreation))
                 {
-                    return "MaxFactionsForType".Translate(f.maxConfigurableAtWorldCreation).ToString().UncapitalizeFirst();
+                    return "MaxFactionsForType".Translate(Math.Abs(f.maxConfigurableAtWorldCreation)).ToString().UncapitalizeFirst();
                 }
                 return true;
             }
             List<FloatMenuOption> list2 = new List<FloatMenuOption>();
-            foreach (FactionDef configurableFaction in FactionGenerator.ConfigurableFactions)
+            foreach (FactionDef configurableFaction in configurableFactions)
             {
                 FactionDef localDef = configurableFaction;
                 string text = localDef.LabelCap;
@@ -683,9 +685,9 @@ namespace RandomStartMod
 
             AcceptanceReport CanAddRandomFaction(FactionDef f)
             {
-                if (factionsAlwaysAdd.Count((FactionDef x) => x == f) >= f.maxConfigurableAtWorldCreation)
+                if (factionsAlwaysAdd.Count((FactionDef x) => x == f) >= Math.Abs(f.maxConfigurableAtWorldCreation))
                 {
-                    return "MaxFactionsForType".Translate(f.maxConfigurableAtWorldCreation).ToString().UncapitalizeFirst();
+                    return "MaxFactionsForType".Translate(Math.Abs(f.maxConfigurableAtWorldCreation)).ToString().UncapitalizeFirst();
                 }
                 if (factionsRandomlyAdd.Count((FactionDef x) => x == f) > 0)
                     return "MaxFactionsForType".Translate(1).ToString().UncapitalizeFirst();
@@ -1057,7 +1059,7 @@ namespace RandomStartMod
             listingStandard.Gap();
             optionalFeaturesListingHeight += 12f;
             Text.Font = GameFont.Medium;
-            listingStandard.Label("Items".Translate());
+            listingStandard.Label("ItemsTab".Translate());
             listingStandard.GapLine();
             optionalFeaturesListingHeight += 24f + Text.LineHeight;
             Text.Font = GameFont.Small;

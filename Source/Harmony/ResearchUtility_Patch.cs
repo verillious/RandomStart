@@ -16,11 +16,14 @@ namespace RandomStartMod
             {
                 return true;
             }
+
             RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
             if (!settings.removeStartingResearch && !settings.addRandomResearch)
             {
                 return true;
             }
+
+            Util.LogMessage("Patching ResearchUtility");
 
             if (!settings.removeStartingResearch)
             {
@@ -52,6 +55,7 @@ namespace RandomStartMod
                     }
                 }
             }
+
             Ideo ideo;
             if (ModLister.IdeologyInstalled && (ideo = Faction.OfPlayer.ideos?.PrimaryIdeo) != null)
             {
@@ -63,6 +67,7 @@ namespace RandomStartMod
                     }
                 }
             }
+
             if (settings.addRandomResearch)
             {
                 List<ResearchProjectDef> possibleProjects = DefDatabase<ResearchProjectDef>
@@ -88,6 +93,7 @@ namespace RandomStartMod
                     }
                 }
             }
+
             return false;
         }
     }

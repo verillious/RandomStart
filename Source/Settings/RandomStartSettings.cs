@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEngine;
 using Verse;
 
 namespace RandomStartMod
@@ -54,7 +53,6 @@ namespace RandomStartMod
             "HoraxCult",
             "Entities",
             "VFEE_Deserters",
-            "Sanguophages",
         };
         public List<string> factionsRandomlyAdd = new List<string>()
         {
@@ -75,10 +73,9 @@ namespace RandomStartMod
             "PirateWaster",
         };
 
-        public Vector2 scrollPosition;
-
         public string anomalyPlaystyle = "Standard";
 
+        // Custom difficulty
         public bool allowBigThreats = true;
         public bool allowIntroThreats = true;
         public bool allowCaveHives = true;
@@ -96,7 +93,6 @@ namespace RandomStartMod
         public bool unwaveringPrisoners = true;
         public bool childRaidersAllowed = false;
         public bool childShamblersAllowed = false;
-
         public float threatScale = 1f;
         public float scariaRotChance;
         public float colonistMoodOffset;
@@ -132,34 +128,26 @@ namespace RandomStartMod
 
 
         //Feature Flags
-
         public bool enableRandomXenotypes = false;
         public bool enableRandomCustomXenotypes = false;
         public IntRange randomGeneRange = new IntRange(5, 15);
         public bool respectFactionXenotypes = true;
-
         public bool fluidIdeo = false;
-
         public bool removeStartingResearch = false;
         public bool addRandomResearch = false;
         public IntRange randomResearchRange = new IntRange(5, 15);
         public int randomResearchTechLevelLimit = 4;
-
         public bool removeStartingItems = false;
         public bool addRandomItems = false;
         public IntRange randomItemRange = new IntRange(5, 15);
         public int randomItemTechLevelLimit = 4;
 
         //Compat
-
         public int myLittlePlanetSubcount = 10;
-
         public int realisticPlanetsWorldType = 3;
         public bool randomiseRealisticPlanets = true;
-
         public bool enableAutoRealRuins = true;
         public bool realRuinsBiomeFilter = false;
-
         public bool noPauseEnabled = true;
         public bool noPauseHalfSpeedEnabled = false;
 
@@ -218,7 +206,7 @@ namespace RandomStartMod
                     "Empire",
                     "HoraxCult",
                     "Entities",
-                    "VFEE_Deserters"
+                    "VFEE_Deserters",
                 }
             );
             Scribe_Collections.Look(
@@ -242,7 +230,6 @@ namespace RandomStartMod
                     "TribeSavageImpid",
                     "OutlanderRoughPig",
                     "PirateWaster",
-                    "Sanguophages",
                 }
             );
 
@@ -440,7 +427,7 @@ namespace RandomStartMod
                 "Empire",
                 "HoraxCult",
                 "Entities",
-                "VFEE_Deserters"
+                "VFEE_Deserters",
             };
             factionsRandomlyAdd = new List<string>()
             {
@@ -459,7 +446,6 @@ namespace RandomStartMod
                 "TribeSavageImpid",
                 "OutlanderRoughPig",
                 "PirateWaster",
-                "Sanguophages",
             };
 
             randomFactionRange = new IntRange(5, 15);

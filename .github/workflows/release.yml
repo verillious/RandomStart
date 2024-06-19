@@ -19,7 +19,7 @@ jobs:
         id: package
         run: |
           mkdir RandomStart
-          cp -r About/ 1.5/ LoadFolders.xml LICENSE README.md RandomStart
+          cp -r About/ 1.5/ LoadFolders.xml RandomStart
           zip -9 -r RandomStart.zip RandomStart
       - name: Upload Package
         id: upload-package

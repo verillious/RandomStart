@@ -12,22 +12,24 @@ namespace RandomStartMod
         [HarmonyPrefix]
         static bool Prefix(Map map, ScenPart_PlayerPawnsArriveMethod __instance)
         {
-            if(!RandomStartData.startedFromRandom)
+            if (!RandomStartData.startedFromRandom)
             {
                 return true;
             }
 
             RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
-            int techLevelLimit = settings.randomItemTechLevelLimit;
             if (!settings.removeStartingItems && !settings.addRandomItems)
             {
                 return true;
             }
 
+            Util.LogMessage("Patching PlayerPawnsArriveMethod");
+
             if (Find.GameInitData == null)
             {
                 return false;
             }
+
             List<List<Thing>> list = new List<List<Thing>>();
 
             foreach (Pawn startingAndOptionalPawn in Find.GameInitData.startingAndOptionalPawns)
@@ -82,6 +84,7 @@ namespace RandomStartMod
 
             if (settings.addRandomItems)
             {
+                int techLevelLimit = settings.randomItemTechLevelLimit;
                 int num = 0;
                 for (int i = 0; i < settings.randomItemRange.RandomInRange; i++)
                 {
@@ -106,8 +109,6 @@ namespace RandomStartMod
                     }
                 }
             }
-
-
 
             DropPodUtility.DropThingGroupsNear(MapGenerator.PlayerStartSpot, map, list, 110, Find.GameInitData.QuickStarted || __instance.method != PlayerPawnsArriveMethod.DropPods, leaveSlag: true, canRoofPunch: true, forbid: true, allowFogged: false);
             return false;
