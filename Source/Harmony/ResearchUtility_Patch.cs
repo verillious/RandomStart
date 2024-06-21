@@ -12,20 +12,15 @@ namespace RandomStartMod
     {
         static public void FinishProjectOptionalPrequisites(ResearchProjectDef proj, bool doCompletionDialog = false, Pawn researcher = null, bool doCompletionLetter = true, bool doPrerequisites = true)
         {
-            if (!doPrerequisites)
+            Util.LogMessage($"Unlocking {proj.LabelCap}, Prerequisites: {doPrerequisites}");
+
+            if (proj.prerequisites != null && doPrerequisites)
             {
-                Util.LogMessage($"Skipping Prerequisites for {proj.LabelCap}");
-            }
-            else
-            {
-                if (proj.prerequisites != null)
+                for (int i = 0; i < proj.prerequisites.Count; i++)
                 {
-                    for (int i = 0; i < proj.prerequisites.Count; i++)
+                    if (!proj.prerequisites[i].IsFinished)
                     {
-                        if (!proj.prerequisites[i].IsFinished)
-                        {
-                            Find.ResearchManager.FinishProject(proj.prerequisites[i], doCompletionDialog, researcher, doCompletionLetter);
-                        }
+                        Find.ResearchManager.FinishProject(proj.prerequisites[i], doCompletionDialog, researcher, doCompletionLetter);
                     }
                 }
             }
@@ -186,6 +181,10 @@ namespace RandomStartMod
                         }
                     }
                 }
+            }
+            else
+            {
+                Util.LogMessage("Skipping starting research");
             }
 
             Ideo ideo;
