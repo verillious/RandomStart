@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using KCSG;
 using RimWorld;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace RandomStartMod
                 {
                     if (!proj.prerequisites[i].IsFinished)
                     {
+                        Util.LogMessage($"Unlocking Prerequisite {proj.LabelCap}");
                         Find.ResearchManager.FinishProject(proj.prerequisites[i], doCompletionDialog, researcher, doCompletionLetter);
                     }
                 }
@@ -29,6 +31,7 @@ namespace RandomStartMod
             int num = Find.ResearchManager.GetTechprints(proj);
             if (num < proj.TechprintCount)
             {
+                Util.LogMessage($"Adding Techprints {proj.LabelCap}");
                 Find.ResearchManager.AddTechprints(proj, proj.TechprintCount - num);
             }
 
@@ -47,6 +50,7 @@ namespace RandomStartMod
             }
             else if (ModsConfig.AnomalyActive && proj.knowledgeCost > 0f)
             {
+                Util.LogMessage($"Adding Anomaly knowledge{proj.LabelCap}");
                 Find.ResearchManager.anomalyKnowledge.SetOrAdd(proj, proj.knowledgeCost);
                 Find.SignalManager.SendSignal(new Signal("ThingStudied", global: true));
             }
@@ -162,6 +166,7 @@ namespace RandomStartMod
                         {
                             if (allDef.HasTag(startingResearchTag))
                             {
+                                Util.LogMessage($"Unlocking Starting Research {allDef.LabelCap}");
                                 Find.ResearchManager.FinishProject(allDef, doCompletionDialog: false, null, doCompletionLetter: false);
                             }
                         }
@@ -176,6 +181,7 @@ namespace RandomStartMod
                             int techprints = Find.ResearchManager.GetTechprints(allDef2);
                             if (techprints < allDef2.TechprintCount)
                             {
+                                Util.LogMessage($"Unlocking Starting Techprints {allDef2.LabelCap}");
                                 Find.ResearchManager.AddTechprints(allDef2, allDef2.TechprintCount - techprints);
                             }
                         }
@@ -184,7 +190,7 @@ namespace RandomStartMod
             }
             else
             {
-                Util.LogMessage("Skipping starting research");
+                Util.LogMessage("Skipping Starting Research");
             }
 
             Ideo ideo;
@@ -194,6 +200,7 @@ namespace RandomStartMod
                 {
                     foreach (ResearchProjectDef startingResearchProject in meme.startingResearchProjects)
                     {
+                        Util.LogMessage($"Unlocking Ideology Meme Research {startingResearchProject.LabelCap}");
                         Find.ResearchManager.FinishProject(startingResearchProject, doCompletionDialog: false, null, doCompletionLetter: false);
                     }
                 }
