@@ -1,5 +1,6 @@
 ﻿using RimWorld;
 using System.Collections.Generic;
+using UnityEngine;
 using Verse;
 
 namespace RandomStartMod
@@ -8,7 +9,7 @@ namespace RandomStartMod
     {
         public static void LogMessage(string message)
         {
-            Log.Message($"[{"RandomStartMod.Title".Translate()}] {message}");
+            Log.Message($"<color=magenta>[{"RandomStartMod.Title".Translate()}]</color> {message}");
         }
 
         public static string GetIntRangeLabel(IntRange range)

@@ -33,11 +33,6 @@ namespace RandomStartMod
             Find.GameInitData.startingSeason = startingSeason;
             Find.GameInitData.mapSize = settings.mapSize;
 
-            if (true)
-            {
-                SetupRandomItems();
-            }
-
             if (ModsConfig.IsActive("OskarPotocki.VanillaFactionsExpanded.Core"))
             {
                 Compat.VECoreCompat.SetupForKCSG();
@@ -48,17 +43,8 @@ namespace RandomStartMod
                 SetupRandomIdeology(settings);
             }
 
-            List<ResearchProjectTagDef> oldResearchTags = new List<ResearchProjectTagDef>(Find.FactionManager.OfPlayer.def.startingResearchTags);
-
             foreach (ScenPart allPart in Find.Scenario.AllParts)
             {
-                if (allPart is ScenPart_StartingThing_Defined)
-                {
-                    Util.LogMessage("ScenPart: " + allPart.def.defName + " SKIPPED");
-                    continue;
-                }
-                Util.LogMessage("ScenPart: " + allPart.def.defName);
-
                 allPart.PostIdeoChosen();
             }
 
@@ -89,8 +75,6 @@ namespace RandomStartMod
             {
                 Compat.RealRuinsCompat.CreatePOIs();
             }
-
-            //Find.FactionManager.OfPlayer.def.startingResearchTags = oldResearchTags;
         }
 
         private static void SetupRandomScenario(RandomStartSettings settings)
@@ -446,14 +430,6 @@ namespace RandomStartMod
             }
         }
 
-        private static void SetupRandomItems()
-        {
-            Scenario newScen = Current.Game.Scenario.CopyForEditing();
-            foreach (ScenPart part in newScen.AllParts.Where(x => (x is ScenPart_StartingThing_Defined)))
-            {
-
-            }
-        }
 
         private static void SetupRandomGenes(RandomStartSettings settings)
         {

@@ -137,6 +137,7 @@ namespace RandomStartMod
         public bool addRandomResearch = false;
         public IntRange randomResearchRange = new IntRange(5, 15);
         public int randomResearchTechLevelLimit = 4;
+        public bool doRandomResearchPrerequisites = true;
         public bool removeStartingItems = false;
         public bool addRandomItems = false;
         public IntRange randomItemRange = new IntRange(5, 15);
@@ -313,6 +314,7 @@ namespace RandomStartMod
             Scribe_Values.Look(ref addRandomResearch, "addRandomResearch", false);
             Scribe_Values.Look(ref randomResearchRange, "randomResearchRange", new IntRange(5, 15));
             Scribe_Values.Look(ref randomResearchTechLevelLimit, "randomResearchTechLevelLimit", 4);
+            Scribe_Values.Look(ref doRandomResearchPrerequisites, "doRandomResearchPrerequisites", true);
 
             Scribe_Values.Look(ref removeStartingItems, "removeStartingItems", false);
             Scribe_Values.Look(ref addRandomItems, "addRandomItems", false);
@@ -492,6 +494,7 @@ namespace RandomStartMod
             addRandomResearch = false;
             randomResearchRange = new IntRange(5, 15);
             randomResearchTechLevelLimit = 4;
+            doRandomResearchPrerequisites = true;
         }
 
         public void ResetItems()

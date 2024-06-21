@@ -1053,6 +1053,9 @@ namespace RandomStartMod
                 optionalFeaturesListingHeight += Text.LineHeight;
                 settings.randomResearchTechLevelLimit = Mathf.RoundToInt(Widgets.HorizontalSlider(listingStandard.GetRect(32f), settings.randomResearchTechLevelLimit, 2, 6, middleAlignment: true, null, null, null, 1f));
                 optionalFeaturesListingHeight += 32f;
+
+                DoOptionalFeatureRow(listingStandard.GetRect(24f), $"{"ResearchUnlocks".Translate()}: {"Prerequisites".Translate()}", null, ref settings.doRandomResearchPrerequisites);
+                optionalFeaturesListingHeight += 24f;
             }
 
 
