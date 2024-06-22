@@ -471,26 +471,59 @@ namespace RandomStartMod
                     }
                     if (selectedGenes.Count > 0)
                     {
+                        int metabolismTotal = 0;
+                        foreach (GeneDef geneDef in selectedGenes)
+                        {
+                            if (settings.enableMetabolicEfficiencyMinimum)
+                            {
+                                if ((metabolismTotal + geneDef.biostatMet) >= settings.minimumMetabolicEfficiency)
+                                {
+                                    GivePawnGene(p, geneDef, ref metabolismTotal);
+                                    metabolismTotal += geneDef.biostatMet;
+                                    foreach (Gene gene in p.genes.GenesListForReading)
+                                    {
+                                        if (gene.Overridden)
+                                        {
+                                            p.genes.RemoveGene(gene);
+                                            metabolismTotal -= gene.def.biostatMet;
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                GivePawnGene(p, geneDef, ref metabolismTotal);
+                                foreach (Gene gene in p.genes.GenesListForReading)
+                                {
+                                    if (gene.Overridden)
+                                    {
+                                        p.genes.RemoveGene(gene);
+                                        metabolismTotal -= gene.def.biostatMet;
+                                    }
+                                }
+                            }
+ 
+                        }
+
+
                         p.genes.xenotypeName = GeneUtility.GenerateXenotypeNameFromGenes(
                             selectedGenes
                         );
                         p.genes.iconDef = DefDatabase<XenotypeIconDef>.GetRandom();
-
-                        foreach (GeneDef geneDef in selectedGenes)
-                        {
-                            Gene gene = GeneMaker.MakeGene(geneDef, p);
-                            p.genes.AddGene(gene, Rand.Bool);
-                            p.genes.OverrideAllConflicting(gene);
-                        }
-                        foreach (Gene gene in p.genes.GenesListForReading)
-                        {
-                            if (gene.Overridden)
-                            {
-                                p.genes.RemoveGene(gene);
-                            }
-                        }
                     }
                 }
+            }
+        }
+
+        private static void GivePawnGene(Pawn p, GeneDef geneDef, ref int metabolismTotal)
+        {
+            p.genes.AddGene(geneDef, Rand.Bool);
+            Gene gene = GeneMaker.MakeGene(geneDef, p);
+            p.genes.OverrideAllConflicting(gene);
+            metabolismTotal += geneDef.biostatMet;
+            if (geneDef.prerequisite != null)
+            {
+                GivePawnGene(p, geneDef.prerequisite, ref metabolismTotal);
             }
         }
 

@@ -40,6 +40,7 @@ namespace RandomStartMod
         private static float sectionHeightChildren = 0f;
 
         public int currentTab = 0;
+        public string randomItemTotalMarketValueLimitTextBuffer;
         public RandomStartMod(ModContentPack content) : base(content)
         {
             settings = GetSettings<RandomStartSettings>();
@@ -975,6 +976,13 @@ namespace RandomStartMod
                     Widgets.IntRange(listingStandard.GetRect(32f), 382399865, ref settings.randomGeneRange, 0, 20);
                     optionalFeaturesListingHeight += 32f;
                 }
+                DoOptionalFeatureRow(listingStandard.GetRect(32f), $"{"minimum".Translate().CapitalizeFirst()}: {"MetabolismTotal".Translate()}", null, ref settings.enableMetabolicEfficiencyMinimum);
+                optionalFeaturesListingHeight += 32f;
+                if (settings.enableMetabolicEfficiencyMinimum)
+                {
+                    settings.minimumMetabolicEfficiency = Mathf.RoundToInt(Widgets.HorizontalSlider(listingStandard.GetRect(24f), settings.minimumMetabolicEfficiency, -5, 5, true, $"{settings.minimumMetabolicEfficiency.ToStringWithSign()} ({"HungerRate".Translate()} x{GeneTuning.MetabolismToFoodConsumptionFactorCurve.Evaluate(settings.minimumMetabolicEfficiency).ToStringPercent()})", null, null, 1f));
+                    optionalFeaturesListingHeight += 32f;
+                }
             }
             if (ModsConfig.IdeologyActive)
             {
@@ -1085,6 +1093,14 @@ namespace RandomStartMod
                 optionalFeaturesListingHeight += Text.LineHeight;
                 settings.randomItemTechLevelLimit = Mathf.RoundToInt(Widgets.HorizontalSlider(listingStandard.GetRect(32f), settings.randomItemTechLevelLimit, 2, 6, middleAlignment: true, null, null, null, 1f));
                 optionalFeaturesListingHeight += 32f;
+
+                DoOptionalFeatureRow(listingStandard.GetRect(32f), $"{"StatsReport_MaxValue".Translate()} ({"Total".Translate().CapitalizeFirst()})", null, ref settings.enableMarketValueLimit);
+                optionalFeaturesListingHeight += 32f;
+                if (settings.enableMarketValueLimit)
+                {
+                    Widgets.TextFieldNumericLabeled(listingStandard.GetRect(24f), $"{"Value".Translate()} ", ref settings.randomItemTotalMarketValueLimit, ref randomItemTotalMarketValueLimitTextBuffer);
+                    optionalFeaturesListingHeight += 24f;
+                }
             }
 
 
