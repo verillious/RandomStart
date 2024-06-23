@@ -73,6 +73,12 @@ namespace RandomStartMod
             "PirateWaster",
         };
 
+        public List<string> factionsRelationsRandomiseExclude = new List<string>()
+        {
+            "Empire",
+            "VFEE_Deserters",
+        };
+
         public string anomalyPlaystyle = "Standard";
 
         // Custom difficulty
@@ -237,6 +243,11 @@ namespace RandomStartMod
                     "PirateWaster",
                 }
             );
+            Scribe_Collections.Look(ref factionsRelationsRandomiseExclude, "factionsRelationsRandomiseExclude", LookMode.Value, new List<string>()
+                {
+                    "VFEE_Deserters",
+                    "Empire",
+                });
 
             Scribe_Values.Look(ref randomFactionRange, "randomFactionRange", new IntRange(5, 15));
             Scribe_Values.Look(ref uniqueFactions, "uniqueFactions", false);
@@ -456,6 +467,11 @@ namespace RandomStartMod
                 "TribeSavageImpid",
                 "OutlanderRoughPig",
                 "PirateWaster",
+            };
+            factionsRelationsRandomiseExclude = new List<string>()
+            {
+                "VFEE_Deserters",
+                "Empire",
             };
 
             randomFactionRange = new IntRange(5, 15);

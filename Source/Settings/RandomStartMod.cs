@@ -790,7 +790,7 @@ namespace RandomStartMod
                 listingStandard.Gap(2f);
                 Rect rainfallRect = listingStandard.GetRect(30f);
                 rainfallRect.width -= 12f;
-                settings.rainfall = Mathf.RoundToInt(Widgets.HorizontalSlider(rainfallRect, (float)settings.rainfall, 0f, OverallRainfallUtility.EnumValuesCount - 1, middleAlignment: true, "PlanetRainfall_Normal".Translate(), "PlanetRainfall_Low".Translate(), "PlanetRainfall_High".Translate(), 1f));
+                settings.rainfall = Mathf.RoundToInt(Widgets.HorizontalSlider(rainfallRect, (float)settings.rainfall, 0f, OverallRainfallUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabel(settings.rainfall), null, null, 1f));
                 planetListingHeight += 3f + 32f;
                 listingStandard.Outdent();
 
@@ -798,7 +798,9 @@ namespace RandomStartMod
             else
             {
                 listingStandard.Indent();
-                Widgets.IntRange(listingStandard.GetRect(32f), 1623498654, ref settings.randomiseRainfallRange, 0, 6, Util.GetIntRangeLabel(settings.randomiseRainfallRange));
+                Rect rainfallRect = listingStandard.GetRect(32f);
+                rainfallRect.width -= 12f;
+                Widgets.IntRange(rainfallRect, 1623498654, ref settings.randomiseRainfallRange, 0, 6, Util.GetIntRangeLabel(settings.randomiseRainfallRange));
                 planetListingHeight += 12f + 32f;
                 listingStandard.Outdent();
             }
@@ -1426,14 +1428,23 @@ namespace RandomStartMod
             Text.Anchor = TextAnchor.MiddleCenter;
             widgetRow.Label(factionDef.LabelCap);
             Text.Anchor = TextAnchor.UpperLeft;
-            if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
+            WidgetRow widgetRow2 = new WidgetRow(rect.width - 64f, 0f);
+            GUI.color = Color.red;
+            if (widgetRow2.ButtonIcon(TexButton.OpenStatsReport, "Delete".Translate(), null, Color.grey))
+            {
+                SoundDefOf.Click.PlayOneShotOnCamera();
+                factionDefNames.RemoveAt(index);
+                result = true;
+            }
+            GUI.color = Color.white;
+            widgetRow2.Gap(4f);
+            if (widgetRow2.ButtonIcon(TexButton.Delete, "Delete".Translate()))
             {
                 SoundDefOf.Click.PlayOneShotOnCamera();
                 factionDefNames.RemoveAt(index);
                 result = true;
             }
             Widgets.EndGroup();
-            ModContentPack mod = factionDef.modContentPack;
             if (Mouse.IsOver(rect2))
             {
                 TooltipHandler.TipRegion(rect2, factionDef.LabelCap.AsTipTitle() + "\n" + factionDef.Description + "\n" + "\n" + GetSourceModMetaData(factionDef).Name.AsTipTitle());
