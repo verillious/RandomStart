@@ -3,7 +3,9 @@ using System.IO;
 using System.Linq;
 using RimWorld;
 using RimWorld.Planet;
+using UnityEngine;
 using Verse;
+using static RimWorld.PsychicRitualRoleDef;
 
 namespace RandomStartMod
 {
@@ -55,16 +57,71 @@ namespace RandomStartMod
 
             Find.GameInitData.startedFromEntry = true;
 
-            Settlement playerSettlement;
+            //Settlement playerSettlement;
 
-            List<Settlement> settlements = Find.WorldObjects.Settlements;
-            for (int i = 0; i < settlements.Count; i++)
+            //List<Settlement> settlements = Find.WorldObjects.Settlements;
+            //for (int i = 0; i < settlements.Count; i++)
+            //{
+            //    if (settlements[i].Faction == Faction.OfPlayer)
+            //    {
+            //        playerSettlement = settlements[i];
+            //        playerSettlement.MapGeneratorDef.genSteps.Clear();
+            //        break;
+            //    }
+            //}
+
+
+            foreach (Faction item in Find.FactionManager.AllFactionsListForReading)
             {
-                if (settlements[i].Faction == Faction.OfPlayer)
+                item.RemoveAllRelations();
+                foreach (Faction item2 in Find.FactionManager.AllFactionsListForReading)
                 {
-                    playerSettlement = settlements[i];
-                    playerSettlement.MapGeneratorDef.genSteps.Clear();
-                    break;
+                    if (item != item2)
+                    {
+                        if (item.RelationWith(item2, allowNull: true) == null)
+                        {
+                            int initialGoodwill = GetInitialGoodwill(item, item2);
+
+                            FactionRelationKind kind = ((initialGoodwill > -10) ? ((initialGoodwill < 75) ? FactionRelationKind.Neutral : FactionRelationKind.Ally) : FactionRelationKind.Hostile);
+                            FactionRelation factionRelation = new FactionRelation();
+                            factionRelation.other = item2;
+                            factionRelation.baseGoodwill = initialGoodwill;
+                            factionRelation.kind = kind;
+                            item.relations.Add(factionRelation);
+                            FactionRelation factionRelation2 = new FactionRelation();
+                            factionRelation2.other = item;
+                            factionRelation2.baseGoodwill = initialGoodwill;
+                            factionRelation2.kind = kind;
+                            item2.relations.Add(factionRelation2);
+                        }
+
+                        int RoundNum(int num)
+                        {
+                            int rem = num % 10;
+                            return rem >= 5 ? (num - rem + 10) : (num - rem);
+                        }
+
+                        int GetInitialGoodwill(Faction a, Faction b)
+                        {
+                            if (a.def.permanentEnemy || b.def.permanentEnemy)
+                            {
+                                return -100;
+                            }
+                            if ((a.def.permanentEnemyToEveryoneExceptPlayer && !b.IsPlayer) || (b.def.permanentEnemyToEveryoneExceptPlayer && !a.IsPlayer))
+                            {
+                                return -100;
+                            }
+                            if (a.def.permanentEnemyToEveryoneExcept != null && !a.def.permanentEnemyToEveryoneExcept.Contains(b.def))
+                            {
+                                return -100;
+                            }
+                            if (b.def.permanentEnemyToEveryoneExcept != null && !b.def.permanentEnemyToEveryoneExcept.Contains(a.def))
+                            {
+                                return -100;
+                            }
+                            return RoundNum(Rand.Range(-100, 101));
+                        }
+                    }
                 }
             }
 
@@ -502,7 +559,7 @@ namespace RandomStartMod
                                     }
                                 }
                             }
- 
+
                         }
 
 

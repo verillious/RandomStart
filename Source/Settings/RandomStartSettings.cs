@@ -37,6 +37,7 @@ namespace RandomStartMod
         public int minimumFactions = 5;
         public int maximumFactions = 15;
         public bool uniqueFactions = false;
+        public bool randomiseFactionGoodwill = false;
 
         public bool enableCustomScenarios = true;
         public bool enableSteamWorkshopScenarios = true;
@@ -71,12 +72,6 @@ namespace RandomStartMod
             "TribeSavageImpid",
             "OutlanderRoughPig",
             "PirateWaster",
-        };
-
-        public List<string> factionsRelationsRandomiseExclude = new List<string>()
-        {
-            "Empire",
-            "VFEE_Deserters",
         };
 
         public string anomalyPlaystyle = "Standard";
@@ -243,11 +238,8 @@ namespace RandomStartMod
                     "PirateWaster",
                 }
             );
-            Scribe_Collections.Look(ref factionsRelationsRandomiseExclude, "factionsRelationsRandomiseExclude", LookMode.Value, new List<string>()
-                {
-                    "VFEE_Deserters",
-                    "Empire",
-                });
+            Scribe_Values.Look(ref randomiseFactionGoodwill, "randomiseFactionGoodwill", false);
+
 
             Scribe_Values.Look(ref randomFactionRange, "randomFactionRange", new IntRange(5, 15));
             Scribe_Values.Look(ref uniqueFactions, "uniqueFactions", false);
@@ -468,11 +460,6 @@ namespace RandomStartMod
                 "OutlanderRoughPig",
                 "PirateWaster",
             };
-            factionsRelationsRandomiseExclude = new List<string>()
-            {
-                "VFEE_Deserters",
-                "Empire",
-            };
 
             randomFactionRange = new IntRange(5, 15);
             uniqueFactions = false;
@@ -494,6 +481,7 @@ namespace RandomStartMod
             ResetIdeo();
             ResetResearch();
             ResetItems();
+            randomiseFactionGoodwill = false;
         }
 
         public void ResetGenes()

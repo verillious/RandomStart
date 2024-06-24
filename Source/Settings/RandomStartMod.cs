@@ -1,3 +1,4 @@
+using Mono.Cecil;
 using RimWorld;
 using RimWorld.Planet;
 using System;
@@ -793,7 +794,6 @@ namespace RandomStartMod
                 settings.rainfall = Mathf.RoundToInt(Widgets.HorizontalSlider(rainfallRect, (float)settings.rainfall, 0f, OverallRainfallUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabel(settings.rainfall), null, null, 1f));
                 planetListingHeight += 3f + 32f;
                 listingStandard.Outdent();
-
             }
             else
             {
@@ -1106,6 +1106,17 @@ namespace RandomStartMod
                     optionalFeaturesListingHeight += 24f;
                 }
             }
+
+            listingStandard.Gap();
+            optionalFeaturesListingHeight += 12f;
+            Text.Font = GameFont.Medium;
+            listingStandard.Label("Goodwill".Translate());
+            listingStandard.GapLine();
+            optionalFeaturesListingHeight += 24f + Text.LineHeight;
+            Text.Font = GameFont.Small;
+
+            DoOptionalFeatureRow(listingStandard.GetRect(24f), "Randomize".Translate(), null, ref settings.randomiseFactionGoodwill);
+            optionalFeaturesListingHeight += 24f;
 
 
             listingStandard.Gap();
@@ -1428,23 +1439,14 @@ namespace RandomStartMod
             Text.Anchor = TextAnchor.MiddleCenter;
             widgetRow.Label(factionDef.LabelCap);
             Text.Anchor = TextAnchor.UpperLeft;
-            WidgetRow widgetRow2 = new WidgetRow(rect.width - 64f, 0f);
-            GUI.color = Color.red;
-            if (widgetRow2.ButtonIcon(TexButton.OpenStatsReport, "Delete".Translate(), null, Color.grey))
-            {
-                SoundDefOf.Click.PlayOneShotOnCamera();
-                factionDefNames.RemoveAt(index);
-                result = true;
-            }
-            GUI.color = Color.white;
-            widgetRow2.Gap(4f);
-            if (widgetRow2.ButtonIcon(TexButton.Delete, "Delete".Translate()))
+            if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
             {
                 SoundDefOf.Click.PlayOneShotOnCamera();
                 factionDefNames.RemoveAt(index);
                 result = true;
             }
             Widgets.EndGroup();
+            ModContentPack mod = factionDef.modContentPack;
             if (Mouse.IsOver(rect2))
             {
                 TooltipHandler.TipRegion(rect2, factionDef.LabelCap.AsTipTitle() + "\n" + factionDef.Description + "\n" + "\n" + GetSourceModMetaData(factionDef).Name.AsTipTitle());
