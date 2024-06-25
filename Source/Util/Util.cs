@@ -13,7 +13,7 @@ namespace RandomStartMod
             Log.Message($"<color=magenta>[{"RandomStartMod.Title".Translate()}]</color> {message}");
         }
 
-        public static string GetIntRangeLabel(IntRange range)
+        public static TaggedString GetIntRangeLabel(IntRange range)
         {
             List<string> intRangeLabels = new List<string>() { "RandomStartMod.VeryLow", "PlanetRainfall_Low", "RandomStartMod.ALittleLess", "PlanetRainfall_Normal", "RandomStartMod.ALittleMore", "PlanetRainfall_High", "RandomStartMod.VeryHigh" };
             string string1 = intRangeLabels[range.min];

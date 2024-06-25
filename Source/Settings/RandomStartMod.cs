@@ -458,8 +458,9 @@ namespace RandomStartMod
                 scenarioListingHeight += 24f;
                 if (settings.enableMarketValueLimit)
                 {
+                    listingStandard.Gap(2f);
                     Widgets.TextFieldNumericLabeled(listingStandard.GetRect(24f), $"{"Value".Translate()} ", ref settings.randomItemTotalMarketValueLimit, ref randomItemTotalMarketValueLimitTextBuffer);
-                    scenarioListingHeight += 24f;
+                    scenarioListingHeight += 2f + 24f;
                 }
             }
 
@@ -874,13 +875,13 @@ namespace RandomStartMod
                 listingStandard.Gap(2f);
                 Rect rainfallRect = listingStandard.GetRect(30f);
                 settings.rainfall = Mathf.RoundToInt(Widgets.HorizontalSlider(rainfallRect, (float)settings.rainfall, 0f, OverallRainfallUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabel(settings.rainfall), null, null, 1f));
-                planetListingHeight += 3f + 32f;
+                planetListingHeight += 32f;
             }
             else
             {
                 Rect rainfallRect = listingStandard.GetRect(32f);
                 Widgets.IntRange(rainfallRect, 1623498654, ref settings.randomiseRainfallRange, 0, 6, Util.GetIntRangeLabel(settings.randomiseRainfallRange));
-                planetListingHeight += 12f + 32f;
+                planetListingHeight += 32f;
             }
 
             listingStandard.Gap();
@@ -893,17 +894,16 @@ namespace RandomStartMod
                 listingStandard.Gap(2f);
                 Rect temperatureRect = listingStandard.GetRect(30f);
                 settings.temperature = Mathf.RoundToInt(Widgets.HorizontalSlider(temperatureRect, (float)settings.temperature, 0f, OverallTemperatureUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabel(settings.temperature), null, null, 1f));
-                planetListingHeight += 2f + 32f;
+                planetListingHeight += 32f;
             }
             else
             {
                 Rect temperatureRect = listingStandard.GetRect(32f);
                 Widgets.IntRange(temperatureRect, 1623498655, ref settings.randomiseTemperatureRange, 0, 6, Util.GetIntRangeLabel(settings.randomiseTemperatureRange));
-                planetListingHeight += 12f + 32f;
+                planetListingHeight += 32f;
             }
 
             listingStandard.Gap();
-
             DoSettingToggle(listingStandard.GetRect(24f), "PlanetPopulation".Translate(), null, ref settings.randomisePopulation);
             planetListingHeight += 12f + 24f;
 
@@ -912,18 +912,16 @@ namespace RandomStartMod
                 listingStandard.Gap(2f);
                 Rect populationRect = listingStandard.GetRect(30f);
                 settings.population = Mathf.RoundToInt(Widgets.HorizontalSlider(populationRect, (float)settings.population, 0f, OverallPopulationUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabel(settings.population), null, null, 1f));
-                planetListingHeight += 2f + 32f;
+                planetListingHeight += 32f;
             }
             else
             {
                 Rect populationRect = listingStandard.GetRect(32f);
                 Widgets.IntRange(populationRect, 1623498656, ref settings.randomisePopulationRange, 0, 6, Util.GetIntRangeLabel(settings.randomisePopulationRange));
-                planetListingHeight += 12f + 32f;
+                planetListingHeight += 32f;
             }
 
             listingStandard.Gap();
-
-
             DoSettingToggle(listingStandard.GetRect(24f), "Pollution_Label".Translate(), null, ref settings.randomisePollution);
             planetListingHeight += 12f + 24f;
 
@@ -932,13 +930,13 @@ namespace RandomStartMod
                 listingStandard.Gap(2f);
                 Rect pollutionRect = listingStandard.GetRect(30f);
                 settings.pollution = Widgets.HorizontalSlider(pollutionRect, settings.pollution, 0f, 1f, middleAlignment: true, settings.pollution.ToStringPercent(), null, null, 0.05f);
-                planetListingHeight += 2f + 32f;
+                planetListingHeight += 32f;
             }
             else
             {
                 Rect pollutionRect = listingStandard.GetRect(32f);
                 Widgets.FloatRange(pollutionRect, 1623498651, ref settings.randomisePollutionRange, 0.0f, 1.0f, Util.GetFloatRangeLabelPercent(settings.randomisePollutionRange));
-                planetListingHeight += 12f + 32f;
+                planetListingHeight += 32f;
             }
 
             listingStandard.Gap();
@@ -1061,13 +1059,14 @@ namespace RandomStartMod
                     optionalFeaturesListingHeight += Text.LineHeight + 12f;
                     Widgets.IntRange(listingStandard.GetRect(32f), 382399865, ref settings.randomGeneRange, 0, 20);
                     optionalFeaturesListingHeight += 32f;
-
+                    listingStandard.Gap(2f);
                     DoSettingToggle(listingStandard.GetRect(24f), $"{"minimum".Translate().CapitalizeFirst()}: {"MetabolismTotal".Translate()}", null, ref settings.enableMetabolicEfficiencyMinimum);
-                    optionalFeaturesListingHeight += 24f;
+                    optionalFeaturesListingHeight += 2f+24f;
                     if (settings.enableMetabolicEfficiencyMinimum)
                     {
+                        listingStandard.Gap(2f);
                         settings.minimumMetabolicEfficiency = Mathf.RoundToInt(Widgets.HorizontalSlider(listingStandard.GetRect(24f), settings.minimumMetabolicEfficiency, -5, 5, true, $"{settings.minimumMetabolicEfficiency.ToStringWithSign()} ({"HungerRate".Translate()} x{GeneTuning.MetabolismToFoodConsumptionFactorCurve.Evaluate(settings.minimumMetabolicEfficiency).ToStringPercent()})", null, null, 1f));
-                        optionalFeaturesListingHeight += 32f;
+                        optionalFeaturesListingHeight += 2f + 24f;
                     }
                 }
             }
