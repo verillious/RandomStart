@@ -37,7 +37,9 @@ namespace RandomStartMod
         public int minimumFactions = 5;
         public int maximumFactions = 15;
         public bool uniqueFactions = false;
+        public bool randomiseFactionGoodwill = false;
 
+        public bool createRandomScenario = false;
         public bool enableCustomScenarios = true;
         public bool enableSteamWorkshopScenarios = true;
 
@@ -131,6 +133,8 @@ namespace RandomStartMod
         public bool enableRandomXenotypes = false;
         public bool enableRandomCustomXenotypes = false;
         public IntRange randomGeneRange = new IntRange(5, 15);
+        public bool enableMetabolicEfficiencyMinimum = false;
+        public int minimumMetabolicEfficiency = 0;
         public bool respectFactionXenotypes = true;
         public bool fluidIdeo = false;
         public bool removeStartingResearch = false;
@@ -142,6 +146,8 @@ namespace RandomStartMod
         public bool addRandomItems = false;
         public IntRange randomItemRange = new IntRange(5, 15);
         public int randomItemTechLevelLimit = 4;
+        public bool enableMarketValueLimit = false;
+        public int randomItemTotalMarketValueLimit = 10000;
 
         //Compat
         public int myLittlePlanetSubcount = 10;
@@ -169,6 +175,7 @@ namespace RandomStartMod
             Scribe_Values.Look(ref randomisePollution, "randomisePollution", true);
             Scribe_Values.Look(ref randomiseSeason, "randomiseSeason", false);
 
+            Scribe_Values.Look(ref createRandomScenario, "createRandomScenario", false);
             Scribe_Values.Look(ref enableCustomScenarios, "enableCustomScenarios", true);
             Scribe_Values.Look(
                 ref enableSteamWorkshopScenarios,
@@ -233,6 +240,8 @@ namespace RandomStartMod
                     "PirateWaster",
                 }
             );
+            Scribe_Values.Look(ref randomiseFactionGoodwill, "randomiseFactionGoodwill", false);
+
 
             Scribe_Values.Look(ref randomFactionRange, "randomFactionRange", new IntRange(5, 15));
             Scribe_Values.Look(ref uniqueFactions, "uniqueFactions", false);
@@ -304,6 +313,8 @@ namespace RandomStartMod
             Scribe_Values.Look(ref enableRandomXenotypes, "enableRandomXenotypes", false);
             Scribe_Values.Look(ref enableRandomCustomXenotypes, "enableRandomCustomXenotypes", false);
             Scribe_Values.Look(ref randomGeneRange, "randomGeneRange", new IntRange(5, 15));
+            Scribe_Values.Look(ref enableMetabolicEfficiencyMinimum, "enableMetabolicEfficiencyMinimum", false);
+            Scribe_Values.Look(ref minimumMetabolicEfficiency, "minimumMetabolicEfficiency", 0);
             Scribe_Values.Look(ref respectFactionXenotypes, "respectFactionXenotypes", true);
             Scribe_Values.Look(ref disableIdeo, "disableIdeo", false);
             Scribe_Values.Look(ref fluidIdeo, "fluidIdeo", false);
@@ -320,6 +331,8 @@ namespace RandomStartMod
             Scribe_Values.Look(ref addRandomItems, "addRandomItems", false);
             Scribe_Values.Look(ref randomItemRange, "randomItemRange", new IntRange(5, 15));
             Scribe_Values.Look(ref randomItemTechLevelLimit, "randomItemTechLevelLimit", 4);
+            Scribe_Values.Look(ref enableMarketValueLimit, "enableMarketValueLimit", false);
+            Scribe_Values.Look(ref randomItemTotalMarketValueLimit, "randomItemTotalMarketValueLimit", 10000);
 
             Scribe_Values.Look(ref myLittlePlanetSubcount, "myLittlePlanetSubcount", 10);
             Scribe_Values.Look(ref realisticPlanetsWorldType, "realisticPlanetsWorldType", 3);
@@ -452,12 +465,16 @@ namespace RandomStartMod
 
             randomFactionRange = new IntRange(5, 15);
             uniqueFactions = false;
+            randomiseFactionGoodwill = false;
         }
         public void ResetScenarios()
         {
+            createRandomScenario = false;
             enableCustomScenarios = true;
             enableSteamWorkshopScenarios = true;
             disabledScenarios = new List<string>() { "tutorial" };
+            ResetResearch();
+            ResetItems();
         }
         public void ResetStorytellers()
         {
@@ -468,8 +485,6 @@ namespace RandomStartMod
         {
             ResetGenes();
             ResetIdeo();
-            ResetResearch();
-            ResetItems();
         }
 
         public void ResetGenes()
@@ -478,6 +493,8 @@ namespace RandomStartMod
             enableRandomCustomXenotypes = false;
             respectFactionXenotypes = true;
             randomGeneRange = new IntRange(5, 15);
+            minimumMetabolicEfficiency = 0;
+            enableMetabolicEfficiencyMinimum = false;
         }
 
         public void ResetIdeo()
@@ -503,6 +520,8 @@ namespace RandomStartMod
             addRandomItems = false;
             randomItemRange = new IntRange(5, 15);
             randomItemTechLevelLimit = 4;
+            randomItemTotalMarketValueLimit = 10000;
+            enableMarketValueLimit = false;
         }
     }
 }

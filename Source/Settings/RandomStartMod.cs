@@ -1,3 +1,4 @@
+using Mono.Cecil;
 using RimWorld;
 using RimWorld.Planet;
 using System;
@@ -40,6 +41,7 @@ namespace RandomStartMod
         private static float sectionHeightChildren = 0f;
 
         public int currentTab = 0;
+        public string randomItemTotalMarketValueLimitTextBuffer;
         public RandomStartMod(ModContentPack content) : base(content)
         {
             settings = GetSettings<RandomStartSettings>();
@@ -173,8 +175,8 @@ namespace RandomStartMod
             if (ModsConfig.IsActive("brrainz.nopausechallenge"))
             {
                 listingStandard.Gap(3f);
-                listingStandard.CheckboxLabeled("No Pause Challenge", ref settings.noPauseEnabled);
-                listingStandard.CheckboxLabeled("Half Speed enabled", ref settings.noPauseHalfSpeedEnabled);
+                DoSettingToggle(listingStandard.GetRect(24f), "No Pause Challenge", null, ref settings.noPauseEnabled);
+                DoSettingToggle(listingStandard.GetRect(24f), "Half Speed enabled", null, ref settings.noPauseHalfSpeedEnabled);
                 mainListingHeight += 3f + 32f + 32f;
             }
 
@@ -295,94 +297,170 @@ namespace RandomStartMod
             listingStandard.Begin(rect);
 
             // Scenarios
+            DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate(), null, ref settings.createRandomScenario);
+            scenarioListingHeight += 24f;
+            if (!settings.createRandomScenario)
+            {
+                listingStandard.Gap();
+                Text.Font = GameFont.Medium;
+                listingStandard.Label("ScenPart_StartWithPawns_OutOf".Translate().CapitalizeFirst());
+                listingStandard.GapLine();
+                scenarioListingHeight += 24f + Text.LineHeight;
+                Text.Font = GameFont.Small;
+
+                List<ScenarioDef> enabledScenarioDefs = DefDatabase<ScenarioDef>.AllDefsListForReading.Where((ScenarioDef item) => !settings.disabledScenarios.Contains(item.scenario.name) && item.scenario.showInUI).ToList();
+                List<Scenario> enabledCustomScenarios = ScenarioLister.ScenariosInCategory(ScenarioCategory.CustomLocal).Where((Scenario item) => !settings.disabledScenarios.Contains(item.name)).ToList();
+                List<Scenario> enabledWorkshopScenarios = ScenarioLister.ScenariosInCategory(ScenarioCategory.SteamWorkshop).Where((Scenario item) => !settings.disabledScenarios.Contains(item.name)).ToList();
+
+                int index = 0;
+                int totalCount = enabledScenarioDefs.Count + enabledCustomScenarios.Count + enabledWorkshopScenarios.Count;
+
+                var floatMenuOptions = new List<FloatMenuOption>();
+                if (settings.disabledScenarios.NullOrEmpty())
+                    settings.disabledScenarios = new List<string>();
+
+                foreach (ScenarioDef scenarioDef in DefDatabase<ScenarioDef>.AllDefsListForReading)
+                {
+                    if (!scenarioDef.scenario.showInUI)
+                        continue;
+
+                    Texture2D tex = GetSourceIcon(scenarioDef);
+                    string source = GetSourceModMetaData(scenarioDef).Name;
+                    if (!settings.disabledScenarios.Contains(scenarioDef.scenario.name))
+                    {
+                        listingStandard.Gap(4f);
+                        DoScenarioRow(listingStandard.GetRect(24f), scenarioDef.scenario, index, totalCount, tex, source);
+                        listingStandard.Gap(4f);
+                        scenarioListingHeight += 32f;
+                        index++;
+                    }
+                    else
+                    {
+                        floatMenuOptions.Add(new FloatMenuOption(scenarioDef.LabelCap, () => settings.disabledScenarios.Remove(scenarioDef.scenario.name), tex, Color.white, MenuOptionPriority.Default, null, null, 24f, (Rect r) => Widgets.InfoCardButton(r.x, r.y + 3f, scenarioDef), null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true));
+                    }
+                }
+
+                foreach (Scenario scenario in ScenarioLister.ScenariosInCategory(ScenarioCategory.CustomLocal))
+                {
+                    if (!scenario.showInUI)
+                        continue;
+
+                    Texture2D tex = ContentFinder<Texture2D>.Get("UI/Buttons/Dev/Save");
+                    string source = "Custom".Translate().CapitalizeFirst();
+                    if (!settings.disabledScenarios.Contains(scenario.name))
+                    {
+                        listingStandard.Gap(4f);
+                        DoScenarioRow(listingStandard.GetRect(24f), scenario, index, totalCount, tex, source);
+                        listingStandard.Gap(4f);
+                        scenarioListingHeight += 32f;
+                        index++;
+                    }
+                    else
+                    {
+                        floatMenuOptions.Add(new FloatMenuOption(scenario.name, () => settings.disabledScenarios.Remove(scenario.name), tex, Color.white, MenuOptionPriority.Default, null, null, 24f, null, null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true));
+                    }
+                }
+
+                foreach (Scenario scenario in ScenarioLister.ScenariosInCategory(ScenarioCategory.SteamWorkshop))
+                {
+                    if (!scenario.showInUI)
+                        continue;
+
+                    Texture2D tex = ContentFinder<Texture2D>.Get("UI/Icons/ContentSources/SteamWorkshop");
+                    string source = "Workshop".Translate();
+                    if (!settings.disabledScenarios.Contains(scenario.name))
+                    {
+                        listingStandard.Gap(4f);
+                        DoScenarioRow(listingStandard.GetRect(24f), scenario, index, totalCount, tex, source);
+                        listingStandard.Gap(4f);
+                        scenarioListingHeight += 32f;
+                        index++;
+                    }
+                    else
+                    {
+                        floatMenuOptions.Add(new FloatMenuOption(scenario.name, () => settings.disabledScenarios.Remove(scenario.name), tex, Color.white, MenuOptionPriority.Default, null, null, 24f, null, null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true));
+                    }
+                }
+
+                if (floatMenuOptions.Count > 0)
+                {
+                    if (Widgets.ButtonText(listingStandard.GetRect(28f), "Add".Translate().CapitalizeFirst() + "..."))
+                    {
+                        Find.WindowStack.Add(new FloatMenu(floatMenuOptions));
+                    }
+                    scenarioListingHeight += 32f;
+                }
+            }
+
             listingStandard.Gap();
+            scenarioListingHeight += 12f;
             Text.Font = GameFont.Medium;
-            listingStandard.Label("ScenPart_StartWithPawns_OutOf".Translate().CapitalizeFirst());
+            listingStandard.Label("Research".Translate());
             listingStandard.GapLine();
             scenarioListingHeight += 24f + Text.LineHeight;
             Text.Font = GameFont.Small;
 
-            List<ScenarioDef> enabledScenarioDefs = DefDatabase<ScenarioDef>.AllDefsListForReading.Where((ScenarioDef item) => !settings.disabledScenarios.Contains(item.scenario.name) && item.scenario.showInUI).ToList();
-            List<Scenario> enabledCustomScenarios = ScenarioLister.ScenariosInCategory(ScenarioCategory.CustomLocal).Where((Scenario item) => !settings.disabledScenarios.Contains(item.name)).ToList();
-            List<Scenario> enabledWorkshopScenarios = ScenarioLister.ScenariosInCategory(ScenarioCategory.SteamWorkshop).Where((Scenario item) => !settings.disabledScenarios.Contains(item.name)).ToList();
-
-            int index = 0;
-            int totalCount = enabledScenarioDefs.Count + enabledCustomScenarios.Count + enabledWorkshopScenarios.Count;
-
-            var floatMenuOptions = new List<FloatMenuOption>();
-            if (settings.disabledScenarios.NullOrEmpty())
-                settings.disabledScenarios = new List<string>();
-
-            foreach (ScenarioDef scenarioDef in DefDatabase<ScenarioDef>.AllDefsListForReading)
+            DoSettingToggle(listingStandard.GetRect(24f), $"{"Remove".Translate()}: {"MedGroupDefaults".Translate()}", null, ref settings.removeStartingResearch);
+            scenarioListingHeight += 24f;
+            DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate(), null, ref settings.addRandomResearch);
+            scenarioListingHeight += 24f;
+            if (settings.addRandomResearch)
             {
-                if (!scenarioDef.scenario.showInUI)
-                    continue;
-
-                Texture2D tex = GetSourceIcon(scenarioDef);
-                string source = GetSourceModMetaData(scenarioDef).Name;
-                if (!settings.disabledScenarios.Contains(scenarioDef.scenario.name))
-                {
-                    listingStandard.Gap(4f);
-                    DoScenarioRow(listingStandard.GetRect(24f), scenarioDef.scenario, index, totalCount, tex, source);
-                    listingStandard.Gap(4f);
-                    scenarioListingHeight += 32f;
-                    index++;
-                }
-                else
-                {
-                    floatMenuOptions.Add(new FloatMenuOption(scenarioDef.LabelCap, () => settings.disabledScenarios.Remove(scenarioDef.scenario.name), tex, Color.white, MenuOptionPriority.Default, null, null, 24f, (Rect r) => Widgets.InfoCardButton(r.x, r.y + 3f, scenarioDef), null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true));
-                }
-            }
-
-            foreach (Scenario scenario in ScenarioLister.ScenariosInCategory(ScenarioCategory.CustomLocal))
-            {
-                if (!scenario.showInUI)
-                    continue;
-
-                Texture2D tex = ContentFinder<Texture2D>.Get("UI/Buttons/Dev/Save");
-                string source = "Custom".Translate().CapitalizeFirst();
-                if (!settings.disabledScenarios.Contains(scenario.name))
-                {
-                    listingStandard.Gap(4f);
-                    DoScenarioRow(listingStandard.GetRect(24f), scenario, index, totalCount, tex, source);
-                    listingStandard.Gap(4f);
-                    scenarioListingHeight += 32f;
-                    index++;
-                }
-                else
-                {
-                    floatMenuOptions.Add(new FloatMenuOption(scenario.name, () => settings.disabledScenarios.Remove(scenario.name), tex, Color.white, MenuOptionPriority.Default, null, null, 24f, null, null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true));
-                }
-            }
-
-            foreach (Scenario scenario in ScenarioLister.ScenariosInCategory(ScenarioCategory.SteamWorkshop))
-            {
-                if (!scenario.showInUI)
-                    continue;
-
-                Texture2D tex = ContentFinder<Texture2D>.Get("UI/Icons/ContentSources/SteamWorkshop");
-                string source = "Workshop".Translate();
-                if (!settings.disabledScenarios.Contains(scenario.name))
-                {
-                    listingStandard.Gap(4f);
-                    DoScenarioRow(listingStandard.GetRect(24f), scenario, index, totalCount, tex, source);
-                    listingStandard.Gap(4f);
-                    scenarioListingHeight += 32f;
-                    index++;
-                }
-                else
-                {
-                    floatMenuOptions.Add(new FloatMenuOption(scenario.name, () => settings.disabledScenarios.Remove(scenario.name), tex, Color.white, MenuOptionPriority.Default, null, null, 24f, null, null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true));
-                }
-            }
-
-            if (floatMenuOptions.Count > 0)
-            {
-                if (Widgets.ButtonText(listingStandard.GetRect(28f), "Add".Translate().CapitalizeFirst() + "..."))
-                {
-                    Find.WindowStack.Add(new FloatMenu(floatMenuOptions));
-                }
+                listingStandard.Gap();
+                listingStandard.Indent(8);
+                listingStandard.Label("PenFoodTab_Count".Translate() + ":");
+                listingStandard.Outdent(8);
+                scenarioListingHeight += Text.LineHeight + 12f;
+                Widgets.IntRange(listingStandard.GetRect(32f), 1823998654, ref settings.randomResearchRange, 0, 20);
                 scenarioListingHeight += 32f;
+
+                listingStandard.Gap();
+                listingStandard.Indent();
+                listingStandard.Label("MaxTier".Translate() + ":");
+                listingStandard.Outdent();
+                scenarioListingHeight += Text.LineHeight + 12f;
+                settings.randomResearchTechLevelLimit = Mathf.RoundToInt(Widgets.HorizontalSlider(listingStandard.GetRect(32f), settings.randomResearchTechLevelLimit, 2, 6, middleAlignment: true, $"TechLevel_{(TechLevel)settings.randomResearchTechLevelLimit}".Translate().CapitalizeFirst(), null, null, 1f));
+                scenarioListingHeight += 32f;
+                DoSettingToggle(listingStandard.GetRect(24f), $"{"ResearchUnlocks".Translate()}: {"Prerequisites".Translate()}", null, ref settings.doRandomResearchPrerequisites);
+                scenarioListingHeight += 24f;
+            }
+
+
+            listingStandard.Gap();
+            scenarioListingHeight += 12f;
+            Text.Font = GameFont.Medium;
+            listingStandard.Label("ItemsTab".Translate());
+            listingStandard.GapLine();
+            scenarioListingHeight += 24f + Text.LineHeight;
+            Text.Font = GameFont.Small;
+
+            DoSettingToggle(listingStandard.GetRect(24f), $"{"Remove".Translate()}: {"MedGroupDefaults".Translate()}", null, ref settings.removeStartingItems);
+            scenarioListingHeight += 24f;
+            DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate(), null, ref settings.addRandomItems);
+            scenarioListingHeight += 24f;
+
+
+            if (settings.addRandomItems)
+            {
+                listingStandard.Gap();
+                listingStandard.Indent(8);
+                listingStandard.Label("PenFoodTab_Count".Translate() + ":");
+                listingStandard.Outdent(8);
+                scenarioListingHeight += Text.LineHeight + 12f;
+                Widgets.IntRange(listingStandard.GetRect(32f), 1823288654, ref settings.randomItemRange, 0, 20);
+                scenarioListingHeight += 32f;
+                listingStandard.Label("MaxTier".Translate() + ":");
+                scenarioListingHeight += Text.LineHeight;
+                settings.randomItemTechLevelLimit = Mathf.RoundToInt(Widgets.HorizontalSlider(listingStandard.GetRect(32f), settings.randomItemTechLevelLimit, 2, 6, middleAlignment: true, $"TechLevel_{(TechLevel)settings.randomItemTechLevelLimit}".Translate().CapitalizeFirst(), null, null, 1f));
+                scenarioListingHeight += 32f;
+
+                DoSettingToggle(listingStandard.GetRect(24f), $"{"StatsReport_MaxValue".Translate()} ({"Total".Translate().CapitalizeFirst()})", null, ref settings.enableMarketValueLimit);
+                scenarioListingHeight += 24f;
+                if (settings.enableMarketValueLimit)
+                {
+                    Widgets.TextFieldNumericLabeled(listingStandard.GetRect(24f), $"{"Value".Translate()} ", ref settings.randomItemTotalMarketValueLimit, ref randomItemTotalMarketValueLimitTextBuffer);
+                    scenarioListingHeight += 24f;
+                }
             }
 
             listingStandard.Gap();
@@ -548,14 +626,13 @@ namespace RandomStartMod
             factionListingHeight += 24f + Text.LineHeight;
             Text.Font = GameFont.Small;
 
+            listingStandard.Gap();
+            listingStandard.Indent(8);
             listingStandard.Label("PenFoodTab_Count".Translate() + ":");
-            factionListingHeight += Text.LineHeight;
+            listingStandard.Outdent(8);
+            factionListingHeight += Text.LineHeight + 12f;
             Widgets.IntRange(listingStandard.GetRect(32f), 1823998654, ref settings.randomFactionRange, 0, 20);
             factionListingHeight += 32f;
-
-            listingStandard.CheckboxLabeled("Unique".Translate().CapitalizeFirst(), ref settings.uniqueFactions);
-            factionListingHeight += 32f;
-
             listingStandard.Gap();
             factionListingHeight += 12f;
 
@@ -672,8 +749,17 @@ namespace RandomStartMod
                 Text.Font = GameFont.Small;
                 GUI.color = Color.white;
             }
+
             listingStandard.Gap();
             factionListingHeight += 12f;
+            DoSettingToggle(listingStandard.GetRect(24f), "Unique".Translate().CapitalizeFirst(), null, ref settings.uniqueFactions);
+            factionListingHeight += 24f;
+            DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate() + ": " + "Goodwill".Translate(), null, ref settings.randomiseFactionGoodwill);
+            factionListingHeight += 24f;
+            listingStandard.Gap();
+            factionListingHeight += 12f;
+
+
             if (listingStandard.ButtonText("RestoreToDefaultSettings".Translate()))
             {
                 settings.ResetFactions();
@@ -779,87 +865,85 @@ namespace RandomStartMod
             listingStandard.Gap();
             planetListingHeight += 12f;
 
-            listingStandard.CheckboxLabeled("PlanetRainfall".Translate(), ref settings.randomiseRainfall, 12f);
-            planetListingHeight += 32f + Text.LineHeight;
+            DoSettingToggle(listingStandard.GetRect(24f), "PlanetRainfall".Translate(), null, ref settings.randomiseRainfall);
+            planetListingHeight += 24f + Text.LineHeight;
 
 
             if (!settings.randomiseRainfall)
             {
-                listingStandard.Indent();
-                listingStandard.Gap();
+                listingStandard.Gap(2f);
                 Rect rainfallRect = listingStandard.GetRect(30f);
-                rainfallRect.width -= 12f;
-                settings.rainfall = Mathf.RoundToInt(Widgets.HorizontalSlider(rainfallRect, (float)settings.rainfall, 0f, OverallRainfallUtility.EnumValuesCount - 1, middleAlignment: true, "PlanetRainfall_Normal".Translate(), "PlanetRainfall_Low".Translate(), "PlanetRainfall_High".Translate(), 1f));
-                planetListingHeight += 12f + 32f;
-                listingStandard.Outdent();
-
+                settings.rainfall = Mathf.RoundToInt(Widgets.HorizontalSlider(rainfallRect, (float)settings.rainfall, 0f, OverallRainfallUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabel(settings.rainfall), null, null, 1f));
+                planetListingHeight += 3f + 32f;
             }
             else
             {
-                Widgets.IntRange(listingStandard.GetRect(32f), 1623498654, ref settings.randomiseRainfallRange, 0, 6, Util.GetIntRangeLabel(settings.randomiseRainfallRange));
+                Rect rainfallRect = listingStandard.GetRect(32f);
+                Widgets.IntRange(rainfallRect, 1623498654, ref settings.randomiseRainfallRange, 0, 6, Util.GetIntRangeLabel(settings.randomiseRainfallRange));
                 planetListingHeight += 12f + 32f;
             }
 
             listingStandard.Gap();
-            listingStandard.CheckboxLabeled("PlanetTemperature".Translate(), ref settings.randomiseTemperature, 12f);
-            planetListingHeight += 12f + 32f;
+
+            DoSettingToggle(listingStandard.GetRect(24f), "PlanetTemperature".Translate(), null, ref settings.randomiseTemperature);
+            planetListingHeight += 12f + 24;
 
             if (!settings.randomiseTemperature)
             {
-                listingStandard.Indent();
-                listingStandard.Gap();
+                listingStandard.Gap(2f);
                 Rect temperatureRect = listingStandard.GetRect(30f);
-                temperatureRect.width -= 12f;
-                settings.temperature = Mathf.RoundToInt(Widgets.HorizontalSlider(temperatureRect, (float)settings.temperature, 0f, OverallTemperatureUtility.EnumValuesCount - 1, middleAlignment: true, "PlanetTemperature_Normal".Translate(), "PlanetTemperature_Low".Translate(), "PlanetTemperature_High".Translate(), 1f));
-                planetListingHeight += 12f + 32f;
-                listingStandard.Outdent();
-
+                settings.temperature = Mathf.RoundToInt(Widgets.HorizontalSlider(temperatureRect, (float)settings.temperature, 0f, OverallTemperatureUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabel(settings.temperature), null, null, 1f));
+                planetListingHeight += 2f + 32f;
             }
             else
             {
-                Widgets.IntRange(listingStandard.GetRect(32f), 1623498655, ref settings.randomiseTemperatureRange, 0, 6, Util.GetIntRangeLabel(settings.randomiseTemperatureRange).Translate());
+                Rect temperatureRect = listingStandard.GetRect(32f);
+                Widgets.IntRange(temperatureRect, 1623498655, ref settings.randomiseTemperatureRange, 0, 6, Util.GetIntRangeLabel(settings.randomiseTemperatureRange));
                 planetListingHeight += 12f + 32f;
             }
+
             listingStandard.Gap();
-            listingStandard.CheckboxLabeled("PlanetPopulation".Translate(), ref settings.randomisePopulation, 12f);
-            planetListingHeight += 12f + 32f;
+
+            DoSettingToggle(listingStandard.GetRect(24f), "PlanetPopulation".Translate(), null, ref settings.randomisePopulation);
+            planetListingHeight += 12f + 24f;
+
             if (!settings.randomisePopulation)
             {
-                listingStandard.Indent();
-                listingStandard.Gap();
+                listingStandard.Gap(2f);
                 Rect populationRect = listingStandard.GetRect(30f);
-                populationRect.width -= 12f;
-                settings.population = Mathf.RoundToInt(Widgets.HorizontalSlider(populationRect, (float)settings.population, 0f, OverallPopulationUtility.EnumValuesCount - 1, middleAlignment: true, "PlanetPopulation_Normal".Translate(), "PlanetPopulation_Low".Translate(), "PlanetPopulation_High".Translate(), 1f));
-                planetListingHeight += 12f + 32f;
-                listingStandard.Outdent();
+                settings.population = Mathf.RoundToInt(Widgets.HorizontalSlider(populationRect, (float)settings.population, 0f, OverallPopulationUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabel(settings.population), null, null, 1f));
+                planetListingHeight += 2f + 32f;
             }
             else
             {
-                Widgets.IntRange(listingStandard.GetRect(32f), 1623498656, ref settings.randomisePopulationRange, 0, 6, Util.GetIntRangeLabel(settings.randomisePopulationRange).Translate());
+                Rect populationRect = listingStandard.GetRect(32f);
+                Widgets.IntRange(populationRect, 1623498656, ref settings.randomisePopulationRange, 0, 6, Util.GetIntRangeLabel(settings.randomisePopulationRange));
                 planetListingHeight += 12f + 32f;
             }
 
             listingStandard.Gap();
-            listingStandard.CheckboxLabeled("Pollution_Label".Translate(), ref settings.randomisePollution, 12f);
-            planetListingHeight += 12f + 32f;
+
+
+            DoSettingToggle(listingStandard.GetRect(24f), "Pollution_Label".Translate(), null, ref settings.randomisePollution);
+            planetListingHeight += 12f + 24f;
+
             if (!settings.randomisePollution)
             {
-                listingStandard.Indent();
-                listingStandard.Gap();
+                listingStandard.Gap(2f);
                 Rect pollutionRect = listingStandard.GetRect(30f);
-                pollutionRect.width -= 12f;
                 settings.pollution = Widgets.HorizontalSlider(pollutionRect, settings.pollution, 0f, 1f, middleAlignment: true, settings.pollution.ToStringPercent(), null, null, 0.05f);
-                planetListingHeight += 12f + 32f;
-                listingStandard.Outdent();
+                planetListingHeight += 2f + 32f;
             }
             else
             {
-                Widgets.FloatRange(listingStandard.GetRect(32f), 1623498651, ref settings.randomisePollutionRange, 0.0f, 1.0f, Util.GetFloatRangeLabelPercent(settings.randomisePollutionRange));
+                Rect pollutionRect = listingStandard.GetRect(32f);
+                Widgets.FloatRange(pollutionRect, 1623498651, ref settings.randomisePollutionRange, 0.0f, 1.0f, Util.GetFloatRangeLabelPercent(settings.randomisePollutionRange));
                 planetListingHeight += 12f + 32f;
             }
 
             listingStandard.Gap();
-            listingStandard.CheckboxLabeled("MapStartSeason".Translate(), ref settings.randomiseSeason, 12f);
+
+            DoSettingToggle(listingStandard.GetRect(24f), "MapStartSeason".Translate(), null, ref settings.randomiseSeason);
             planetListingHeight += 12f + 32f;
 
             if (!settings.randomiseSeason)
@@ -911,8 +995,8 @@ namespace RandomStartMod
                 listingStandard.GapLine();
                 planetListingHeight += 12f + 24f + Text.LineHeight;
                 Text.Font = GameFont.Small;
-                listingStandard.CheckboxLabeled("Randomize".Translate(), ref settings.randomiseRealisticPlanets);
-                planetListingHeight += 32f;
+                DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate(), null, ref settings.randomiseRealisticPlanets);
+                planetListingHeight += 24f;
                 if (!settings.randomiseRealisticPlanets)
                 {
                     Compat.RealisticPlanetsCompat.DoWorldTypeSelectionButton(listingStandard);
@@ -929,10 +1013,10 @@ namespace RandomStartMod
                 listingStandard.GapLine();
                 planetListingHeight += 12f + 24f + Text.LineHeight;
                 Text.Font = GameFont.Small;
-                listingStandard.CheckboxLabeled("RunInBackground".Translate(), ref settings.enableAutoRealRuins);
-                planetListingHeight += 32f;
-                listingStandard.CheckboxLabeled("RealRuins.BiomeFiltering".Translate(), ref settings.realRuinsBiomeFilter, "RealRuins.BiomeFilteringTT".Translate());
-                planetListingHeight += 32f;
+                DoSettingToggle(listingStandard.GetRect(24f), "RunInBackground".Translate(), null, ref settings.enableAutoRealRuins);
+                planetListingHeight += 24f;
+                DoSettingToggle(listingStandard.GetRect(24f), "RealRuins.BiomeFiltering".Translate(), null, ref settings.realRuinsBiomeFilter);
+                planetListingHeight += 24f;
             }
 
             listingStandard.Gap();
@@ -962,18 +1046,29 @@ namespace RandomStartMod
                 listingStandard.GapLine();
                 optionalFeaturesListingHeight += 24f + Text.LineHeight;
                 Text.Font = GameFont.Small;
-                DoOptionalFeatureRow(listingStandard.GetRect(24f), $"{"Randomize".Translate()}: {"Xenotype".Translate()}", null, ref settings.enableRandomXenotypes);
+                DoSettingToggle(listingStandard.GetRect(24f), $"{"Randomize".Translate()}: {"Xenotype".Translate()}", null, ref settings.enableRandomXenotypes);
                 optionalFeaturesListingHeight += 24f;
-                DoOptionalFeatureRow(listingStandard.GetRect(24f), "RandomStartMod.RespectMemberXenotypes".Translate(), null, ref settings.respectFactionXenotypes);
+                DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.RespectMemberXenotypes".Translate(), null, ref settings.respectFactionXenotypes);
                 optionalFeaturesListingHeight += 24f;
-                DoOptionalFeatureRow(listingStandard.GetRect(24f), $"{"Randomize".Translate()}: {"Genes".Translate().CapitalizeFirst()}", null, ref settings.enableRandomCustomXenotypes);
+                DoSettingToggle(listingStandard.GetRect(24f), $"{"Randomize".Translate()}: {"Genes".Translate().CapitalizeFirst()}", null, ref settings.enableRandomCustomXenotypes);
                 optionalFeaturesListingHeight += 24f;
                 if (settings.enableRandomCustomXenotypes)
                 {
+                    listingStandard.Gap();
+                    listingStandard.Indent(8);
                     listingStandard.Label("PenFoodTab_Count".Translate() + ":");
-                    optionalFeaturesListingHeight += Text.LineHeight;
+                    listingStandard.Outdent(8);
+                    optionalFeaturesListingHeight += Text.LineHeight + 12f;
                     Widgets.IntRange(listingStandard.GetRect(32f), 382399865, ref settings.randomGeneRange, 0, 20);
                     optionalFeaturesListingHeight += 32f;
+
+                    DoSettingToggle(listingStandard.GetRect(24f), $"{"minimum".Translate().CapitalizeFirst()}: {"MetabolismTotal".Translate()}", null, ref settings.enableMetabolicEfficiencyMinimum);
+                    optionalFeaturesListingHeight += 24f;
+                    if (settings.enableMetabolicEfficiencyMinimum)
+                    {
+                        settings.minimumMetabolicEfficiency = Mathf.RoundToInt(Widgets.HorizontalSlider(listingStandard.GetRect(24f), settings.minimumMetabolicEfficiency, -5, 5, true, $"{settings.minimumMetabolicEfficiency.ToStringWithSign()} ({"HungerRate".Translate()} x{GeneTuning.MetabolismToFoodConsumptionFactorCurve.Evaluate(settings.minimumMetabolicEfficiency).ToStringPercent()})", null, null, 1f));
+                        optionalFeaturesListingHeight += 32f;
+                    }
                 }
             }
             if (ModsConfig.IdeologyActive)
@@ -984,15 +1079,15 @@ namespace RandomStartMod
                 listingStandard.GapLine();
                 optionalFeaturesListingHeight += 24f + Text.LineHeight;
                 Text.Font = GameFont.Small;
-                DoOptionalFeatureRow(listingStandard.GetRect(24f), "PlayClassic".Translate(), null, ref settings.disableIdeo);
+                DoSettingToggle(listingStandard.GetRect(24f), "PlayClassic".Translate(), null, ref settings.disableIdeo);
                 optionalFeaturesListingHeight += 24f;
                 if (!settings.disableIdeo)
                 {
-                    DoOptionalFeatureRow(listingStandard.GetRect(24f), "CreateFluid".Translate(), "FluidIdeoTip".Translate(), ref settings.fluidIdeo);
+                    DoSettingToggle(listingStandard.GetRect(24f), "CreateFluid".Translate(), "FluidIdeoTip".Translate(), ref settings.fluidIdeo);
                     optionalFeaturesListingHeight += 24f;
                     if (GenFilePaths.AllCustomIdeoFiles.Any())
                     {
-                        DoOptionalFeatureRow(listingStandard.GetRect(24f), "LoadExistingIdeoligion".Translate(), null, ref settings.overrideIdeo);
+                        DoSettingToggle(listingStandard.GetRect(24f), "LoadExistingIdeoligion".Translate(), null, ref settings.overrideIdeo);
                         optionalFeaturesListingHeight += 24f;
                         if (settings.overrideIdeo)
                         {
@@ -1028,66 +1123,6 @@ namespace RandomStartMod
 
             }
 
-
-            listingStandard.Gap();
-            optionalFeaturesListingHeight += 12f;
-            Text.Font = GameFont.Medium;
-            listingStandard.Label("Research".Translate());
-            listingStandard.GapLine();
-            optionalFeaturesListingHeight += 24f + Text.LineHeight;
-            Text.Font = GameFont.Small;
-
-            DoOptionalFeatureRow(listingStandard.GetRect(24f), $"{"Remove".Translate()}: {"MedGroupDefaults".Translate()}", null, ref settings.removeStartingResearch);
-            optionalFeaturesListingHeight += 24f;
-            DoOptionalFeatureRow(listingStandard.GetRect(24f), "Randomize".Translate(), null, ref settings.addRandomResearch);
-            optionalFeaturesListingHeight += 24f;
-            if (settings.addRandomResearch)
-            {
-                listingStandard.Label("PenFoodTab_Count".Translate() + ":");
-                optionalFeaturesListingHeight += Text.LineHeight;
-                Widgets.IntRange(listingStandard.GetRect(32f), 1823998654, ref settings.randomResearchRange, 0, 20);
-                optionalFeaturesListingHeight += 32f;
-                listingStandard.Label("MaxTier".Translate() + ":");
-                optionalFeaturesListingHeight += Text.LineHeight;
-                listingStandard.Label($"TechLevel_{(TechLevel)settings.randomResearchTechLevelLimit}".Translate().CapitalizeFirst());
-                optionalFeaturesListingHeight += Text.LineHeight;
-                settings.randomResearchTechLevelLimit = Mathf.RoundToInt(Widgets.HorizontalSlider(listingStandard.GetRect(32f), settings.randomResearchTechLevelLimit, 2, 6, middleAlignment: true, null, null, null, 1f));
-                optionalFeaturesListingHeight += 32f;
-
-                DoOptionalFeatureRow(listingStandard.GetRect(24f), $"{"ResearchUnlocks".Translate()}: {"Prerequisites".Translate()}", null, ref settings.doRandomResearchPrerequisites);
-                optionalFeaturesListingHeight += 24f;
-            }
-
-
-            listingStandard.Gap();
-            optionalFeaturesListingHeight += 12f;
-            Text.Font = GameFont.Medium;
-            listingStandard.Label("ItemsTab".Translate());
-            listingStandard.GapLine();
-            optionalFeaturesListingHeight += 24f + Text.LineHeight;
-            Text.Font = GameFont.Small;
-
-            DoOptionalFeatureRow(listingStandard.GetRect(24f), $"{"Remove".Translate()}: {"MedGroupDefaults".Translate()}", null, ref settings.removeStartingItems);
-            optionalFeaturesListingHeight += 24f;
-            DoOptionalFeatureRow(listingStandard.GetRect(24f), "Randomize".Translate(), null, ref settings.addRandomItems);
-            optionalFeaturesListingHeight += 24f;
-
-
-            if (settings.addRandomItems)
-            {
-                listingStandard.Label("PenFoodTab_Count".Translate() + ":");
-                optionalFeaturesListingHeight += Text.LineHeight;
-                Widgets.IntRange(listingStandard.GetRect(32f), 1823288654, ref settings.randomItemRange, 0, 20);
-                optionalFeaturesListingHeight += 32f;
-                listingStandard.Label("MaxTier".Translate() + ":");
-                optionalFeaturesListingHeight += Text.LineHeight;
-                listingStandard.Label($"TechLevel_{(TechLevel)settings.randomItemTechLevelLimit}".Translate().CapitalizeFirst());
-                optionalFeaturesListingHeight += Text.LineHeight;
-                settings.randomItemTechLevelLimit = Mathf.RoundToInt(Widgets.HorizontalSlider(listingStandard.GetRect(32f), settings.randomItemTechLevelLimit, 2, 6, middleAlignment: true, null, null, null, 1f));
-                optionalFeaturesListingHeight += 32f;
-            }
-
-
             listingStandard.Gap();
             optionalFeaturesListingHeight += 12f;
             if (listingStandard.ButtonText("RestoreToDefaultSettings".Translate()))
@@ -1104,11 +1139,11 @@ namespace RandomStartMod
         {
             Listing_Standard listing_Standard = DrawCustomSectionStart(listing, sectionHeightThreats, "DifficultyThreatSection".Translate());
             DrawCustomDifficultySlider(listing_Standard, "threatScale", ref settings.threatScale, ToStringStyle.PercentZero, ToStringNumberSense.Absolute, 0f, 5f);
-            DrawCustomDifficultyCheckbox(listing_Standard, "allowBigThreats", ref settings.allowBigThreats);
-            DrawCustomDifficultyCheckbox(listing_Standard, "allowViolentQuests", ref settings.allowViolentQuests);
-            DrawCustomDifficultyCheckbox(listing_Standard, "allowIntroThreats", ref settings.allowIntroThreats);
-            DrawCustomDifficultyCheckbox(listing_Standard, "predatorsHuntHumanlikes", ref settings.predatorsHuntHumanlikes);
-            DrawCustomDifficultyCheckbox(listing_Standard, "allowExtremeWeatherIncidents", ref settings.allowExtremeWeatherIncidents);
+            DrawCustomDifficultySetting(listing_Standard, "allowBigThreats", ref settings.allowBigThreats);
+            DrawCustomDifficultySetting(listing_Standard, "allowViolentQuests", ref settings.allowViolentQuests);
+            DrawCustomDifficultySetting(listing_Standard, "allowIntroThreats", ref settings.allowIntroThreats);
+            DrawCustomDifficultySetting(listing_Standard, "predatorsHuntHumanlikes", ref settings.predatorsHuntHumanlikes);
+            DrawCustomDifficultySetting(listing_Standard, "allowExtremeWeatherIncidents", ref settings.allowExtremeWeatherIncidents);
             if (ModsConfig.BiotechActive)
             {
                 DrawCustomDifficultySlider(listing_Standard, "wastepackInfestationChanceFactor", ref settings.wastepackInfestationChanceFactor, ToStringStyle.PercentZero, ToStringNumberSense.Absolute, 0f, 5f);
@@ -1137,14 +1172,14 @@ namespace RandomStartMod
                 return;
             }
             listing_Standard = DrawCustomSectionStart(listing, sectionHeightChildren, "DifficultyChildrenSection".Translate());
-            DrawCustomDifficultyCheckbox(listing_Standard, "noBabiesOrChildren", ref settings.noBabiesOrChildren);
-            DrawCustomDifficultyCheckbox(listing_Standard, "babiesAreHealthy", ref settings.babiesAreHealthy);
+            DrawCustomDifficultySetting(listing_Standard, "noBabiesOrChildren", ref settings.noBabiesOrChildren);
+            DrawCustomDifficultySetting(listing_Standard, "babiesAreHealthy", ref settings.babiesAreHealthy);
             if (!settings.noBabiesOrChildren)
             {
-                DrawCustomDifficultyCheckbox(listing_Standard, "childRaidersAllowed", ref settings.childRaidersAllowed);
+                DrawCustomDifficultySetting(listing_Standard, "childRaidersAllowed", ref settings.childRaidersAllowed);
                 if (ModsConfig.AnomalyActive)
                 {
-                    DrawCustomDifficultyCheckbox(listing_Standard, "childShamblersAllowed", ref settings.childShamblersAllowed);
+                    DrawCustomDifficultySetting(listing_Standard, "childShamblersAllowed", ref settings.childShamblersAllowed);
                 }
             }
             else
@@ -1172,20 +1207,20 @@ namespace RandomStartMod
             DrawCustomDifficultySlider(listing_Standard, "deepDrillInfestationChanceFactor", ref settings.deepDrillInfestationChanceFactor, ToStringStyle.PercentZero, ToStringNumberSense.Absolute, 0f, 5f);
             DrawCustomDifficultySlider(listing_Standard, "friendlyFireChanceFactor", ref settings.friendlyFireChanceFactor, ToStringStyle.PercentZero, ToStringNumberSense.Absolute, 0f, 1f);
             DrawCustomDifficultySlider(listing_Standard, "allowInstantKillChance", ref settings.allowInstantKillChance, ToStringStyle.PercentZero, ToStringNumberSense.Absolute, 0f, 1f);
-            DrawCustomDifficultyCheckbox(listing_Standard, "peacefulTemples", ref settings.peacefulTemples, invert: true);
-            DrawCustomDifficultyCheckbox(listing_Standard, "allowCaveHives", ref settings.allowCaveHives);
-            DrawCustomDifficultyCheckbox(listing_Standard, "unwaveringPrisoners", ref settings.unwaveringPrisoners);
+            DrawCustomDifficultySetting(listing_Standard, "peacefulTemples", ref settings.peacefulTemples, invert: true);
+            DrawCustomDifficultySetting(listing_Standard, "allowCaveHives", ref settings.allowCaveHives);
+            DrawCustomDifficultySetting(listing_Standard, "unwaveringPrisoners", ref settings.unwaveringPrisoners);
             DrawCustomSectionEnd(listing, listing_Standard, out sectionHeightGeneral);
             listing_Standard = DrawCustomSectionStart(listing, sectionHeightPlayerTools, "DifficultyPlayerToolsSection".Translate());
-            DrawCustomDifficultyCheckbox(listing_Standard, "allowTraps", ref settings.allowTraps);
-            DrawCustomDifficultyCheckbox(listing_Standard, "allowTurrets", ref settings.allowTurrets);
-            DrawCustomDifficultyCheckbox(listing_Standard, "allowMortars", ref settings.allowMortars);
-            DrawCustomDifficultyCheckbox(listing_Standard, "classicMortars", ref settings.classicMortars);
+            DrawCustomDifficultySetting(listing_Standard, "allowTraps", ref settings.allowTraps);
+            DrawCustomDifficultySetting(listing_Standard, "allowTurrets", ref settings.allowTurrets);
+            DrawCustomDifficultySetting(listing_Standard, "allowMortars", ref settings.allowMortars);
+            DrawCustomDifficultySetting(listing_Standard, "classicMortars", ref settings.classicMortars);
             DrawCustomSectionEnd(listing, listing_Standard, out sectionHeightPlayerTools);
             listing_Standard = DrawCustomSectionStart(listing, sectionHeightAdaptation, "DifficultyAdaptationSection".Translate());
             DrawCustomDifficultySlider(listing_Standard, "adaptationGrowthRateFactorOverZero", ref settings.adaptationGrowthRateFactorOverZero, ToStringStyle.PercentZero, ToStringNumberSense.Absolute, 0f, 1f);
             DrawCustomDifficultySlider(listing_Standard, "adaptationEffectFactor", ref settings.adaptationEffectFactor, ToStringStyle.PercentZero, ToStringNumberSense.Absolute, 0f, 1f);
-            DrawCustomDifficultyCheckbox(listing_Standard, "fixedWealthMode", ref settings.fixedWealthMode);
+            DrawCustomDifficultySetting(listing_Standard, "fixedWealthMode", ref settings.fixedWealthMode);
             GUI.enabled = settings.fixedWealthMode;
             float value = Mathf.Round(12f / settings.fixedWealthTimeFactor);
             DrawCustomDifficultySlider(listing_Standard, "fixedWealthTimeFactor", ref value, ToStringStyle.Integer, ToStringNumberSense.Absolute, 1f, 20f, 1f);
@@ -1296,7 +1331,7 @@ namespace RandomStartMod
             value = num;
         }
 
-        private static void DrawCustomDifficultyCheckbox(Listing_Standard listing, string optionName, ref bool value, bool invert = false, bool showTooltip = true)
+        private static void DrawCustomDifficultySetting(Listing_Standard listing, string optionName, ref bool value, bool invert = false, bool showTooltip = true)
         {
             string text = (invert ? "_Inverted" : "");
             string text2 = optionName.CapitalizeFirst();
@@ -1424,7 +1459,7 @@ namespace RandomStartMod
             return result;
         }
 
-        public void DoOptionalFeatureRow(Rect rect, string label, string description, ref bool checkOn)
+        public void DoSettingToggle(Rect rect, string label, string description, ref bool checkOn)
         {
 
             Widgets.BeginGroup(rect);
@@ -1436,11 +1471,24 @@ namespace RandomStartMod
 
             Widgets.Checkbox(new Vector2(rect.width - 24f - 6f, 0f), ref checkOn);
             Widgets.EndGroup();
+            if (Widgets.ButtonInvisible(new Rect(rect.x, rect.y, rect.width - 24f - 6f, rect.height)))
+            {
+                checkOn = !checkOn;
+                if (checkOn)
+                {
+                    SoundDefOf.Checkbox_TurnedOn.PlayOneShotOnCamera();
+                }
+                else
+                {
+                    SoundDefOf.Checkbox_TurnedOff.PlayOneShotOnCamera();
+                }
+            }
             if (Mouse.IsOver(rect))
             {
                 TooltipHandler.TipRegion(rect, description);
                 Widgets.DrawHighlight(rect);
             }
+
         }
 
         public ModMetaData GetSourceModMetaData(Def def)

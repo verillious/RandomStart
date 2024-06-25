@@ -3,7 +3,9 @@ using System.IO;
 using System.Linq;
 using RimWorld;
 using RimWorld.Planet;
+using UnityEngine;
 using Verse;
+using static RimWorld.PsychicRitualRoleDef;
 
 namespace RandomStartMod
 {
@@ -55,16 +57,71 @@ namespace RandomStartMod
 
             Find.GameInitData.startedFromEntry = true;
 
-            Settlement playerSettlement;
+            //Settlement playerSettlement;
 
-            List<Settlement> settlements = Find.WorldObjects.Settlements;
-            for (int i = 0; i < settlements.Count; i++)
+            //List<Settlement> settlements = Find.WorldObjects.Settlements;
+            //for (int i = 0; i < settlements.Count; i++)
+            //{
+            //    if (settlements[i].Faction == Faction.OfPlayer)
+            //    {
+            //        playerSettlement = settlements[i];
+            //        playerSettlement.MapGeneratorDef.genSteps.Clear();
+            //        break;
+            //    }
+            //}
+
+
+            foreach (Faction item in Find.FactionManager.AllFactionsListForReading)
             {
-                if (settlements[i].Faction == Faction.OfPlayer)
+                item.RemoveAllRelations();
+                foreach (Faction item2 in Find.FactionManager.AllFactionsListForReading)
                 {
-                    playerSettlement = settlements[i];
-                    playerSettlement.MapGeneratorDef.genSteps.Clear();
-                    break;
+                    if (item != item2)
+                    {
+                        if (item.RelationWith(item2, allowNull: true) == null)
+                        {
+                            int initialGoodwill = GetInitialGoodwill(item, item2);
+
+                            FactionRelationKind kind = ((initialGoodwill > -10) ? ((initialGoodwill < 75) ? FactionRelationKind.Neutral : FactionRelationKind.Ally) : FactionRelationKind.Hostile);
+                            FactionRelation factionRelation = new FactionRelation();
+                            factionRelation.other = item2;
+                            factionRelation.baseGoodwill = initialGoodwill;
+                            factionRelation.kind = kind;
+                            item.relations.Add(factionRelation);
+                            FactionRelation factionRelation2 = new FactionRelation();
+                            factionRelation2.other = item;
+                            factionRelation2.baseGoodwill = initialGoodwill;
+                            factionRelation2.kind = kind;
+                            item2.relations.Add(factionRelation2);
+                        }
+
+                        int RoundNum(int num)
+                        {
+                            int rem = num % 10;
+                            return rem >= 5 ? (num - rem + 10) : (num - rem);
+                        }
+
+                        int GetInitialGoodwill(Faction a, Faction b)
+                        {
+                            if (a.def.permanentEnemy || b.def.permanentEnemy)
+                            {
+                                return -100;
+                            }
+                            if ((a.def.permanentEnemyToEveryoneExceptPlayer && !b.IsPlayer) || (b.def.permanentEnemyToEveryoneExceptPlayer && !a.IsPlayer))
+                            {
+                                return -100;
+                            }
+                            if (a.def.permanentEnemyToEveryoneExcept != null && !a.def.permanentEnemyToEveryoneExcept.Contains(b.def))
+                            {
+                                return -100;
+                            }
+                            if (b.def.permanentEnemyToEveryoneExcept != null && !b.def.permanentEnemyToEveryoneExcept.Contains(a.def))
+                            {
+                                return -100;
+                            }
+                            return RoundNum(Rand.Range(-100, 101));
+                        }
+                    }
                 }
             }
 
@@ -79,49 +136,55 @@ namespace RandomStartMod
 
         private static void SetupRandomScenario(RandomStartSettings settings)
         {
-            List<Scenario> scenarios = new List<Scenario>();
-
-            scenarios.AddRange(
-                ScenarioLister
-                    .AllScenarios()
-                    .Where(
-                        (Scenario scenario) =>
-                            !settings.disabledScenarios.Contains(scenario.name) && scenario.showInUI
-                    )
-            );
-            if (settings.enableCustomScenarios)
-                scenarios.AddRange(
-                    ScenarioLister
-                        .ScenariosInCategory(ScenarioCategory.CustomLocal)
-                        .Where(
-                            (Scenario scenario) =>
-                                !settings.disabledScenarios.Contains(scenario.name)
-                                && scenario.showInUI
-                        )
-                );
-            if (settings.enableSteamWorkshopScenarios)
-                scenarios.AddRange(
-                    ScenarioLister
-                        .ScenariosInCategory(ScenarioCategory.SteamWorkshop)
-                        .Where(
-                            (Scenario scenario) =>
-                                !settings.disabledScenarios.Contains(scenario.name)
-                                && scenario.showInUI
-                        )
-                );
-
-            Current.Game.Scenario = scenarios.RandomElement();
-            if (Current.Game.Scenario == null)
+            if (settings.createRandomScenario)
             {
-                string errorString = "[Random Start] Could not find valid Scenario from:";
-                foreach (Scenario s in scenarios)
-                {
-                    errorString += "\n" + "    - " + s.name;
-                }
-                Log.Error(errorString);
-                Current.Game.Scenario = ScenarioDefOf.Crashlanded.scenario;
+                Current.Game.Scenario = ScenarioMaker.GenerateNewRandomScenario(GenText.RandomSeedString());
             }
+            else
+            {
+                List<Scenario> scenarios = new List<Scenario>();
 
+                scenarios.AddRange(
+                    ScenarioLister
+                        .AllScenarios()
+                        .Where(
+                            (Scenario scenario) =>
+                                !settings.disabledScenarios.Contains(scenario.name) && scenario.showInUI
+                        )
+                );
+                if (settings.enableCustomScenarios)
+                    scenarios.AddRange(
+                        ScenarioLister
+                            .ScenariosInCategory(ScenarioCategory.CustomLocal)
+                            .Where(
+                                (Scenario scenario) =>
+                                    !settings.disabledScenarios.Contains(scenario.name)
+                                    && scenario.showInUI
+                            )
+                    );
+                if (settings.enableSteamWorkshopScenarios)
+                    scenarios.AddRange(
+                        ScenarioLister
+                            .ScenariosInCategory(ScenarioCategory.SteamWorkshop)
+                            .Where(
+                                (Scenario scenario) =>
+                                    !settings.disabledScenarios.Contains(scenario.name)
+                                    && scenario.showInUI
+                            )
+                    );
+
+                Current.Game.Scenario = scenarios.RandomElement();
+                if (Current.Game.Scenario == null)
+                {
+                    string errorString = "[Random Start] Could not find valid Scenario from:";
+                    foreach (Scenario s in scenarios)
+                    {
+                        errorString += "\n" + "    - " + s.name;
+                    }
+                    Log.Error(errorString);
+                    Current.Game.Scenario = ScenarioDefOf.Crashlanded.scenario;
+                }
+            }
             Util.LogMessage($"Starting {Current.Game.Scenario}");
         }
 
@@ -471,26 +534,59 @@ namespace RandomStartMod
                     }
                     if (selectedGenes.Count > 0)
                     {
+                        int metabolismTotal = 0;
+                        foreach (GeneDef geneDef in selectedGenes)
+                        {
+                            if (settings.enableMetabolicEfficiencyMinimum)
+                            {
+                                if ((metabolismTotal + geneDef.biostatMet) >= settings.minimumMetabolicEfficiency)
+                                {
+                                    GivePawnGene(p, geneDef, ref metabolismTotal);
+                                    metabolismTotal += geneDef.biostatMet;
+                                    foreach (Gene gene in p.genes.GenesListForReading)
+                                    {
+                                        if (gene.Overridden)
+                                        {
+                                            p.genes.RemoveGene(gene);
+                                            metabolismTotal -= gene.def.biostatMet;
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                GivePawnGene(p, geneDef, ref metabolismTotal);
+                                foreach (Gene gene in p.genes.GenesListForReading)
+                                {
+                                    if (gene.Overridden)
+                                    {
+                                        p.genes.RemoveGene(gene);
+                                        metabolismTotal -= gene.def.biostatMet;
+                                    }
+                                }
+                            }
+
+                        }
+
+
                         p.genes.xenotypeName = GeneUtility.GenerateXenotypeNameFromGenes(
                             selectedGenes
                         );
                         p.genes.iconDef = DefDatabase<XenotypeIconDef>.GetRandom();
-
-                        foreach (GeneDef geneDef in selectedGenes)
-                        {
-                            Gene gene = GeneMaker.MakeGene(geneDef, p);
-                            p.genes.AddGene(gene, Rand.Bool);
-                            p.genes.OverrideAllConflicting(gene);
-                        }
-                        foreach (Gene gene in p.genes.GenesListForReading)
-                        {
-                            if (gene.Overridden)
-                            {
-                                p.genes.RemoveGene(gene);
-                            }
-                        }
                     }
                 }
+            }
+        }
+
+        private static void GivePawnGene(Pawn p, GeneDef geneDef, ref int metabolismTotal)
+        {
+            p.genes.AddGene(geneDef, Rand.Bool);
+            Gene gene = GeneMaker.MakeGene(geneDef, p);
+            p.genes.OverrideAllConflicting(gene);
+            metabolismTotal += geneDef.biostatMet;
+            if (geneDef.prerequisite != null)
+            {
+                GivePawnGene(p, geneDef.prerequisite, ref metabolismTotal);
             }
         }
 

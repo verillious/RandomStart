@@ -24,6 +24,8 @@ namespace RandomStartMod
             }
 
             Util.LogMessage("Patching PlayerPawnsArriveMethod");
+            Util.LogMessage($"Using Total Market Value Limit: {settings.randomItemTotalMarketValueLimit}");
+
 
             if (Find.GameInitData == null)
             {
@@ -31,6 +33,9 @@ namespace RandomStartMod
             }
 
             List<List<Thing>> list = new List<List<Thing>>();
+
+            float totalRandomItemMarketValue = 0.0f;
+
 
             foreach (Pawn startingAndOptionalPawn in Find.GameInitData.startingAndOptionalPawns)
             {
@@ -50,6 +55,7 @@ namespace RandomStartMod
                         item.SetFactionDirect(Faction.OfPlayer);
                     }
                     list[num].Add(item);
+                    totalRandomItemMarketValue += item.MarketValue;
                     num++;
                     if (num >= list.Count)
                     {
@@ -74,6 +80,7 @@ namespace RandomStartMod
                         item2.SetFactionDirect(Faction.OfPlayer);
                     }
                     list[num].Add(item2);
+                    totalRandomItemMarketValue += item2.MarketValue;
                     num++;
                     if (num >= list.Count)
                     {
@@ -82,30 +89,64 @@ namespace RandomStartMod
                 }
             }
 
+
             if (settings.addRandomItems)
             {
                 int techLevelLimit = settings.randomItemTechLevelLimit;
                 int num = 0;
+                var attempts = 0;
                 for (int i = 0; i < settings.randomItemRange.RandomInRange; i++)
                 {
                     //ThingSetMakerDef thingSetMakerDef = ThingSetMakerDefOf.MapGen_DefaultStockpile;
                     //randomItems.AddRange(thingSetMakerDef.root.Generate(default(ThingSetMakerParams)));
-                    ThingDef newThing = DefDatabase<ThingDef>.AllDefsListForReading.Where(x => x.category == ThingCategory.Item && (int)x.techLevel <= techLevelLimit && (int)x.techLevel > 0).RandomElement();
+                    attempts = 0;
+                    ThingDef newThing;
+                    Thing newItem;
+
+                    IEnumerable<ThingDef> possibleItems = DefDatabase<ThingDef>.AllDefsListForReading.Where(x => x.category == ThingCategory.Item && (int)x.techLevel <= techLevelLimit && (int)x.techLevel > 0);
+                    if(settings.enableMarketValueLimit)
+                    {
+                        do
+                        {
+                            newThing = possibleItems.RandomElement();
+                            newItem = ThingMaker.MakeThing(newThing, GenStuff.RandomStuffFor(newThing));
+                            attempts++;
+                        }
+                        while (totalRandomItemMarketValue + (newItem.MarketValue * newThing.stackLimit) > settings.randomItemTotalMarketValueLimit && attempts <= 20);
+                    }
+                    else
+                    {
+                        newThing = possibleItems.RandomElement();
+                        newItem = ThingMaker.MakeThing(newThing, GenStuff.RandomStuffFor(newThing));
+                    }
+
+                    if (attempts >= 20)
+                    {
+                        Util.LogMessage("Adding more items impossible, stopping...");
+                        break;
+                    }
+                    Util.LogMessage($"Adding {newItem.LabelCap}, value {newItem.MarketValue}x{newThing.stackLimit}, tech level {newThing.techLevel} after {attempts} attempts");
+
                     for (int j = 0; j < newThing.stackLimit; j++)
                     {
-                        Thing newItem = ThingMaker.MakeThing(newThing, GenStuff.RandomStuffFor(newThing));
                         if (newItem.def.CanHaveFaction)
                         {
                             newItem.SetFactionDirect(Faction.OfPlayer);
                         }
                         list[num].Add(newItem);
-                    }
+                        totalRandomItemMarketValue += newItem.MarketValue;
+                    }   
                     num++;
                     if (num >= list.Count)
                     {
                         num = 0;
                     }
+                    if ( attempts >= 20 )
+                    {
+                        break;
+                    }
                 }
+                Util.LogMessage($"Total item market cost: {totalRandomItemMarketValue}");
             }
 
             DropPodUtility.DropThingGroupsNear(MapGenerator.PlayerStartSpot, map, list, 110, Find.GameInitData.QuickStarted || __instance.method != PlayerPawnsArriveMethod.DropPods, leaveSlag: true, canRoofPunch: true, forbid: true, allowFogged: false);
