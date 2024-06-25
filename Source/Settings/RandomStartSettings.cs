@@ -39,6 +39,7 @@ namespace RandomStartMod
         public bool uniqueFactions = false;
         public bool randomiseFactionGoodwill = false;
 
+        public bool createRandomScenario = false;
         public bool enableCustomScenarios = true;
         public bool enableSteamWorkshopScenarios = true;
 
@@ -174,6 +175,7 @@ namespace RandomStartMod
             Scribe_Values.Look(ref randomisePollution, "randomisePollution", true);
             Scribe_Values.Look(ref randomiseSeason, "randomiseSeason", false);
 
+            Scribe_Values.Look(ref createRandomScenario, "createRandomScenario", false);
             Scribe_Values.Look(ref enableCustomScenarios, "enableCustomScenarios", true);
             Scribe_Values.Look(
                 ref enableSteamWorkshopScenarios,
@@ -463,12 +465,16 @@ namespace RandomStartMod
 
             randomFactionRange = new IntRange(5, 15);
             uniqueFactions = false;
+            randomiseFactionGoodwill = false;
         }
         public void ResetScenarios()
         {
+            createRandomScenario = false;
             enableCustomScenarios = true;
             enableSteamWorkshopScenarios = true;
             disabledScenarios = new List<string>() { "tutorial" };
+            ResetResearch();
+            ResetItems();
         }
         public void ResetStorytellers()
         {
@@ -479,9 +485,6 @@ namespace RandomStartMod
         {
             ResetGenes();
             ResetIdeo();
-            ResetResearch();
-            ResetItems();
-            randomiseFactionGoodwill = false;
         }
 
         public void ResetGenes()

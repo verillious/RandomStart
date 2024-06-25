@@ -136,49 +136,55 @@ namespace RandomStartMod
 
         private static void SetupRandomScenario(RandomStartSettings settings)
         {
-            List<Scenario> scenarios = new List<Scenario>();
-
-            scenarios.AddRange(
-                ScenarioLister
-                    .AllScenarios()
-                    .Where(
-                        (Scenario scenario) =>
-                            !settings.disabledScenarios.Contains(scenario.name) && scenario.showInUI
-                    )
-            );
-            if (settings.enableCustomScenarios)
-                scenarios.AddRange(
-                    ScenarioLister
-                        .ScenariosInCategory(ScenarioCategory.CustomLocal)
-                        .Where(
-                            (Scenario scenario) =>
-                                !settings.disabledScenarios.Contains(scenario.name)
-                                && scenario.showInUI
-                        )
-                );
-            if (settings.enableSteamWorkshopScenarios)
-                scenarios.AddRange(
-                    ScenarioLister
-                        .ScenariosInCategory(ScenarioCategory.SteamWorkshop)
-                        .Where(
-                            (Scenario scenario) =>
-                                !settings.disabledScenarios.Contains(scenario.name)
-                                && scenario.showInUI
-                        )
-                );
-
-            Current.Game.Scenario = scenarios.RandomElement();
-            if (Current.Game.Scenario == null)
+            if (settings.createRandomScenario)
             {
-                string errorString = "[Random Start] Could not find valid Scenario from:";
-                foreach (Scenario s in scenarios)
-                {
-                    errorString += "\n" + "    - " + s.name;
-                }
-                Log.Error(errorString);
-                Current.Game.Scenario = ScenarioDefOf.Crashlanded.scenario;
+                Current.Game.Scenario = ScenarioMaker.GenerateNewRandomScenario(GenText.RandomSeedString());
             }
+            else
+            {
+                List<Scenario> scenarios = new List<Scenario>();
 
+                scenarios.AddRange(
+                    ScenarioLister
+                        .AllScenarios()
+                        .Where(
+                            (Scenario scenario) =>
+                                !settings.disabledScenarios.Contains(scenario.name) && scenario.showInUI
+                        )
+                );
+                if (settings.enableCustomScenarios)
+                    scenarios.AddRange(
+                        ScenarioLister
+                            .ScenariosInCategory(ScenarioCategory.CustomLocal)
+                            .Where(
+                                (Scenario scenario) =>
+                                    !settings.disabledScenarios.Contains(scenario.name)
+                                    && scenario.showInUI
+                            )
+                    );
+                if (settings.enableSteamWorkshopScenarios)
+                    scenarios.AddRange(
+                        ScenarioLister
+                            .ScenariosInCategory(ScenarioCategory.SteamWorkshop)
+                            .Where(
+                                (Scenario scenario) =>
+                                    !settings.disabledScenarios.Contains(scenario.name)
+                                    && scenario.showInUI
+                            )
+                    );
+
+                Current.Game.Scenario = scenarios.RandomElement();
+                if (Current.Game.Scenario == null)
+                {
+                    string errorString = "[Random Start] Could not find valid Scenario from:";
+                    foreach (Scenario s in scenarios)
+                    {
+                        errorString += "\n" + "    - " + s.name;
+                    }
+                    Log.Error(errorString);
+                    Current.Game.Scenario = ScenarioDefOf.Crashlanded.scenario;
+                }
+            }
             Util.LogMessage($"Starting {Current.Game.Scenario}");
         }
 

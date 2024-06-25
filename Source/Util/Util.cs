@@ -34,7 +34,7 @@ namespace RandomStartMod
         }
 
         public static void DrawCountAdjuster(ref int value, Rect inRect, ref string buffer, int min, int max, bool readOnly = false, int? setToMin = null, int? setToMax = null)
-        { 
+        {
             int val = value;
             Rect rect = inRect.ContractedBy(50f, 0f);
             Rect rect2 = rect.LeftPartPixels(30f);
