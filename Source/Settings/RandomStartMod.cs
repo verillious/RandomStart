@@ -449,7 +449,9 @@ namespace RandomStartMod
                 scenarioListingHeight += Text.LineHeight + 12f;
                 Widgets.IntRange(listingStandard.GetRect(32f), 1823288654, ref settings.randomItemRange, 0, 20);
                 scenarioListingHeight += 32f;
+                listingStandard.Indent(8);
                 listingStandard.Label("MaxTier".Translate() + ":");
+                listingStandard.Outdent(8);
                 scenarioListingHeight += Text.LineHeight;
                 settings.randomItemTechLevelLimit = Mathf.RoundToInt(Widgets.HorizontalSlider(listingStandard.GetRect(32f), settings.randomItemTechLevelLimit, 2, 6, middleAlignment: true, $"TechLevel_{(TechLevel)settings.randomItemTechLevelLimit}".Translate().CapitalizeFirst(), null, null, 1f));
                 scenarioListingHeight += 32f;

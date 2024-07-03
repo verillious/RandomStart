@@ -104,7 +104,7 @@ namespace RandomStartMod
                     Thing newItem;
 
                     IEnumerable<ThingDef> possibleItems = DefDatabase<ThingDef>.AllDefsListForReading.Where(x => x.category == ThingCategory.Item && (int)x.techLevel <= techLevelLimit && (int)x.techLevel > 0);
-                    if(settings.enableMarketValueLimit)
+                    if (settings.enableMarketValueLimit)
                     {
                         do
                         {
@@ -135,13 +135,13 @@ namespace RandomStartMod
                         }
                         list[num].Add(newItem);
                         totalRandomItemMarketValue += newItem.MarketValue;
-                    }   
+                    }
                     num++;
                     if (num >= list.Count)
                     {
                         num = 0;
                     }
-                    if ( attempts >= 20 )
+                    if (attempts >= 20)
                     {
                         break;
                     }
