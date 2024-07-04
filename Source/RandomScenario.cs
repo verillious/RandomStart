@@ -72,6 +72,7 @@ namespace RandomStartMod
 
             if (settings.randomiseFactionGoodwill)
             {
+                Util.LogMessage("Randomising Faction Goodwill");
                 foreach (Faction item in Find.FactionManager.AllFactionsListForReading)
                 {
                     item.RemoveAllRelations();

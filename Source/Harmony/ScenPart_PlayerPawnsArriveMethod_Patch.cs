@@ -104,7 +104,7 @@ namespace RandomStartMod
                     Thing newItem;
 
                     IEnumerable<ThingDef> possibleItems = DefDatabase<ThingDef>.AllDefsListForReading.Where(x => x.category == ThingCategory.Item && (int)x.techLevel <= techLevelLimit && (int)x.techLevel > 0);
-                    if(settings.enableMarketValueLimit)
+                    if (settings.enableMarketValueLimit)
                     {
                         do
                         {
@@ -122,10 +122,8 @@ namespace RandomStartMod
 
                     if (attempts >= 20)
                     {
-                        Util.LogMessage("Adding more items impossible, stopping...");
                         break;
                     }
-                    Util.LogMessage($"Adding {newItem.LabelCap}, value {newItem.MarketValue}x{newThing.stackLimit}, tech level {newThing.techLevel} after {attempts} attempts");
 
                     for (int j = 0; j < newThing.stackLimit; j++)
                     {
@@ -135,13 +133,13 @@ namespace RandomStartMod
                         }
                         list[num].Add(newItem);
                         totalRandomItemMarketValue += newItem.MarketValue;
-                    }   
+                    }
                     num++;
                     if (num >= list.Count)
                     {
                         num = 0;
                     }
-                    if ( attempts >= 20 )
+                    if (attempts >= 20)
                     {
                         break;
                     }
