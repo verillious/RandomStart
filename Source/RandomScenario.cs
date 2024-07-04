@@ -70,62 +70,62 @@ namespace RandomStartMod
             //    }
             //}
 
-
-            foreach (Faction item in Find.FactionManager.AllFactionsListForReading)
+            if (settings.randomiseFactionGoodwill)
             {
-                item.RemoveAllRelations();
-                foreach (Faction item2 in Find.FactionManager.AllFactionsListForReading)
+                foreach (Faction item in Find.FactionManager.AllFactionsListForReading)
                 {
-                    if (item != item2)
+                    item.RemoveAllRelations();
+                    foreach (Faction item2 in Find.FactionManager.AllFactionsListForReading)
                     {
-                        if (item.RelationWith(item2, allowNull: true) == null)
+                        if (item != item2)
                         {
-                            int initialGoodwill = GetInitialGoodwill(item, item2);
+                            if (item.RelationWith(item2, allowNull: true) == null)
+                            {
+                                int initialGoodwill = GetInitialGoodwill(item, item2);
 
-                            FactionRelationKind kind = ((initialGoodwill > -10) ? ((initialGoodwill < 75) ? FactionRelationKind.Neutral : FactionRelationKind.Ally) : FactionRelationKind.Hostile);
-                            FactionRelation factionRelation = new FactionRelation();
-                            factionRelation.other = item2;
-                            factionRelation.baseGoodwill = initialGoodwill;
-                            factionRelation.kind = kind;
-                            item.relations.Add(factionRelation);
-                            FactionRelation factionRelation2 = new FactionRelation();
-                            factionRelation2.other = item;
-                            factionRelation2.baseGoodwill = initialGoodwill;
-                            factionRelation2.kind = kind;
-                            item2.relations.Add(factionRelation2);
-                        }
+                                FactionRelationKind kind = ((initialGoodwill > -10) ? ((initialGoodwill < 75) ? FactionRelationKind.Neutral : FactionRelationKind.Ally) : FactionRelationKind.Hostile);
+                                FactionRelation factionRelation = new FactionRelation();
+                                factionRelation.other = item2;
+                                factionRelation.baseGoodwill = initialGoodwill;
+                                factionRelation.kind = kind;
+                                item.relations.Add(factionRelation);
+                                FactionRelation factionRelation2 = new FactionRelation();
+                                factionRelation2.other = item;
+                                factionRelation2.baseGoodwill = initialGoodwill;
+                                factionRelation2.kind = kind;
+                                item2.relations.Add(factionRelation2);
+                            }
 
-                        int RoundNum(int num)
-                        {
-                            int rem = num % 10;
-                            return rem >= 5 ? (num - rem + 10) : (num - rem);
-                        }
+                            int RoundNum(int num)
+                            {
+                                int rem = num % 10;
+                                return rem >= 5 ? (num - rem + 10) : (num - rem);
+                            }
 
-                        int GetInitialGoodwill(Faction a, Faction b)
-                        {
-                            if (a.def.permanentEnemy || b.def.permanentEnemy)
+                            int GetInitialGoodwill(Faction a, Faction b)
                             {
-                                return -100;
+                                if (a.def.permanentEnemy || b.def.permanentEnemy)
+                                {
+                                    return -100;
+                                }
+                                if ((a.def.permanentEnemyToEveryoneExceptPlayer && !b.IsPlayer) || (b.def.permanentEnemyToEveryoneExceptPlayer && !a.IsPlayer))
+                                {
+                                    return -100;
+                                }
+                                if (a.def.permanentEnemyToEveryoneExcept != null && !a.def.permanentEnemyToEveryoneExcept.Contains(b.def))
+                                {
+                                    return -100;
+                                }
+                                if (b.def.permanentEnemyToEveryoneExcept != null && !b.def.permanentEnemyToEveryoneExcept.Contains(a.def))
+                                {
+                                    return -100;
+                                }
+                                return RoundNum(Rand.Range(-100, 101));
                             }
-                            if ((a.def.permanentEnemyToEveryoneExceptPlayer && !b.IsPlayer) || (b.def.permanentEnemyToEveryoneExceptPlayer && !a.IsPlayer))
-                            {
-                                return -100;
-                            }
-                            if (a.def.permanentEnemyToEveryoneExcept != null && !a.def.permanentEnemyToEveryoneExcept.Contains(b.def))
-                            {
-                                return -100;
-                            }
-                            if (b.def.permanentEnemyToEveryoneExcept != null && !b.def.permanentEnemyToEveryoneExcept.Contains(a.def))
-                            {
-                                return -100;
-                            }
-                            return RoundNum(Rand.Range(-100, 101));
                         }
                     }
                 }
             }
-
-
             PageUtility.InitGameStart();
 
             if (ModsConfig.IsActive("Woolstrand.RealRuins") && settings.enableAutoRealRuins)
