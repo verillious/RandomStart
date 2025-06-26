@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+	<RandomStartMod.Title>Random Start</RandomStartMod.Title>
+	<RandomStartMod.LaunchingWithoutConfiguring>You are launching {0} but you haven't configured it yet.</RandomStartMod.LaunchingWithoutConfiguring>
+	<RandomStartMod.SettingsAccess>(You can access the settings by right-clicking the <b>Random</b> button)</RandomStartMod.SettingsAccess>
+	<RandomStartMod.RespectMemberXenotypes>Only choose from player faction xenotypes</RandomStartMod.RespectMemberXenotypes>
+	<RandomStartMod.ALittleMore>A Little More</RandomStartMod.ALittleMore>
+	<RandomStartMod.ALittleLess>A Little Less</RandomStartMod.ALittleLess>
+	<RandomStartMod.VeryHigh>Very High</RandomStartMod.VeryHigh>
+	<RandomStartMod.VeryLow>Very Low</RandomStartMod.VeryLow>
+</LanguageData>

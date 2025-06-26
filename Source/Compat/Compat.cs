@@ -98,7 +98,7 @@ namespace RandomStartMod.Compat
         {
             RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
             settings.myLittlePlanetSubcount = Mathf.RoundToInt(Widgets.HorizontalSlider(rect, settings.myLittlePlanetSubcount, 6f, 10f, middleAlignment: true, null, "MLPWorldTiny".Translate(), "MLPWorldDefault".Translate(), 1f));
-            WorldGenRules.RulesOverrider.subcount = settings.myLittlePlanetSubcount;
+            PlanetLayerSettingsDefOf.Surface.settings.subdivisions = settings.myLittlePlanetSubcount;
         }
     }
 
@@ -142,7 +142,7 @@ namespace RandomStartMod.Compat
             }
         }
 
-        public static void GenerateRealisticPlanetWorld(float planetCoverage, string seedString, OverallRainfall overallRainfall, OverallTemperature overallTemperature, OverallPopulation population, List<FactionDef> factions = null, float pollution = 0f, int worldType = -1)
+        public static void GenerateRealisticPlanetWorld(float planetCoverage, string seedString, OverallRainfall overallRainfall, OverallTemperature overallTemperature, OverallPopulation population, LandmarkDensity landmarkDensity, List<FactionDef> factions = null, float pollution = 0f, int worldType = -1)
         {
             Util.LogMessage("[RealisticPlanetsCompat] Generating Realistic Planets World");
             RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
@@ -193,8 +193,7 @@ namespace RandomStartMod.Compat
             Planets_Code.Planets_TemperatureTuning.SetSeasonalCurve();
             Find.GameInitData.ResetWorldRelatedMapInitData();
 
-            Current.Game.World = WorldGenerator.GenerateWorld(planetCoverage, seedString, rainfall, overallTemperature, population, factions, pollution);
-
+            Current.Game.World = WorldGenerator.GenerateWorld(planetCoverage, seedString, rainfall, overallTemperature, population, landmarkDensity, factions, pollution);
         }
     }
 

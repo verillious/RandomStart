@@ -329,6 +329,12 @@ namespace RandomStartMod
             if (settings.randomisePopulation)
                 population = (OverallPopulation)settings.randomisePopulationRange.RandomInRange;
 
+
+            // WAITING FOR ODYSSEY
+            //LandmarkDensity landmarkDensity = (LandmarkDensity)settings.landmarkDensity;
+            //if (settings.randomiseLandmarkDensity)
+            //    landmarkDensity = (LandmarkDensity)settings.randomiseLandmarkDensityRange.RandomInRange;
+
             float pollution = settings.pollution;
             if (settings.randomisePollution)
                 pollution = settings.randomisePollutionRange.RandomInRange;
@@ -391,6 +397,7 @@ namespace RandomStartMod
                     rainfall,
                     temperature,
                     population,
+                    LandmarkDensity.Normal,
                     worldFactions,
                     pollution,
                     worldType
@@ -404,6 +411,7 @@ namespace RandomStartMod
                     rainfall,
                     temperature,
                     population,
+                    LandmarkDensity.Normal,
                     worldFactions,
                     pollution
                 );

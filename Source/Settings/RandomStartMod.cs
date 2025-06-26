@@ -632,7 +632,7 @@ namespace RandomStartMod
             listingStandard.Label("PenFoodTab_Count".Translate() + ":");
             listingStandard.Outdent(8);
             factionListingHeight += Text.LineHeight + 12f;
-            Widgets.IntRange(listingStandard.GetRect(32f), 1823998654, ref settings.randomFactionRange, 0, 20);
+            Widgets.IntRange(listingStandard.GetRect(32f), 1823998654, ref settings.randomFactionRange, 0, 100);
             factionListingHeight += 32f;
             listingStandard.Gap();
             factionListingHeight += 12f;
@@ -921,6 +921,26 @@ namespace RandomStartMod
                 planetListingHeight += 32f;
             }
 
+            // WAITING FOR ODYSSEY
+
+            //listingStandard.Gap();
+            //DoSettingToggle(listingStandard.GetRect(24f), "PlanetLandmarks".Translate(), null, ref settings.randomiseLandmarkDensity);
+            //planetListingHeight += 12f + 24f;
+
+            //if (!settings.randomiseLandmarkDensity)
+            //{
+            //    listingStandard.Gap(2f);
+            //    Rect landmarkRect = listingStandard.GetRect(30f);
+            //    settings.population = Mathf.RoundToInt(Widgets.HorizontalSlider(landmarkRect, (float)settings.landmarkDensity, 0f, LandmarkDensityUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabel(settings.landmarkDensity), null, null, 1f));
+            //    planetListingHeight += 32f;
+            //}
+            //else
+            //{
+            //    Rect landmarkRect = listingStandard.GetRect(32f);
+            //    Widgets.IntRange(landmarkRect, 1623498668, ref settings.randomiseLandmarkDensityRange, 0, 6, Util.GetIntRangeLabel(settings.randomiseLandmarkDensityRange));
+            //    planetListingHeight += 32f;
+            //}
+
             listingStandard.Gap();
             DoSettingToggle(listingStandard.GetRect(24f), "Pollution_Label".Translate(), null, ref settings.randomisePollution);
             planetListingHeight += 12f + 24f;
@@ -1061,7 +1081,7 @@ namespace RandomStartMod
                     optionalFeaturesListingHeight += 32f;
                     listingStandard.Gap(2f);
                     DoSettingToggle(listingStandard.GetRect(24f), $"{"minimum".Translate().CapitalizeFirst()}: {"MetabolismTotal".Translate()}", null, ref settings.enableMetabolicEfficiencyMinimum);
-                    optionalFeaturesListingHeight += 2f+24f;
+                    optionalFeaturesListingHeight += 2f + 24f;
                     if (settings.enableMetabolicEfficiencyMinimum)
                     {
                         listingStandard.Gap(2f);
@@ -1231,7 +1251,9 @@ namespace RandomStartMod
         private static Listing_Standard DrawCustomSectionStart(Listing_Standard listing, float height, string label, string tooltip = null)
         {
             listing.Gap();
-            listing.Label(label, -1f, tooltip);
+            TaggedString transLabel = label.Translate();
+            TaggedString transTooltip = tooltip.Translate();
+            listing.Label(transLabel, -1f, transTooltip);
             Listing_Standard listing_Standard = listing.BeginSection(height, 8f, 6f);
             listing_Standard.maxOneColumn = true;
             return listing_Standard;
@@ -1498,6 +1520,10 @@ namespace RandomStartMod
         public Texture2D GetSourceIcon(Def def)
         {
             ModContentPack modContentPack = def.modContentPack;
+            if (modContentPack == null)
+            {
+                return ContentFinder<Texture2D>.Get("UI/Buttons/Dev/Save");
+            }
             ModMetaData modMetaData = modContentPack.ModMetaData;
             if (modContentPack.IsOfficialMod)
             {

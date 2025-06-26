@@ -16,11 +16,13 @@ namespace RandomStartMod
         public IntRange randomiseRainfallRange = new IntRange(2, 4);
         public IntRange randomiseTemperatureRange = new IntRange(2, 4);
         public IntRange randomisePopulationRange = new IntRange(2, 4);
+        public IntRange randomiseLandmarkDensityRange = new IntRange(2, 4);
         public FloatRange randomisePollutionRange = new FloatRange(0.05f, 0.25f);
 
         public bool randomiseRainfall = true;
         public bool randomiseTemperature = true;
         public bool randomisePopulation = true;
+        public bool randomiseLandmarkDensity = true;
         public bool randomisePollution = true;
         public bool randomiseSeason = false;
         public bool disableIdeo = false;
@@ -30,6 +32,7 @@ namespace RandomStartMod
         public int rainfall = 3;
         public int temperature = 3;
         public int population = 3;
+        public int landmarkDensity = 3;
         public float pollution = 0.05f;
         public int startingSeason = 2;
 
@@ -186,6 +189,7 @@ namespace RandomStartMod
             Scribe_Values.Look(ref rainfall, "rainfall", 3);
             Scribe_Values.Look(ref temperature, "temperature", 3);
             Scribe_Values.Look(ref population, "population", 3);
+            Scribe_Values.Look(ref landmarkDensity, "landmarkDensity", 3);
             Scribe_Values.Look(ref pollution, "pollution", 0.05f);
             Scribe_Values.Look(ref startingSeason, "startingSeason", 2);
 
@@ -414,15 +418,18 @@ namespace RandomStartMod
             randomiseRainfall = true;
             randomiseTemperature = true;
             randomisePopulation = true;
+            randomiseLandmarkDensity = true;
             randomisePollution = true;
             randomiseRainfallRange = new IntRange(2, 4);
             randomiseTemperatureRange = new IntRange(2, 4);
             randomisePopulationRange = new IntRange(2, 4);
+            randomiseLandmarkDensityRange = new IntRange(2, 4);
             randomisePollutionRange = new FloatRange(0.05f, 0.25f);
             randomiseSeason = false;
             rainfall = 3;
             temperature = 3;
             population = 3;
+            landmarkDensity = 3;
             pollution = 0.05f;
             startingSeason = 2;
             myLittlePlanetSubcount = 10;
