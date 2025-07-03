@@ -29,7 +29,7 @@ namespace RandomStartMod
 
             int index = 0;
 
-            if (ModsConfig.IsActive("phoenix.ContinueButton"))
+            if (ModsConfig.IsActive("phoenix.ContinueButton") || ModsConfig.IsActive("phoenix.ContinueButton_Steam"))
             {
                 index = 1;
             }

@@ -28,6 +28,8 @@ namespace RandomStartMod
 
             Find.GameInitData.ChooseRandomStartingTile();
 
+            Util.LogMessage($"Starting in {Find.WorldGrid[Find.GameInitData.startingTile].biome.label.CapitalizeFirst()}");
+
             Season startingSeason = (Season)settings.startingSeason;
             if (settings.randomiseSeason)
                 startingSeason = (Season)Rand.Range(1, 6);
@@ -35,7 +37,7 @@ namespace RandomStartMod
             Find.GameInitData.startingSeason = startingSeason;
             Find.GameInitData.mapSize = settings.mapSize;
 
-            if (ModsConfig.IsActive("OskarPotocki.VanillaFactionsExpanded.Core"))
+            if (ModsConfig.IsActive("OskarPotocki.VanillaFactionsExpanded.Core") || ModsConfig.IsActive("OskarPotocki.VanillaFactionsExpanded.Core_Steam"))
             {
                 Compat.VECoreCompat.SetupForKCSG();
             }
@@ -129,9 +131,12 @@ namespace RandomStartMod
             }
             PageUtility.InitGameStart();
 
-            if (ModsConfig.IsActive("Woolstrand.RealRuins") && settings.enableAutoRealRuins)
+            if (ModsConfig.IsActive("Woolstrand.RealRuins") || ModsConfig.IsActive("Woolstrand.RealRuins_Steam"))
             {
-                Compat.RealRuinsCompat.CreatePOIs();
+                if (settings.enableAutoRealRuins)
+                {
+                    Compat.RealRuinsCompat.CreatePOIs();
+                }
             }
         }
 
@@ -174,8 +179,8 @@ namespace RandomStartMod
                             )
                     );
 
-                Current.Game.Scenario = scenarios.RandomElement();
-                if (Current.Game.Scenario == null)
+                Scenario randomScenario = scenarios.RandomElement();
+                if (randomScenario == null)
                 {
                     string errorString = "[Random Start] Could not find valid Scenario from:";
                     foreach (Scenario s in scenarios)
@@ -183,8 +188,15 @@ namespace RandomStartMod
                         errorString += "\n" + "    - " + s.name;
                     }
                     Log.Error(errorString);
-                    Current.Game.Scenario = ScenarioDefOf.Crashlanded.scenario;
+                    randomScenario = ScenarioDefOf.Crashlanded.scenario;
                 }
+
+                if (settings.removeStartingItems)
+                {
+                    Util.LogMessage("Removing scattered starting items from Scenario");
+                    randomScenario.parts.RemoveAll(x => x is ScenPart_ScatterThings);
+                }
+                Current.Game.Scenario = randomScenario;
             }
             Util.LogMessage($"Starting {Current.Game.Scenario}");
         }
@@ -276,7 +288,7 @@ namespace RandomStartMod
 
             chosenStoryteller.tutorialMode = false;
 
-            if (ModsConfig.IsActive("brrainz.nopausechallenge"))
+            if (ModsConfig.IsActive("brrainz.nopausechallenge") || ModsConfig.IsActive("brrainz.nopausechallenge_steam"))
             {
                 Compat.NoPauseCompat.SetupForNoPause();
             }
@@ -344,13 +356,22 @@ namespace RandomStartMod
             IEnumerable<FactionDef> allFactionDefs =
                 DefDatabase<FactionDef>.AllDefsListForReading.Where((FactionDef x) => x.isPlayer);
 
-            foreach (string factionDefName in settings.factionsAlwaysAdd)
+            bool needToWriteSettings = false;
+
+            List<string> factionsAlwaysAdd = new List<string>(settings.factionsAlwaysAdd);
+            foreach (string factionDefName in factionsAlwaysAdd)
             {
                 FactionDef faction = DefDatabase<FactionDef>.GetNamed(factionDefName, false);
                 if (faction == null)
+                {
+                    settings.factionsAlwaysAdd.Remove(factionDefName);
+                    Util.LogMessage($"Tried to create invalid Faction {faction}. Removing from list.");
+                    needToWriteSettings = true;
                     continue;
+                }
                 worldFactions.Add(faction);
             }
+
             if (settings.factionsRandomlyAdd.Count > 0)
             {
                 List<string> randomFactions = new List<string>(settings.factionsRandomlyAdd);
@@ -360,7 +381,15 @@ namespace RandomStartMod
                     FactionDef faction = DefDatabase<FactionDef>.GetNamed(randomFaction, false);
 
                     if (faction == null)
+                    {
+                        settings.factionsRandomlyAdd.Remove(randomFaction);
+                        randomFactions.Remove(randomFaction);
+                        Util.LogMessage($"Tried to create invalid Faction {randomFaction}. Removing from list.");
+                        needToWriteSettings = true;
+                        if (randomFactions.Count == 0)
+                            break;
                         continue;
+                    }
                     worldFactions.Add(faction);
                     if (settings.uniqueFactions)
                     {
@@ -371,22 +400,29 @@ namespace RandomStartMod
                 }
             }
 
-            if (ModsConfig.IsActive("OskarPotocki.VFE.Empire"))
+            if (needToWriteSettings)
+            {
+                settings.Write();
+            }
+
+            if (ModsConfig.IsActive("OskarPotocki.VFE.Empire") || ModsConfig.IsActive("OskarPotocki.VFE.Empire_Steam"))
             {
                 Compat.VFEECompat.EnsureScenarioFactions(worldFactions);
             }
 
-            if (ModsConfig.IsActive("OskarPotocki.VFE.Deserters"))
+            if (ModsConfig.IsActive("OskarPotocki.VFE.Deserters") || ModsConfig.IsActive("OskarPotocki.VFE.Deserters_Steam"))
             {
                 Compat.VFEDCompat.EnsureScenarioFactions(worldFactions);
             }
 
-            if (ModsConfig.IsActive("kentington.saveourship2"))
+            if (ModsConfig.IsActive("kentington.saveourship2") || ModsConfig.IsActive("kentington.saveourship2_steam"))
             {
                 Compat.SOS2Compat.SetupForStartInSpace();
             }
 
-            if (ModsConfig.IsActive("zvq.RealisticPlanetsContinued"))
+            Util.LogMessage($"Created {worldFactions.Count} factions");
+
+            if (ModsConfig.IsActive("zvq.RealisticPlanetsContinued") || ModsConfig.IsActive("kentington.RealisticPlanetsContinued_Steam"))
             {
                 int worldType = settings.realisticPlanetsWorldType;
                 if (settings.randomiseRealisticPlanets)

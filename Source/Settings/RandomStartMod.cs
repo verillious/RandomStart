@@ -172,7 +172,7 @@ namespace RandomStartMod
             {
                 settings.permadeath = true;
             }
-            if (ModsConfig.IsActive("brrainz.nopausechallenge"))
+            if (ModsConfig.IsActive("brrainz.nopausechallenge") || ModsConfig.IsActive("brrainz.nopausechallenge_steam"))
             {
                 listingStandard.Gap(3f);
                 DoSettingToggle(listingStandard.GetRect(24f), "No Pause Challenge", null, ref settings.noPauseEnabled);
@@ -400,9 +400,9 @@ namespace RandomStartMod
             scenarioListingHeight += 24f + Text.LineHeight;
             Text.Font = GameFont.Small;
 
-            DoSettingToggle(listingStandard.GetRect(24f), $"{"Remove".Translate()}: {"MedGroupDefaults".Translate()}", null, ref settings.removeStartingResearch);
+            DoSettingToggle(listingStandard.GetRect(24f), $"{"Remove".Translate()}: {"MedGroupDefaults".Translate()}", "Remove Default Research".AsTipTitle() + "\n\n" + "Remove the research items that your colony would normally start with.", ref settings.removeStartingResearch);
             scenarioListingHeight += 24f;
-            DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate(), null, ref settings.addRandomResearch);
+            DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate(), "Randomize Research".AsTipTitle() + "\n\n" + "Randomly add research to your colony.", ref settings.addRandomResearch);
             scenarioListingHeight += 24f;
             if (settings.addRandomResearch)
             {
@@ -421,7 +421,7 @@ namespace RandomStartMod
                 scenarioListingHeight += Text.LineHeight + 12f;
                 settings.randomResearchTechLevelLimit = Mathf.RoundToInt(Widgets.HorizontalSlider(listingStandard.GetRect(32f), settings.randomResearchTechLevelLimit, 2, 6, middleAlignment: true, $"TechLevel_{(TechLevel)settings.randomResearchTechLevelLimit}".Translate().CapitalizeFirst(), null, null, 1f));
                 scenarioListingHeight += 32f;
-                DoSettingToggle(listingStandard.GetRect(24f), $"{"ResearchUnlocks".Translate()}: {"Prerequisites".Translate()}", null, ref settings.doRandomResearchPrerequisites);
+                DoSettingToggle(listingStandard.GetRect(24f), $"{"ResearchUnlocks".Translate()}: {"Prerequisites".Translate()}", "Unlock Prerequisite Research".AsTipTitle() + "\n\n" + "When unlocking a randomly assigned research, also unlock all other research topics that would normally be required to research it.\n\nFor example, when unlocking 'Battery' also unlock 'Electricity'.", ref settings.doRandomResearchPrerequisites);
                 scenarioListingHeight += 24f;
             }
 
@@ -753,9 +753,9 @@ namespace RandomStartMod
 
             listingStandard.Gap();
             factionListingHeight += 12f;
-            DoSettingToggle(listingStandard.GetRect(24f), "Unique".Translate().CapitalizeFirst(), null, ref settings.uniqueFactions);
+            DoSettingToggle(listingStandard.GetRect(24f), "Unique".Translate().CapitalizeFirst(), "Unique Factions".AsTipTitle() + "\n\n" + "Only generate one of each type of faction.\n\nThis means that the maximum number of randomly generated factions will be the same as the amount of factions selected above.", ref settings.uniqueFactions);
             factionListingHeight += 24f;
-            DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate() + ": " + "Goodwill".Translate(), null, ref settings.randomiseFactionGoodwill);
+            DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate() + ": " + "Goodwill".Translate(), "Randomize Faction Goodwill".AsTipTitle() + "\n\n" + "Randomly set your faction's relationship with generated factions.\n\nThis means that factions that are normally friendly to you may be hostile and factions that are normally hostile may be friendly.", ref settings.randomiseFactionGoodwill);
             factionListingHeight += 24f;
             listingStandard.Gap();
             factionListingHeight += 12f;
@@ -990,7 +990,7 @@ namespace RandomStartMod
                 planetListingHeight += 32f;
             }
 
-            if (ModsConfig.IsActive("Oblitus.MyLittlePlanet"))
+            if (ModsConfig.IsActive("Oblitus.MyLittlePlanet") || ModsConfig.IsActive("Oblitus.MyLittlePlanet_Steam"))
             {
                 listingStandard.Gap();
                 Text.Font = GameFont.Medium;
@@ -1005,7 +1005,7 @@ namespace RandomStartMod
                 planetListingHeight += 30f;
             }
 
-            if (ModsConfig.IsActive("zvq.RealisticPlanetsContinued"))
+            if (ModsConfig.IsActive("zvq.RealisticPlanetsContinued") || ModsConfig.IsActive("Woolstrand.RealisticPlanetsContinued_Steam"))
             {
                 listingStandard.Gap();
                 Text.Font = GameFont.Medium;
@@ -1023,7 +1023,7 @@ namespace RandomStartMod
 
             }
 
-            if (ModsConfig.IsActive("Woolstrand.RealRuins"))
+            if (ModsConfig.IsActive("Woolstrand.RealRuins") || ModsConfig.IsActive("Woolstrand.RealRuins_Steam"))
             {
                 listingStandard.Gap();
                 Text.Font = GameFont.Medium;

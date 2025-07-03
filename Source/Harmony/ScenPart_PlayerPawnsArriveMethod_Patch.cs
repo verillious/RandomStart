@@ -24,8 +24,6 @@ namespace RandomStartMod
             }
 
             Util.LogMessage("Patching PlayerPawnsArriveMethod");
-            Util.LogMessage($"Using Total Market Value Limit: {settings.randomItemTotalMarketValueLimit}");
-
 
             if (Find.GameInitData == null)
             {
@@ -43,27 +41,33 @@ namespace RandomStartMod
                 List<Thing> list4 = new List<Thing>();
                 list3.Add(startingAndOptionalPawn);
                 list.Add(list3);
-                foreach (ThingDefCount item in Find.GameInitData.startingPossessions[startingAndOptionalPawn])
+                if (!settings.removeStartingItems)
                 {
-                    list4.Add(StartingPawnUtility.GenerateStartingPossession(item));
+                    foreach (
+                        ThingDefCount item in Find.GameInitData.startingPossessions[
+                            startingAndOptionalPawn
+                        ]
+                    )
+                    {
+                        list4.Add(StartingPawnUtility.GenerateStartingPossession(item));
+                    }
                 }
-                int num = 0;
+                int num1 = 0;
                 foreach (Thing item in list4)
                 {
                     if (item.def.CanHaveFaction)
                     {
                         item.SetFactionDirect(Faction.OfPlayer);
                     }
-                    list[num].Add(item);
+                    list[num1].Add(item);
                     totalRandomItemMarketValue += item.MarketValue;
-                    num++;
-                    if (num >= list.Count)
+                    num1++;
+                    if (num1 >= list.Count)
                     {
-                        num = 0;
+                        num1 = 0;
                     }
                 }
             }
-
 
             if (!settings.removeStartingItems)
             {
@@ -72,19 +76,19 @@ namespace RandomStartMod
                 {
                     list2.AddRange(allPart.PlayerStartingThings());
                 }
-                int num = 0;
+                int num2 = 0;
                 foreach (Thing item2 in list2)
                 {
                     if (item2.def.CanHaveFaction)
                     {
                         item2.SetFactionDirect(Faction.OfPlayer);
                     }
-                    list[num].Add(item2);
+                    list[num2].Add(item2);
                     totalRandomItemMarketValue += item2.MarketValue;
-                    num++;
-                    if (num >= list.Count)
+                    num2++;
+                    if (num2 >= list.Count)
                     {
-                        num = 0;
+                        num2 = 0;
                     }
                 }
             }
@@ -92,6 +96,7 @@ namespace RandomStartMod
 
             if (settings.addRandomItems)
             {
+                Util.LogMessage("Adding random items to starting pawns");
                 int techLevelLimit = settings.randomItemTechLevelLimit;
                 int num = 0;
                 var attempts = 0;
@@ -102,14 +107,15 @@ namespace RandomStartMod
                     attempts = 0;
                     ThingDef newThing;
                     Thing newItem;
-
+                    ThingDef newStuff;
                     IEnumerable<ThingDef> possibleItems = DefDatabase<ThingDef>.AllDefsListForReading.Where(x => x.category == ThingCategory.Item && (int)x.techLevel <= techLevelLimit && (int)x.techLevel > 0);
                     if (settings.enableMarketValueLimit)
                     {
                         do
                         {
                             newThing = possibleItems.RandomElement();
-                            newItem = ThingMaker.MakeThing(newThing, GenStuff.RandomStuffFor(newThing));
+                            newStuff = GenStuff.RandomStuffFor(newThing);
+                            newItem = ThingMaker.MakeThing(newThing, newStuff);
                             attempts++;
                         }
                         while (totalRandomItemMarketValue + (newItem.MarketValue * newThing.stackLimit) > settings.randomItemTotalMarketValueLimit && attempts <= 20);
@@ -117,21 +123,21 @@ namespace RandomStartMod
                     else
                     {
                         newThing = possibleItems.RandomElement();
-                        newItem = ThingMaker.MakeThing(newThing, GenStuff.RandomStuffFor(newThing));
+                        newStuff = GenStuff.RandomStuffFor(newThing);
+                        newItem = ThingMaker.MakeThing(newThing, newStuff);
                     }
 
                     if (attempts >= 20)
                     {
                         break;
                     }
-
                     for (int j = 0; j < newThing.stackLimit; j++)
                     {
                         if (newItem.def.CanHaveFaction)
                         {
                             newItem.SetFactionDirect(Faction.OfPlayer);
                         }
-                        list[num].Add(newItem);
+                        list[num].Add(ThingMaker.MakeThing(newThing, newStuff));
                         totalRandomItemMarketValue += newItem.MarketValue;
                     }
                     num++;
@@ -144,7 +150,7 @@ namespace RandomStartMod
                         break;
                     }
                 }
-                Util.LogMessage($"Total item market cost: {totalRandomItemMarketValue}");
+                Util.LogMessage($"Total item market cost: {totalRandomItemMarketValue} Limit: {(settings.enableMarketValueLimit ? settings.randomItemTotalMarketValueLimit.ToString() : "Disabled")}");
             }
 
             DropPodUtility.DropThingGroupsNear(MapGenerator.PlayerStartSpot, map, list, 110, Find.GameInitData.QuickStarted || __instance.method != PlayerPawnsArriveMethod.DropPods, leaveSlag: true, canRoofPunch: true, forbid: true, allowFogged: false);

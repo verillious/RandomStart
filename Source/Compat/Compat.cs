@@ -147,7 +147,7 @@ namespace RandomStartMod.Compat
             Util.LogMessage("[RealisticPlanetsCompat] Generating Realistic Planets World");
             RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
 
-            if (ModsConfig.IsActive("Oblitus.MyLittlePlanet"))
+            if (ModsConfig.IsActive("Oblitus.MyLittlePlanet") || ModsConfig.IsActive("Oblitus.MyLittlePlanet_Steam"))
             {
                 Util.LogMessage("[RealisticPlanetsCompat] My Little Planet is running");
                 Planets_Code.Planets_GameComponent.subcount = settings.myLittlePlanetSubcount;
