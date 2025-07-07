@@ -1,4 +1,3 @@
-config option to limit fluid ideologies to a single meme, instead of 3
 
 The randomizer for number of factions on the world generator is broken or at least inconsistent wit what you select.
 I select 0-20 and during twenty different world generation attempts, it generats only three or four factions.
@@ -20,18 +19,14 @@ My current work-around is to create a custom ideology with no rituals or special
 
 
 So, do caves from Biomes!! Caverns work or not? Never got an answer, just tried another rando start and AGAIN no caves at all. Really disappointing because I LOVE the random start.
-
-
-Please raise faction limit and allow changing of biome ratios
+allow changing of biome ratios
 
 
 one of my all time favourites, but i feel like it doesnt randomize the xenotype of colonists properly, like they usually include all the genes to make a hiveling, and then add a random gene instead of randomizing it from the ground up
-
-I love this mod but I wish I could exclude permanent game conditions like planetkillers from scenarios.
-
 I think it would be cool if there was an option set a specific xenotype for all colonists.
-
 customise random meme count range please?
+config option to limit fluid ideologies to a single meme, instead of 3
+So in the options under the Misc Tab under Ideology there is an option to load a saved ideoligon. I added saved ideoligon but my pawns get a random religion anyways. It it supposed to give your starting pawns that religion or is it just supposed to add it to the game or what? I'm not sure how it's supposed to work so I can't tell if it's working or not.
 
 
 Can you add posibility to disable randomization of reputation or rep range for selected factions?
@@ -40,10 +35,8 @@ Empire is hostile
 https://postimg.cc/YGpSfWRL
 
 
-So in the options under the Misc Tab under Ideology there is an option to load a saved ideoligon. I added saved ideoligon but my pawns get a random religion anyways. It it supposed to give your starting pawns that religion or is it just supposed to add it to the game or what? I'm not sure how it's supposed to work so I can't tell if it's working or not.
 
 
 Will there be support for Biomes! mods for world settings and ReGrowth mod for the world settings as well? Also there seems to be no world settings for the Infestations from the new VFE insectoids 2
-
 
 Question on starting items, I set a wealth limit to the starting items, but that wealth is never maintained due to the random scenario adding a bunch of scattered items around the map.. Is there any way around this? Or could you incorporate the limit to include scattered items/make a separate option based on scattered item wealth?

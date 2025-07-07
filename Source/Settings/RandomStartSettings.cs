@@ -13,6 +13,9 @@ namespace RandomStartMod
 
         public bool permadeath = false;
 
+        public bool randomiseWorldSeed = true;
+        public string worldSeed = "village";
+
         public IntRange randomiseRainfallRange = new IntRange(2, 4);
         public IntRange randomiseTemperatureRange = new IntRange(2, 4);
         public IntRange randomisePopulationRange = new IntRange(2, 4);
@@ -177,7 +180,8 @@ namespace RandomStartMod
             Scribe_Values.Look(ref randomisePopulation, "randomisePopulation", true);
             Scribe_Values.Look(ref randomisePollution, "randomisePollution", true);
             Scribe_Values.Look(ref randomiseSeason, "randomiseSeason", false);
-
+            Scribe_Values.Look(ref randomiseWorldSeed, "randomiseWorldSeed", true);
+            Scribe_Values.Look(ref worldSeed, "worldSeed", "village");
             Scribe_Values.Look(ref createRandomScenario, "createRandomScenario", false);
             Scribe_Values.Look(ref enableCustomScenarios, "enableCustomScenarios", true);
             Scribe_Values.Look(
@@ -415,6 +419,8 @@ namespace RandomStartMod
             mapSize = 250;
             planetCoverage = 0.3f;
             permadeath = false;
+            randomiseWorldSeed = true;
+            worldSeed = "village";
             randomiseRainfall = true;
             randomiseTemperature = true;
             randomisePopulation = true;

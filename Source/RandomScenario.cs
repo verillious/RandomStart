@@ -422,6 +422,29 @@ namespace RandomStartMod
 
             Util.LogMessage($"Created {worldFactions.Count} factions");
 
+            string worldSeed;
+            if (settings.randomiseWorldSeed)
+            {
+                Util.LogMessage("Randomising world seed");
+                worldSeed = GenText.RandomSeedString();
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(settings.worldSeed))
+                {
+                    Util.LogMessage($"World Seed: '{settings.worldSeed}' is invalid");
+                    worldSeed = GenText.RandomSeedString();
+                    settings.worldSeed = worldSeed;
+                }
+                else
+                {
+                    Util.LogMessage("Using custom world seed");
+                    worldSeed = settings.worldSeed;
+                }
+            }
+
+            Util.LogMessage($"Using world seed: '{worldSeed}'");
+
             if (ModsConfig.IsActive("zvq.RealisticPlanetsContinued") || ModsConfig.IsActive("kentington.RealisticPlanetsContinued_Steam"))
             {
                 int worldType = settings.realisticPlanetsWorldType;
@@ -429,7 +452,7 @@ namespace RandomStartMod
                     worldType = -1;
                 Compat.RealisticPlanetsCompat.GenerateRealisticPlanetWorld(
                     settings.planetCoverage,
-                    GenText.RandomSeedString(),
+                    worldSeed,
                     rainfall,
                     temperature,
                     population,
@@ -443,7 +466,7 @@ namespace RandomStartMod
             {
                 Current.Game.World = WorldGenerator.GenerateWorld(
                     settings.planetCoverage,
-                    GenText.RandomSeedString(),
+                    worldSeed,
                     rainfall,
                     temperature,
                     population,

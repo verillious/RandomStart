@@ -866,6 +866,25 @@ namespace RandomStartMod
             listingStandard.Gap();
             planetListingHeight += 12f;
 
+            DoSettingToggle(listingStandard.GetRect(24f), "WorldSeed".Translate(), "Randomise World Seed".AsTipTitle() + "\n\n" + "Randomly assign the seed used an the generation of your world.", ref settings.randomiseWorldSeed);
+            planetListingHeight += 24f + Text.LineHeight;
+
+            if (!settings.randomiseWorldSeed)
+            {
+                listingStandard.Gap(5f);
+                Rect worldSeedRect = listingStandard.GetRect(30f);
+                settings.worldSeed = Widgets.TextField(worldSeedRect, settings.worldSeed);
+                planetListingHeight += 35f;
+                listingStandard.Gap(2f);
+                if (listingStandard.ButtonText("RandomizeSeed".Translate()))
+                {
+                    settings.worldSeed = GenText.RandomSeedString();
+                }
+                planetListingHeight += 34f;
+            }
+
+            listingStandard.Gap();
+
             DoSettingToggle(listingStandard.GetRect(24f), "PlanetRainfall".Translate(), null, ref settings.randomiseRainfall);
             planetListingHeight += 24f + Text.LineHeight;
 
