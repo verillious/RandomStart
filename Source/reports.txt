@@ -1,17 +1,3 @@
-
-The randomizer for number of factions on the world generator is broken or at least inconsistent wit what you select.
-I select 0-20 and during twenty different world generation attempts, it generats only three or four factions.
-If I raise the faction limit to minimum of 7, it always generates 7 factions.
-If I raise the faction limit to minimum of 20 it only generates 16.
-
-I'm noticing that when I start a randomized scenario, if there is a permanent event, like a permanent blood rain, or a permanent flash storm, they don't actually spawn on the initial map, but if I pick up my colony and resettle it then the permanent conditions are present.
-
-If you make map once, you need to restart rimworld to make another map. otherwise keep failing to make a new map whatever you do.
-
-This mod strangely conflicts with the rimfridge continued mod SPECIFICALLY when generating a map with snow on it for some reason... It gets stuck in map generation with errors on snow and fog of war generating?
-
-another suggestion is a world tech limit compatibility
-
 Very mild bug/ incompatibility with the Wild Men start with Vanilla Expanded: Tribals (I also have Progression Core but not sure if that affects things).
 Without Random Start after selecting your map in VE:tribals the ideology screen doesn't generate your colony's Ideology and instead says "customise NPC ideologies". During gameplay, After you finish the final "animal tech" research (Culture) you get to create your own ideology.
 Using Random Start it seems to auto generate a starting ideology like any other start, meaning your pawns have an ideology before they are supposed to, then when you research culture you get to make a new one and the old one exists in the world somewhere.
@@ -30,13 +16,7 @@ So in the options under the Misc Tab under Ideology there is an option to load a
 
 
 Can you add posibility to disable randomization of reputation or rep range for selected factions?
-Got this hillarios start with VFE empire
-Empire is hostile
-https://postimg.cc/YGpSfWRL
-
 
 
 
 Will there be support for Biomes! mods for world settings and ReGrowth mod for the world settings as well? Also there seems to be no world settings for the Infestations from the new VFE insectoids 2
-
-Question on starting items, I set a wealth limit to the starting items, but that wealth is never maintained due to the random scenario adding a bunch of scattered items around the map.. Is there any way around this? Or could you incorporate the limit to include scattered items/make a separate option based on scattered item wealth?

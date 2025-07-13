@@ -39,6 +39,10 @@ namespace RandomStartMod
         public float pollution = 0.05f;
         public int startingSeason = 2;
 
+        // Starting Tile Settings
+        public bool filterStartingBiome = false;
+        public List<string> allowedBiomes = new List<string>();
+
         public IntRange randomFactionRange = new IntRange(5, 15);
         public int minimumFactions = 5;
         public int maximumFactions = 15;
@@ -196,6 +200,10 @@ namespace RandomStartMod
             Scribe_Values.Look(ref landmarkDensity, "landmarkDensity", 3);
             Scribe_Values.Look(ref pollution, "pollution", 0.05f);
             Scribe_Values.Look(ref startingSeason, "startingSeason", 2);
+
+            // Starting Tile Settings
+            Scribe_Values.Look(ref filterStartingBiome, "filterStartingBiome", false);
+            Scribe_Collections.Look(ref allowedBiomes, "allowedBiomes", LookMode.Value, new List<string>());
 
             Scribe_Collections.Look(
                 ref disabledStorytellers,
@@ -438,6 +446,11 @@ namespace RandomStartMod
             landmarkDensity = 3;
             pollution = 0.05f;
             startingSeason = 2;
+            
+            // Starting Tile Settings
+            filterStartingBiome = false;
+            allowedBiomes = new List<string>();
+            
             myLittlePlanetSubcount = 10;
             randomiseRealisticPlanets = true;
             realisticPlanetsWorldType = 3;
@@ -535,6 +548,12 @@ namespace RandomStartMod
             randomItemTechLevelLimit = 4;
             randomItemTotalMarketValueLimit = 10000;
             enableMarketValueLimit = false;
+        }
+
+        public void ResetStartingTile()
+        {
+            filterStartingBiome = false;
+            allowedBiomes = new List<string>();
         }
     }
 }

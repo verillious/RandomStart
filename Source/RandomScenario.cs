@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
 using Verse;
+using VFECore;
 using static RimWorld.PsychicRitualRoleDef;
 
 namespace RandomStartMod
@@ -20,15 +23,82 @@ namespace RandomStartMod
                 .GetSettings<RandomStartSettings>();
 
             Current.ProgramState = ProgramState.Entry;
-            Current.Game = new Game();
-            Current.Game.InitData = new GameInitData();
+            Current.Game = new Game { InitData = new GameInitData() };
             SetupRandomScenario(settings);
             SetupRandomDifficulty(settings);
             SetupRandomPlanet(settings);
 
-            Find.GameInitData.ChooseRandomStartingTile();
+            if (
+                settings.filterStartingBiome
+                && settings.allowedBiomes != null
+                && settings.allowedBiomes.Count > 0
+            )
+            {
+                Util.LogMessage("Filtering starting tile by allowed biomes");
+                List<BiomeDef> filterBiomes = new List<BiomeDef>();
+                foreach (string biomeDefName in settings.allowedBiomes)
+                {
+                    BiomeDef biomeDef = BiomeDef.Named(biomeDefName);
 
-            Util.LogMessage($"Starting in {Find.WorldGrid[Find.GameInitData.startingTile].biome.label.CapitalizeFirst()}");
+                    if (biomeDef != null)
+                    {
+                        filterBiomes.Add(biomeDef);
+                    }
+                }
+
+                List<Tile> filteredTiles = Find.WorldGrid.Surface.tiles.FindAll(tile =>
+                    filterBiomes.Contains(tile.biome)
+                );
+
+                foreach (Tile filteredTile in filteredTiles)
+                {
+                    if (
+                        !filteredTile.PrimaryBiome.canBuildBase
+                        || !filteredTile.PrimaryBiome.implemented
+                        || filteredTile.hilliness == Hilliness.Impassable
+                    )
+                    {
+                        continue;
+                    }
+
+                    if (!filteredTile.PrimaryBiome.canAutoChoose)
+                    {
+                        continue;
+                    }
+
+                    PlanetTile filteredPlanetTile = Find.WorldGrid
+                        .Surface[Find.WorldGrid.Surface.tiles.IndexOf(filteredTile)]
+                        .tile;
+
+                    if (TileFinder.IsValidTileForNewSettlement(filteredPlanetTile))
+                    {
+                        Find.GameInitData.startingTile = filteredPlanetTile;
+                        Util.LogMessage(
+                            $"Found valid tile for random start: {filteredPlanetTile.Tile.biome.label.CapitalizeFirst()}"
+                        );
+                        break;
+                    }
+
+                    Util.LogMessage(
+                        "No valid tile found for allowed biomes. Choosing random tile."
+                    );
+                    Find.GameInitData.ChooseRandomStartingTile();
+                }
+            }
+            else
+            {
+                if (settings.filterStartingBiome)
+                {
+                    Util.LogMessage(
+                        "Allowed biomes list is empty or null. Randomly choosing a tile without filtering."
+                    );
+                    Find.GameInitData.ChooseRandomStartingTile();
+                }
+            }
+
+            Util.LogMessage(
+                $"Starting in {Find.WorldGrid[Find.GameInitData.startingTile].biome.label.CapitalizeFirst()}"
+            );
 
             Season startingSeason = (Season)settings.startingSeason;
             if (settings.randomiseSeason)
@@ -37,7 +107,10 @@ namespace RandomStartMod
             Find.GameInitData.startingSeason = startingSeason;
             Find.GameInitData.mapSize = settings.mapSize;
 
-            if (ModsConfig.IsActive("OskarPotocki.VanillaFactionsExpanded.Core") || ModsConfig.IsActive("OskarPotocki.VanillaFactionsExpanded.Core_Steam"))
+            if (
+                ModsConfig.IsActive("OskarPotocki.VanillaFactionsExpanded.Core")
+                || ModsConfig.IsActive("OskarPotocki.VanillaFactionsExpanded.Core_Steam")
+            )
             {
                 Compat.VECoreCompat.SetupForKCSG();
             }
@@ -86,7 +159,15 @@ namespace RandomStartMod
                             {
                                 int initialGoodwill = GetInitialGoodwill(item, item2);
 
-                                FactionRelationKind kind = ((initialGoodwill > -10) ? ((initialGoodwill < 75) ? FactionRelationKind.Neutral : FactionRelationKind.Ally) : FactionRelationKind.Hostile);
+                                FactionRelationKind kind = (
+                                    (initialGoodwill > -10)
+                                        ? (
+                                            (initialGoodwill < 75)
+                                                ? FactionRelationKind.Neutral
+                                                : FactionRelationKind.Ally
+                                        )
+                                        : FactionRelationKind.Hostile
+                                );
                                 FactionRelation factionRelation = new FactionRelation();
                                 factionRelation.other = item2;
                                 factionRelation.baseGoodwill = initialGoodwill;
@@ -111,15 +192,24 @@ namespace RandomStartMod
                                 {
                                     return -100;
                                 }
-                                if ((a.def.permanentEnemyToEveryoneExceptPlayer && !b.IsPlayer) || (b.def.permanentEnemyToEveryoneExceptPlayer && !a.IsPlayer))
+                                if (
+                                    (a.def.permanentEnemyToEveryoneExceptPlayer && !b.IsPlayer)
+                                    || (b.def.permanentEnemyToEveryoneExceptPlayer && !a.IsPlayer)
+                                )
                                 {
                                     return -100;
                                 }
-                                if (a.def.permanentEnemyToEveryoneExcept != null && !a.def.permanentEnemyToEveryoneExcept.Contains(b.def))
+                                if (
+                                    a.def.permanentEnemyToEveryoneExcept != null
+                                    && !a.def.permanentEnemyToEveryoneExcept.Contains(b.def)
+                                )
                                 {
                                     return -100;
                                 }
-                                if (b.def.permanentEnemyToEveryoneExcept != null && !b.def.permanentEnemyToEveryoneExcept.Contains(a.def))
+                                if (
+                                    b.def.permanentEnemyToEveryoneExcept != null
+                                    && !b.def.permanentEnemyToEveryoneExcept.Contains(a.def)
+                                )
                                 {
                                     return -100;
                                 }
@@ -131,7 +221,10 @@ namespace RandomStartMod
             }
             PageUtility.InitGameStart();
 
-            if (ModsConfig.IsActive("Woolstrand.RealRuins") || ModsConfig.IsActive("Woolstrand.RealRuins_Steam"))
+            if (
+                ModsConfig.IsActive("Woolstrand.RealRuins")
+                || ModsConfig.IsActive("Woolstrand.RealRuins_Steam")
+            )
             {
                 if (settings.enableAutoRealRuins)
                 {
@@ -144,7 +237,9 @@ namespace RandomStartMod
         {
             if (settings.createRandomScenario)
             {
-                Current.Game.Scenario = ScenarioMaker.GenerateNewRandomScenario(GenText.RandomSeedString());
+                Current.Game.Scenario = ScenarioMaker.GenerateNewRandomScenario(
+                    GenText.RandomSeedString()
+                );
             }
             else
             {
@@ -155,7 +250,8 @@ namespace RandomStartMod
                         .AllScenarios()
                         .Where(
                             (Scenario scenario) =>
-                                !settings.disabledScenarios.Contains(scenario.name) && scenario.showInUI
+                                !settings.disabledScenarios.Contains(scenario.name)
+                                && scenario.showInUI
                         )
                 );
                 if (settings.enableCustomScenarios)
@@ -288,7 +384,10 @@ namespace RandomStartMod
 
             chosenStoryteller.tutorialMode = false;
 
-            if (ModsConfig.IsActive("brrainz.nopausechallenge") || ModsConfig.IsActive("brrainz.nopausechallenge_steam"))
+            if (
+                ModsConfig.IsActive("brrainz.nopausechallenge")
+                || ModsConfig.IsActive("brrainz.nopausechallenge_steam")
+            )
             {
                 Compat.NoPauseCompat.SetupForNoPause();
             }
@@ -328,7 +427,6 @@ namespace RandomStartMod
 
         private static void SetupRandomPlanet(RandomStartSettings settings)
         {
-
             OverallRainfall rainfall = (OverallRainfall)settings.rainfall;
             if (settings.randomiseRainfall)
                 rainfall = (OverallRainfall)settings.randomiseRainfallRange.RandomInRange;
@@ -340,7 +438,6 @@ namespace RandomStartMod
             OverallPopulation population = (OverallPopulation)settings.population;
             if (settings.randomisePopulation)
                 population = (OverallPopulation)settings.randomisePopulationRange.RandomInRange;
-
 
             // WAITING FOR ODYSSEY
             //LandmarkDensity landmarkDensity = (LandmarkDensity)settings.landmarkDensity;
@@ -365,7 +462,9 @@ namespace RandomStartMod
                 if (faction == null)
                 {
                     settings.factionsAlwaysAdd.Remove(factionDefName);
-                    Util.LogMessage($"Tried to create invalid Faction {faction}. Removing from list.");
+                    Util.LogMessage(
+                        $"Tried to create invalid Faction {faction}. Removing from list."
+                    );
                     needToWriteSettings = true;
                     continue;
                 }
@@ -384,7 +483,9 @@ namespace RandomStartMod
                     {
                         settings.factionsRandomlyAdd.Remove(randomFaction);
                         randomFactions.Remove(randomFaction);
-                        Util.LogMessage($"Tried to create invalid Faction {randomFaction}. Removing from list.");
+                        Util.LogMessage(
+                            $"Tried to create invalid Faction {randomFaction}. Removing from list."
+                        );
                         needToWriteSettings = true;
                         if (randomFactions.Count == 0)
                             break;
@@ -405,17 +506,26 @@ namespace RandomStartMod
                 settings.Write();
             }
 
-            if (ModsConfig.IsActive("OskarPotocki.VFE.Empire") || ModsConfig.IsActive("OskarPotocki.VFE.Empire_Steam"))
+            if (
+                ModsConfig.IsActive("OskarPotocki.VFE.Empire")
+                || ModsConfig.IsActive("OskarPotocki.VFE.Empire_Steam")
+            )
             {
                 Compat.VFEECompat.EnsureScenarioFactions(worldFactions);
             }
 
-            if (ModsConfig.IsActive("OskarPotocki.VFE.Deserters") || ModsConfig.IsActive("OskarPotocki.VFE.Deserters_Steam"))
+            if (
+                ModsConfig.IsActive("OskarPotocki.VFE.Deserters")
+                || ModsConfig.IsActive("OskarPotocki.VFE.Deserters_Steam")
+            )
             {
                 Compat.VFEDCompat.EnsureScenarioFactions(worldFactions);
             }
 
-            if (ModsConfig.IsActive("kentington.saveourship2") || ModsConfig.IsActive("kentington.saveourship2_steam"))
+            if (
+                ModsConfig.IsActive("kentington.saveourship2")
+                || ModsConfig.IsActive("kentington.saveourship2_steam")
+            )
             {
                 Compat.SOS2Compat.SetupForStartInSpace();
             }
@@ -445,7 +555,10 @@ namespace RandomStartMod
 
             Util.LogMessage($"Using world seed: '{worldSeed}'");
 
-            if (ModsConfig.IsActive("zvq.RealisticPlanetsContinued") || ModsConfig.IsActive("kentington.RealisticPlanetsContinued_Steam"))
+            if (
+                ModsConfig.IsActive("zvq.RealisticPlanetsContinued")
+                || ModsConfig.IsActive("kentington.RealisticPlanetsContinued_Steam")
+            )
             {
                 int worldType = settings.realisticPlanetsWorldType;
                 if (settings.randomiseRealisticPlanets)
@@ -515,10 +628,10 @@ namespace RandomStartMod
             }
             else
             {
+                Ideo newIdeo = null;
                 if (settings.overrideIdeo && File.Exists(settings.customIdeoOverrideFile))
                 {
                     Util.LogMessage("Attempting to load ideo file");
-                    Ideo newIdeo = null;
                     PreLoadUtility.CheckVersionAndLoad(
                         settings.customIdeoOverrideFile,
                         ScribeMetaHeaderUtility.ScribeHeaderMode.Ideo,
@@ -539,11 +652,6 @@ namespace RandomStartMod
                     if (newIdeo != null)
                     {
                         Util.LogMessage("Loaded ideo file");
-                        Find.FactionManager.OfPlayer.ideos.RemoveAll();
-                        Find.FactionManager.OfPlayer.ideos.SetPrimary(newIdeo);
-                        Find.IdeoManager.RemoveUnusedStartingIdeos();
-                        newIdeo.initialPlayerIdeo = true;
-                        Find.IdeoManager.Add(newIdeo);
                     }
                     else
                     {
@@ -552,15 +660,33 @@ namespace RandomStartMod
                         );
                     }
                 }
-                if (settings.fluidIdeo)
+                else
                 {
-                    Ideo playerIdeo =
-                        Find.FactionManager.OfPlayer.ideos.AllIdeos.FirstOrDefault();
-                    playerIdeo.Fluid = true;
+                    IdeoGenerationParms genParms = new IdeoGenerationParms(
+                        Find.FactionManager.OfPlayer.def,
+                        forceNoExpansionIdeo: false,
+                        null,
+                        null,
+                        null,
+                        classicExtra: false,
+                        forceNoWeaponPreference: false,
+                        settings.fluidIdeo
+                    );
+                    newIdeo = IdeoGenerator.GenerateIdeo(genParms);
+                    newIdeo.memes.Clear();
+                    int memeCount = 3;
+                    newIdeo.memes.AddRange(IdeoUtility.GenerateRandomMemes(memeCount, genParms));
+                    newIdeo.SortMemesInDisplayOrder();
+                    newIdeo.foundation.RandomizePrecepts(true, genParms);
                 }
+
+                Find.FactionManager.OfPlayer.ideos.RemoveAll();
+                Find.FactionManager.OfPlayer.ideos.SetPrimary(newIdeo);
+                Find.IdeoManager.RemoveUnusedStartingIdeos();
+                newIdeo.initialPlayerIdeo = true;
+                Find.IdeoManager.Add(newIdeo);
             }
         }
-
 
         private static void SetupRandomGenes(RandomStartSettings settings)
         {
@@ -594,9 +720,7 @@ namespace RandomStartMod
                     {
                         selectedGenes.Add(
                             DefDatabase<GeneDef>
-                                .AllDefsListForReading.Where(
-                                    (GeneDef g) => g.canGenerateInGeneSet
-                                )
+                                .AllDefsListForReading.Where((GeneDef g) => g.canGenerateInGeneSet)
                                 .RandomElement()
                         );
                     }
@@ -607,7 +731,10 @@ namespace RandomStartMod
                         {
                             if (settings.enableMetabolicEfficiencyMinimum)
                             {
-                                if ((metabolismTotal + geneDef.biostatMet) >= settings.minimumMetabolicEfficiency)
+                                if (
+                                    (metabolismTotal + geneDef.biostatMet)
+                                    >= settings.minimumMetabolicEfficiency
+                                )
                                 {
                                     GivePawnGene(p, geneDef, ref metabolismTotal);
                                     metabolismTotal += geneDef.biostatMet;
@@ -633,9 +760,7 @@ namespace RandomStartMod
                                     }
                                 }
                             }
-
                         }
-
 
                         p.genes.xenotypeName = GeneUtility.GenerateXenotypeNameFromGenes(
                             selectedGenes
@@ -684,7 +809,6 @@ namespace RandomStartMod
                         );
                     }
                 }
-
             }
         }
     }

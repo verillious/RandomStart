@@ -24,6 +24,7 @@ namespace RandomStartMod
         private static Vector2 factionScrollPosition;
         private static Vector2 planetScrollPosition;
         private static Vector2 scenariosScrollPosition;
+        private static Vector2 startingTileScrollPosition;
 
         private static float mainListingHeight;
         private static float factionListingHeight;
@@ -31,6 +32,7 @@ namespace RandomStartMod
         private static float storytellerListingHeight;
         private static float scenarioListingHeight;
         private static float optionalFeaturesListingHeight;
+        private static float startingTileListingHeight;
 
         private static float sectionHeightThreats = 0f;
         private static float sectionHeightGeneral = 0f;
@@ -84,6 +86,11 @@ namespace RandomStartMod
                     currentTab = 2;
                     WriteSettings();
                 }, currentTab == 2),
+                new TabRecord("Starting Tile", () =>
+                {
+                    currentTab = 6;
+                    WriteSettings();
+                }, currentTab == 6),
                 new TabRecord("Factions".Translate(), () =>
                 {
                     currentTab = 1;
@@ -125,6 +132,10 @@ namespace RandomStartMod
             else if (currentTab == 5)
             {
                 DoOptionalFeaturesTabContents(mainRect.ContractedBy(15f));
+            }
+            else if (currentTab == 6)
+            {
+                DoStartingTileSettingsTabContents(mainRect.ContractedBy(15f));
             }
 
         }
@@ -1173,6 +1184,139 @@ namespace RandomStartMod
             Widgets.EndScrollView();
         }
 
+        private void DoStartingTileSettingsTabContents(Rect inRect)
+        {
+            if (settings == null)
+            {
+                Util.LogMessage("Settings is null in DoStartingTileSettingsTabContents");
+                return;
+            }
+
+            // Clean up any excluded biomes from the settings
+            CleanUpExcludedBiomes();
+
+            Rect rect = new Rect(0f, 60f, inRect.width, startingTileListingHeight);
+            startingTileListingHeight = 0f;
+            Widgets.BeginScrollView(inRect, ref startingTileScrollPosition, rect, false);
+
+            Listing_Standard listingStandard = new Listing_Standard();
+            listingStandard.Begin(rect);
+
+            listingStandard.Gap();
+            Text.Font = GameFont.Medium;
+            listingStandard.Label("Starting Tile");
+            listingStandard.GapLine();
+            startingTileListingHeight += 24f + Text.LineHeight;
+            Text.Font = GameFont.Small;
+            listingStandard.Gap();
+            startingTileListingHeight += 12f;
+
+            // Filter Starting Biome toggle
+            DoSettingToggle(listingStandard.GetRect(24f), "Filter Starting Biome", "Enable to filter which biomes are allowed for starting tiles", ref settings.filterStartingBiome);
+            startingTileListingHeight += 24f;
+
+            if (settings.filterStartingBiome)
+            {
+                listingStandard.Gap();
+                listingStandard.Label("Allowed Biomes:");
+                startingTileListingHeight += 12f + Text.LineHeight;
+
+                // Ensure allowedBiomes list is not null
+                if (settings.allowedBiomes == null)
+                {
+                    settings.allowedBiomes = new List<string>();
+                }
+
+                // Display current allowed biomes (only those with canBuildBase=true)
+                List<BiomeDef> biomesAllowed = new List<BiomeDef>();
+                foreach (string biomeDefName in settings.allowedBiomes)
+                {
+                    BiomeDef biome = DefDatabase<BiomeDef>.GetNamed(biomeDefName, false);
+                    if (biome == null || !biome.canBuildBase || !biome.canAutoChoose)
+                        continue;
+                    biomesAllowed.Add(biome);
+                }
+                for (int i = 0; i < biomesAllowed.Count; i++)
+                {
+                    listingStandard.Gap(4f);
+                    if (DoBiomeRow(listingStandard.GetRect(24f), biomesAllowed[i], settings.allowedBiomes, i))
+                    {
+                        i--;
+                    }
+                    listingStandard.Gap(4f);
+                    startingTileListingHeight += 32f;
+                }
+
+                if (biomesAllowed.Count == 0)
+                {
+                    listingStandard.Label("No biomes selected (will use default behavior)");
+                    startingTileListingHeight += Text.LineHeight;
+                }
+
+                listingStandard.Gap();
+                startingTileListingHeight += 12f;
+
+                // Add biome button
+                if (listingStandard.ButtonText("Add Biome"))
+                {
+                    List<FloatMenuOption> list = new List<FloatMenuOption>();
+                    // Manually filter out underground biomes that don't appear on planet surface
+                    string[] excludedBiomes = { "Underground", "Labyrinth", "MetalHell", "Undercave" };
+                    IEnumerable<BiomeDef> availableBiomes = DefDatabase<BiomeDef>.AllDefs.Where(b => b != null && b.canBuildBase && b.implemented && b.canAutoChoose && !excludedBiomes.Contains(b.defName));
+
+                    foreach (BiomeDef biomeDef in availableBiomes)
+                    {
+                        BiomeDef localDef = biomeDef;
+                        string text = localDef.LabelCap;
+                        Action action = delegate
+                        {
+                            settings.allowedBiomes.Add(localDef.defName);
+                        };
+                        AcceptanceReport acceptanceReport = CanAddBiome(localDef);
+                        if (!acceptanceReport)
+                        {
+                            action = null;
+                            if (!acceptanceReport.Reason.NullOrEmpty())
+                            {
+                                text = text + " (" + acceptanceReport.Reason + ")";
+                            }
+                        }
+                        else
+                        {
+                            int num = biomesAllowed.Count((BiomeDef x) => x == localDef);
+                            if (num > 0)
+                            {
+                                text = text + " (" + num + ")";
+                            }
+                        }
+                        Texture2D biomeIcon = BaseContent.BadTex; // Simple fallback for now
+                        if (!biomeDef.texture.NullOrEmpty())
+                        {
+                            biomeIcon = ContentFinder<Texture2D>.Get(biomeDef.texture, false) ?? BaseContent.BadTex;
+                        }
+                        FloatMenuOption floatMenuOption = new FloatMenuOption(text, action, biomeIcon, Color.white, MenuOptionPriority.Default, null, null, 24f, (Rect r) => Widgets.InfoCardButton(r.x, r.y + 3f, localDef), null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true);
+                        floatMenuOption.tooltip = text.AsTipTitle() + "\n" + localDef.description;
+                        list.Add(floatMenuOption);
+                    }
+
+                    if (list.Count > 0)
+                    {
+                        Find.WindowStack.Add(new FloatMenu(list));
+                    }
+                }
+                startingTileListingHeight += 32f + 12f;
+            }
+            
+            if (listingStandard.ButtonText("RestoreToDefaultSettings".Translate()))
+            {
+                settings.ResetStartingTile();
+            }
+            startingTileListingHeight += 32f;
+
+            listingStandard.End();
+            Widgets.EndScrollView();
+        }
+
         private void DrawCustomLeft(Listing_Standard listing)
         {
             Listing_Standard listing_Standard = DrawCustomSectionStart(listing, sectionHeightThreats, "DifficultyThreatSection".Translate());
@@ -1499,6 +1643,52 @@ namespace RandomStartMod
             return result;
         }
 
+        public bool DoBiomeRow(Rect rect, BiomeDef biomeDef, List<string> biomeDefNames, int index)
+        {
+            bool result = false;
+            Rect rect2 = new Rect(rect.x, rect.y - 4f, rect.width, rect.height + 8f);
+            if (index % 2 == 1)
+            {
+                Widgets.DrawLightHighlight(rect2);
+            }
+            Widgets.BeginGroup(rect);
+            WidgetRow widgetRow = new WidgetRow(6f, 0f);
+            
+            // Draw biome icon if available, otherwise use a default texture
+            Texture2D biomeIcon = BaseContent.BadTex; // Simple fallback for now
+            if (!biomeDef.texture.NullOrEmpty())
+            {
+                biomeIcon = ContentFinder<Texture2D>.Get(biomeDef.texture, false) ?? BaseContent.BadTex;
+            }
+            GUI.color = Color.white;
+            widgetRow.Icon(biomeIcon);
+            widgetRow.Gap(4f);
+            
+            Text.Anchor = TextAnchor.MiddleCenter;
+            widgetRow.Label(biomeDef.LabelCap);
+            Text.Anchor = TextAnchor.UpperLeft;
+            
+            if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
+            {
+                SoundDefOf.Click.PlayOneShotOnCamera();
+                biomeDefNames.RemoveAt(index);
+                result = true;
+            }
+            Widgets.EndGroup();
+            
+            if (Mouse.IsOver(rect2))
+            {
+                string tooltip = biomeDef.LabelCap.AsTipTitle() + "\n" + biomeDef.description;
+                if (biomeDef.modContentPack != null)
+                {
+                    tooltip += "\n\n" + GetSourceModMetaData(biomeDef).Name.AsTipTitle();
+                }
+                TooltipHandler.TipRegion(rect2, tooltip);
+                Widgets.DrawHighlight(rect2);
+            }
+            return result;
+        }
+
         public void DoSettingToggle(Rect rect, string label, string description, ref bool checkOn)
         {
 
@@ -1600,6 +1790,46 @@ namespace RandomStartMod
                 return false;
             }
             return true;
+        }
+
+        private void CleanUpExcludedBiomes()
+        {
+            if (settings.allowedBiomes == null)
+                return;
+                
+            // Remove any excluded biomes from the settings
+            string[] excludedBiomes = { "Underground", "Labyrinth", "MetalHell", "Undercave" };
+            
+            List<string> biomesToRemove = new List<string>();
+            foreach (string biomeName in settings.allowedBiomes)
+            {
+                if (excludedBiomes.Contains(biomeName))
+                {
+                    biomesToRemove.Add(biomeName);
+                }
+            }
+            
+            foreach (string biomeToRemove in biomesToRemove)
+            {
+                settings.allowedBiomes.Remove(biomeToRemove);
+            }
+        }
+
+        AcceptanceReport CanAddBiome(BiomeDef b)
+        {
+            if (settings.allowedBiomes.Contains(b.defName))
+            {
+                return "Already added";
+            }
+            
+            // Manually filter out underground biomes that don't appear on planet surface
+            string[] excludedBiomes = { "Underground", "Labyrinth", "MetalHell", "Undercave" };
+            if (excludedBiomes.Contains(b.defName))
+            {
+                return "Not available on planet surface";
+            }
+            
+            return AcceptanceReport.WasAccepted;
         }
     }
 }
