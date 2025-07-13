@@ -42,6 +42,12 @@ namespace RandomStartMod
         // Starting Tile Settings
         public bool filterStartingBiome = false;
         public List<string> allowedBiomes = new List<string>();
+        
+        public bool filterStartingHilliness = false;
+        public List<int> allowedHilliness = new List<int>();
+
+        // Starting Colonist Settings
+        public bool startingPawnForceViolence = true;
 
         public IntRange randomFactionRange = new IntRange(5, 15);
         public int minimumFactions = 5;
@@ -64,6 +70,8 @@ namespace RandomStartMod
             "Empire",
             "HoraxCult",
             "Entities",
+            "Salvagers",
+            "TradersGuild",
             "VFEE_Deserters",
         };
         public List<string> factionsRandomlyAdd = new List<string>()
@@ -138,7 +146,6 @@ namespace RandomStartMod
         public float allowInstantKillChance = 0f;
         public float fixedWealthTimeFactor = 1f;
 
-
         //Feature Flags
         public bool enableRandomXenotypes = false;
         public bool enableRandomCustomXenotypes = false;
@@ -147,6 +154,7 @@ namespace RandomStartMod
         public int minimumMetabolicEfficiency = 0;
         public bool respectFactionXenotypes = true;
         public bool fluidIdeo = false;
+        public IntRange randomMemeRange = new IntRange(1, 4);
         public bool removeStartingResearch = false;
         public bool addRandomResearch = false;
         public IntRange randomResearchRange = new IntRange(5, 15);
@@ -204,6 +212,11 @@ namespace RandomStartMod
             // Starting Tile Settings
             Scribe_Values.Look(ref filterStartingBiome, "filterStartingBiome", false);
             Scribe_Collections.Look(ref allowedBiomes, "allowedBiomes", LookMode.Value, new List<string>());
+            Scribe_Values.Look(ref filterStartingHilliness, "filterStartingHilliness", false);
+            Scribe_Collections.Look(ref allowedHilliness, "allowedHilliness", LookMode.Value, new List<int>());
+
+            // Starting Colonist Settings
+            Scribe_Values.Look(ref startingPawnForceViolence, "startingPawnForceViolence", false);
 
             Scribe_Collections.Look(
                 ref disabledStorytellers,
@@ -334,6 +347,7 @@ namespace RandomStartMod
             Scribe_Values.Look(ref respectFactionXenotypes, "respectFactionXenotypes", true);
             Scribe_Values.Look(ref disableIdeo, "disableIdeo", false);
             Scribe_Values.Look(ref fluidIdeo, "fluidIdeo", false);
+            Scribe_Values.Look(ref randomMemeRange, "randomMemeRange", new IntRange(1, 4));
             Scribe_Values.Look(ref overrideIdeo, "overrideIdeo", false);
             Scribe_Values.Look(ref customIdeoOverrideFile, "customIdeoOverrideFile", null);
 
@@ -446,7 +460,7 @@ namespace RandomStartMod
             landmarkDensity = 3;
             pollution = 0.05f;
             startingSeason = 2;
-            
+
             // Starting Tile Settings
             filterStartingBiome = false;
             allowedBiomes = new List<string>();
@@ -527,6 +541,7 @@ namespace RandomStartMod
         {
             disableIdeo = false;
             fluidIdeo = false;
+            randomMemeRange = new IntRange(1, 4);
             overrideIdeo = false;
             customIdeoOverrideFile = null;
         }
@@ -554,6 +569,13 @@ namespace RandomStartMod
         {
             filterStartingBiome = false;
             allowedBiomes = new List<string>();
+            filterStartingHilliness = false;
+            allowedHilliness = new List<int>();
+        }
+
+        public void ResetStartingColonists()
+        {
+            startingPawnForceViolence = false;
         }
     }
 }

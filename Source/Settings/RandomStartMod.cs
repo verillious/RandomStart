@@ -33,7 +33,6 @@ namespace RandomStartMod
         private static float scenarioListingHeight;
         private static float optionalFeaturesListingHeight;
         private static float startingTileListingHeight;
-
         private static float sectionHeightThreats = 0f;
         private static float sectionHeightGeneral = 0f;
         private static float sectionHeightPlayerTools = 0f;
@@ -91,6 +90,11 @@ namespace RandomStartMod
                     currentTab = 6;
                     WriteSettings();
                 }, currentTab == 6),
+                new TabRecord("Starting Colonists", () =>
+                {
+                    currentTab = 7;
+                    WriteSettings();
+                }, currentTab == 7),
                 new TabRecord("Factions".Translate(), () =>
                 {
                     currentTab = 1;
@@ -137,7 +141,6 @@ namespace RandomStartMod
             {
                 DoStartingTileSettingsTabContents(mainRect.ContractedBy(15f));
             }
-
         }
 
         public void DoDifficultySettingsTabContents(Rect inRect)
@@ -1134,6 +1137,17 @@ namespace RandomStartMod
                 {
                     DoSettingToggle(listingStandard.GetRect(24f), "CreateFluid".Translate(), "FluidIdeoTip".Translate(), ref settings.fluidIdeo);
                     optionalFeaturesListingHeight += 24f;
+                    
+                    // Random Meme Range
+                    listingStandard.Indent(8);
+                    listingStandard.Label("Random Meme Count:");
+                    listingStandard.Outdent(8);
+                    optionalFeaturesListingHeight += Text.LineHeight + 12f;
+                    Widgets.IntRange(listingStandard.GetRect(32f), 382399866, ref settings.randomMemeRange, 1, 10);
+                    optionalFeaturesListingHeight += 32f;
+                    listingStandard.Gap(2f);
+                    optionalFeaturesListingHeight += 2f;
+                    
                     if (GenFilePaths.AllCustomIdeoFiles.Any())
                     {
                         DoSettingToggle(listingStandard.GetRect(24f), "LoadExistingIdeoligion".Translate(), null, ref settings.overrideIdeo);
@@ -1173,6 +1187,15 @@ namespace RandomStartMod
             }
 
             listingStandard.Gap();
+            Text.Font = GameFont.Medium;
+            listingStandard.Label("SelectCaravanColonists".Translate());
+            listingStandard.GapLine();
+            optionalFeaturesListingHeight += 24f + Text.LineHeight;
+            Text.Font = GameFont.Small;
+            DoSettingToggle(listingStandard.GetRect(24f), "Pawns Must Be Capable of Violence".Translate(), "Starting Pawns Must be Capable of Violence".AsTipTitle() + "\n\n" + "Do not generate starting pawns that are incapable of violence due to medical issues, backgrounds or traits.", ref settings.startingPawnForceViolence);
+            optionalFeaturesListingHeight += 24f;
+
+            listingStandard.Gap();
             optionalFeaturesListingHeight += 12f;
             if (listingStandard.ButtonText("RestoreToDefaultSettings".Translate()))
             {
@@ -1194,6 +1217,7 @@ namespace RandomStartMod
 
             // Clean up any excluded biomes from the settings
             CleanUpExcludedBiomes();
+            CleanUpInvalidHilliness();
 
             Rect rect = new Rect(0f, 60f, inRect.width, startingTileListingHeight);
             startingTileListingHeight = 0f;
@@ -1296,6 +1320,110 @@ namespace RandomStartMod
                         }
                         FloatMenuOption floatMenuOption = new FloatMenuOption(text, action, biomeIcon, Color.white, MenuOptionPriority.Default, null, null, 24f, (Rect r) => Widgets.InfoCardButton(r.x, r.y + 3f, localDef), null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true);
                         floatMenuOption.tooltip = text.AsTipTitle() + "\n" + localDef.description;
+                        list.Add(floatMenuOption);
+                    }
+
+                    if (list.Count > 0)
+                    {
+                        Find.WindowStack.Add(new FloatMenu(list));
+                    }
+                }
+                startingTileListingHeight += 32f + 12f;
+            }
+
+            listingStandard.Gap();
+            startingTileListingHeight += 12f;
+
+            // Filter Starting Hilliness toggle
+            DoSettingToggle(listingStandard.GetRect(24f), "Filter Starting Hilliness", "Enable to filter which hilliness types are allowed for starting tiles", ref settings.filterStartingHilliness);
+            startingTileListingHeight += 24f;
+
+            if (settings.filterStartingHilliness)
+            {
+                listingStandard.Gap();
+                listingStandard.Label("Allowed Hilliness:");
+                startingTileListingHeight += 12f + Text.LineHeight;
+
+                // Ensure allowedHilliness list is not null
+                if (settings.allowedHilliness == null)
+                {
+                    settings.allowedHilliness = new List<int>();
+                }
+
+                // Display current allowed hilliness types
+                List<int> hillinessTypes = new List<int> { 1, 2, 3, 4 }; // Flat, SmallHills, LargeHills, Mountainous
+                List<int> hillinessAllowed = new List<int>();
+                foreach (int hillinessValue in settings.allowedHilliness)
+                {
+                    if (hillinessTypes.Contains(hillinessValue))
+                    {
+                        hillinessAllowed.Add(hillinessValue);
+                    }
+                }
+
+                for (int i = 0; i < hillinessAllowed.Count; i++)
+                {
+                    listingStandard.Gap(4f);
+                    if (DoHillinessRow(listingStandard.GetRect(24f), hillinessAllowed[i], settings.allowedHilliness, i))
+                    {
+                        i--;
+                    }
+                    listingStandard.Gap(4f);
+                    startingTileListingHeight += 32f;
+                }
+
+                if (hillinessAllowed.Count == 0)
+                {
+                    listingStandard.Label("No hilliness selected (will use default behavior)");
+                    startingTileListingHeight += Text.LineHeight;
+                }
+
+                listingStandard.Gap();
+                startingTileListingHeight += 12f;
+
+                // Add hilliness button
+                if (listingStandard.ButtonText("Add Hilliness"))
+                {
+                    List<FloatMenuOption> list = new List<FloatMenuOption>();
+                    List<int> availableHilliness = new List<int> { 1, 2, 3, 4 }; // Flat, SmallHills, LargeHills, Mountainous
+
+                    foreach (int hillinessValue in availableHilliness)
+                    {
+                        int localValue = hillinessValue;
+                        string hillinessKey = "";
+                        switch (hillinessValue)
+                        {
+                            case 1: hillinessKey = "Hilliness_Flat"; break;
+                            case 2: hillinessKey = "Hilliness_SmallHills"; break;
+                            case 3: hillinessKey = "Hilliness_LargeHills"; break;
+                            case 4: hillinessKey = "Hilliness_Mountainous"; break;
+                        }
+                        
+                        string text = hillinessKey.Translate();
+                        Action action = delegate
+                        {
+                            settings.allowedHilliness.Add(localValue);
+                        };
+                        
+                        AcceptanceReport acceptanceReport = CanAddHilliness(localValue);
+                        if (!acceptanceReport)
+                        {
+                            action = null;
+                            if (!acceptanceReport.Reason.NullOrEmpty())
+                            {
+                                text = text + " (" + acceptanceReport.Reason + ")";
+                            }
+                        }
+                        else
+                        {
+                            int num = hillinessAllowed.Count((int x) => x == localValue);
+                            if (num > 0)
+                            {
+                                text = text + " (" + num + ")";
+                            }
+                        }
+                        
+                        FloatMenuOption floatMenuOption = new FloatMenuOption(text, action, BaseContent.BadTex, Color.white);
                         list.Add(floatMenuOption);
                     }
 
@@ -1689,6 +1817,53 @@ namespace RandomStartMod
             return result;
         }
 
+        public bool DoHillinessRow(Rect rect, int hillinessValue, List<int> hillinessValues, int index)
+        {
+            bool result = false;
+            Rect rect2 = new Rect(rect.x, rect.y - 4f, rect.width, rect.height + 8f);
+            if (index % 2 == 1)
+            {
+                Widgets.DrawLightHighlight(rect2);
+            }
+            Widgets.BeginGroup(rect);
+            WidgetRow widgetRow = new WidgetRow(6f, 0f);
+            
+            GUI.color = Color.white;
+            widgetRow.Icon(BaseContent.BadTex); // Simple icon for hilliness
+            widgetRow.Gap(4f);
+            
+            // Get the translated hilliness name
+            string hillinessName = "";
+            switch (hillinessValue)
+            {
+                case 1: hillinessName = "Hilliness_Flat".Translate(); break;
+                case 2: hillinessName = "Hilliness_SmallHills".Translate(); break;
+                case 3: hillinessName = "Hilliness_LargeHills".Translate(); break;
+                case 4: hillinessName = "Hilliness_Mountainous".Translate(); break;
+                default: hillinessName = "Unknown"; break;
+            }
+            
+            Text.Anchor = TextAnchor.MiddleCenter;
+            widgetRow.Label(hillinessName);
+            Text.Anchor = TextAnchor.UpperLeft;
+            
+            if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
+            {
+                SoundDefOf.Click.PlayOneShotOnCamera();
+                hillinessValues.RemoveAt(index);
+                result = true;
+            }
+            Widgets.EndGroup();
+            
+            if (Mouse.IsOver(rect2))
+            {
+                string tooltip = hillinessName.AsTipTitle();
+                TooltipHandler.TipRegion(rect2, tooltip);
+                Widgets.DrawHighlight(rect2);
+            }
+            return result;
+        }
+
         public void DoSettingToggle(Rect rect, string label, string description, ref bool checkOn)
         {
 
@@ -1815,6 +1990,29 @@ namespace RandomStartMod
             }
         }
 
+        private void CleanUpInvalidHilliness()
+        {
+            if (settings.allowedHilliness == null)
+                return;
+                
+            // Remove any invalid hilliness values (only allow 1-4: Flat, SmallHills, LargeHills, Mountainous)
+            List<int> validHilliness = new List<int> { 1, 2, 3, 4 };
+            
+            List<int> hillinessToRemove = new List<int>();
+            foreach (int hillinessValue in settings.allowedHilliness)
+            {
+                if (!validHilliness.Contains(hillinessValue))
+                {
+                    hillinessToRemove.Add(hillinessValue);
+                }
+            }
+            
+            foreach (int hillinessToRemove_item in hillinessToRemove)
+            {
+                settings.allowedHilliness.Remove(hillinessToRemove_item);
+            }
+        }
+
         AcceptanceReport CanAddBiome(BiomeDef b)
         {
             if (settings.allowedBiomes.Contains(b.defName))
@@ -1827,6 +2025,16 @@ namespace RandomStartMod
             if (excludedBiomes.Contains(b.defName))
             {
                 return "Not available on planet surface";
+            }
+            
+            return AcceptanceReport.WasAccepted;
+        }
+
+        AcceptanceReport CanAddHilliness(int hillinessValue)
+        {
+            if (settings.allowedHilliness.Contains(hillinessValue))
+            {
+                return "Already added";
             }
             
             return AcceptanceReport.WasAccepted;

@@ -24,31 +24,92 @@ namespace RandomStartMod
 
             Current.ProgramState = ProgramState.Entry;
             Current.Game = new Game { InitData = new GameInitData() };
+
+            if (settings.startingPawnForceViolence)
+            {
+                for (int i = 0; i < StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.Count; i++)
+                {
+                    PawnGenerationRequest request =
+                        StartingPawnUtility.StartingAndOptionalPawnGenerationRequests[i];
+                    request.MustBeCapableOfViolence = true;
+                }
+            }
+
             SetupRandomScenario(settings);
             SetupRandomDifficulty(settings);
             SetupRandomPlanet(settings);
 
-            if (
-                settings.filterStartingBiome
-                && settings.allowedBiomes != null
-                && settings.allowedBiomes.Count > 0
-            )
-            {
-                Util.LogMessage("Filtering starting tile by allowed biomes");
-                List<BiomeDef> filterBiomes = new List<BiomeDef>();
-                foreach (string biomeDefName in settings.allowedBiomes)
-                {
-                    BiomeDef biomeDef = BiomeDef.Named(biomeDefName);
+            // Handle starting tile filtering
+            bool hasFilters =
+                (
+                    settings.filterStartingBiome
+                    && settings.allowedBiomes != null
+                    && settings.allowedBiomes.Count > 0
+                )
+                || (
+                    settings.filterStartingHilliness
+                    && settings.allowedHilliness != null
+                    && settings.allowedHilliness.Count > 0
+                );
 
-                    if (biomeDef != null)
+            if (hasFilters)
+            {
+                bool foundValidTile = false;
+                List<BiomeDef> filterBiomes = new List<BiomeDef>();
+                List<Hilliness> filterHilliness = new List<Hilliness>();
+
+                // Setup biome filtering
+                if (
+                    settings.filterStartingBiome
+                    && settings.allowedBiomes != null
+                    && settings.allowedBiomes.Count > 0
+                )
+                {
+                    Util.LogMessage("Filtering starting tile by allowed biomes");
+                    foreach (string biomeDefName in settings.allowedBiomes)
                     {
-                        filterBiomes.Add(biomeDef);
+                        BiomeDef biomeDef = BiomeDef.Named(biomeDefName);
+                        if (biomeDef != null)
+                        {
+                            filterBiomes.Add(biomeDef);
+                        }
                     }
                 }
 
+                // Setup hilliness filtering
+                if (
+                    settings.filterStartingHilliness
+                    && settings.allowedHilliness != null
+                    && settings.allowedHilliness.Count > 0
+                )
+                {
+                    Util.LogMessage("Filtering starting tile by allowed hilliness");
+                    foreach (int hillinessValue in settings.allowedHilliness)
+                    {
+                        if (hillinessValue >= 1 && hillinessValue <= 4) // Flat, SmallHills, LargeHills, Mountainous
+                        {
+                            filterHilliness.Add((Hilliness)hillinessValue);
+                        }
+                    }
+                }
+
+                // Find tiles that match all enabled filters
                 List<Tile> filteredTiles = Find.WorldGrid.Surface.tiles.FindAll(tile =>
-                    filterBiomes.Contains(tile.biome)
-                );
+                {
+                    // Check biome filter (if enabled)
+                    bool biomeMatch =
+                        !settings.filterStartingBiome
+                        || filterBiomes.Count == 0
+                        || filterBiomes.Contains(tile.biome);
+
+                    // Check hilliness filter (if enabled)
+                    bool hillinessMatch =
+                        !settings.filterStartingHilliness
+                        || filterHilliness.Count == 0
+                        || filterHilliness.Contains(tile.hilliness);
+
+                    return biomeMatch && hillinessMatch;
+                });
 
                 foreach (Tile filteredTile in filteredTiles)
                 {
@@ -73,27 +134,28 @@ namespace RandomStartMod
                     if (TileFinder.IsValidTileForNewSettlement(filteredPlanetTile))
                     {
                         Find.GameInitData.startingTile = filteredPlanetTile;
+                        string biomeInfo = filteredPlanetTile.Tile.biome.label.CapitalizeFirst();
+                        string hillinessInfo = filteredTile.hilliness.GetLabelCap();
                         Util.LogMessage(
-                            $"Found valid tile for random start: {filteredPlanetTile.Tile.biome.label.CapitalizeFirst()}"
+                            $"Found valid tile for random start: {biomeInfo}, {hillinessInfo}"
                         );
+                        foundValidTile = true;
                         break;
                     }
+                }
 
+                if (!foundValidTile)
+                {
                     Util.LogMessage(
-                        "No valid tile found for allowed biomes. Choosing random tile."
+                        "No valid tile found for applied filters. Choosing random tile."
                     );
                     Find.GameInitData.ChooseRandomStartingTile();
                 }
             }
             else
             {
-                if (settings.filterStartingBiome)
-                {
-                    Util.LogMessage(
-                        "Allowed biomes list is empty or null. Randomly choosing a tile without filtering."
-                    );
-                    Find.GameInitData.ChooseRandomStartingTile();
-                }
+                // No filters applied, choose random tile
+                Find.GameInitData.ChooseRandomStartingTile();
             }
 
             Util.LogMessage(
@@ -674,7 +736,7 @@ namespace RandomStartMod
                     );
                     newIdeo = IdeoGenerator.GenerateIdeo(genParms);
                     newIdeo.memes.Clear();
-                    int memeCount = 3;
+                    int memeCount = settings.randomMemeRange.RandomInRange;
                     newIdeo.memes.AddRange(IdeoUtility.GenerateRandomMemes(memeCount, genParms));
                     newIdeo.SortMemesInDisplayOrder();
                     newIdeo.foundation.RandomizePrecepts(true, genParms);
