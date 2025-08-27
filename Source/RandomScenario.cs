@@ -24,17 +24,6 @@ namespace RandomStartMod
 
             Current.ProgramState = ProgramState.Entry;
             Current.Game = new Game { InitData = new GameInitData() };
-
-            if (settings.startingPawnForceViolence)
-            {
-                for (int i = 0; i < StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.Count; i++)
-                {
-                    PawnGenerationRequest request =
-                        StartingPawnUtility.StartingAndOptionalPawnGenerationRequests[i];
-                    request.MustBeCapableOfViolence = true;
-                }
-            }
-
             SetupRandomScenario(settings);
             SetupRandomDifficulty(settings);
             SetupRandomPlanet(settings);
@@ -187,6 +176,18 @@ namespace RandomStartMod
                 allPart.PostIdeoChosen();
             }
 
+            if (settings.startingPawnForceViolence)
+            {
+                StartingPawnUtility.ClearAllStartingPawns();
+                for (int i = 0; i < 10; i++)
+                {
+                    PawnGenerationRequest request = StartingPawnUtility.DefaultStartingPawnRequest;
+                    request.MustBeCapableOfViolence = true;
+                    StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.Add(request);
+                    StartingPawnUtility.AddNewPawn(i);
+                }
+            }
+
             if (ModsConfig.BiotechActive)
             {
                 SetupRandomGenes(settings);
@@ -194,29 +195,45 @@ namespace RandomStartMod
 
             Find.GameInitData.startedFromEntry = true;
 
-            //Settlement playerSettlement;
-
-            //List<Settlement> settlements = Find.WorldObjects.Settlements;
-            //for (int i = 0; i < settlements.Count; i++)
-            //{
-            //    if (settlements[i].Faction == Faction.OfPlayer)
-            //    {
-            //        playerSettlement = settlements[i];
-            //        playerSettlement.MapGeneratorDef.genSteps.Clear();
-            //        break;
-            //    }
-            //}
-
             if (settings.randomiseFactionGoodwill)
             {
                 Util.LogMessage("Randomising Faction Goodwill");
                 foreach (Faction item in Find.FactionManager.AllFactionsListForReading)
                 {
-                    item.RemoveAllRelations();
+                    // Skip faction if it's excluded from reputation randomization
+                    if (settings.factionsExcludeFromReputationRandomization != null && 
+                        settings.factionsExcludeFromReputationRandomization.Contains(item.def.defName))
+                    {
+                        continue;
+                    }
+                    
+                    // Only remove relations for factions that aren't excluded
+                    List<FactionRelation> relationsToRemove = new List<FactionRelation>();
+                    foreach (FactionRelation relation in item.relations)
+                    {
+                        if (settings.factionsExcludeFromReputationRandomization == null ||
+                            !settings.factionsExcludeFromReputationRandomization.Contains(relation.other.def.defName))
+                        {
+                            relationsToRemove.Add(relation);
+                        }
+                    }
+                    foreach (FactionRelation relation in relationsToRemove)
+                    {
+                        item.relations.Remove(relation);
+                    }
+                    
                     foreach (Faction item2 in Find.FactionManager.AllFactionsListForReading)
                     {
                         if (item != item2)
                         {
+                            // Skip if either faction is excluded from reputation randomization
+                            if (settings.factionsExcludeFromReputationRandomization != null && 
+                                (settings.factionsExcludeFromReputationRandomization.Contains(item.def.defName) ||
+                                 settings.factionsExcludeFromReputationRandomization.Contains(item2.def.defName)))
+                            {
+                                continue;
+                            }
+                            
                             if (item.RelationWith(item2, allowNull: true) == null)
                             {
                                 int initialGoodwill = GetInitialGoodwill(item, item2);
@@ -724,12 +741,55 @@ namespace RandomStartMod
                 }
                 else
                 {
+                    // Convert string lists to actual defs
+                    List<PreceptDef> disallowedPreceptDefs = null;
+                    if (settings.disallowedPrecepts?.Count > 0)
+                    {
+                        disallowedPreceptDefs = new List<PreceptDef>();
+                        foreach (string preceptDefName in settings.disallowedPrecepts)
+                        {
+                            PreceptDef preceptDef = DefDatabase<PreceptDef>.GetNamed(preceptDefName, false);
+                            if (preceptDef != null)
+                            {
+                                disallowedPreceptDefs.Add(preceptDef);
+                            }
+                        }
+                    }
+
+                    List<MemeDef> disallowedMemeDefs = null;
+                    if (settings.disallowedMemes?.Count > 0)
+                    {
+                        disallowedMemeDefs = new List<MemeDef>();
+                        foreach (string memeDefName in settings.disallowedMemes)
+                        {
+                            MemeDef memeDef = DefDatabase<MemeDef>.GetNamed(memeDefName, false);
+                            if (memeDef != null)
+                            {
+                                disallowedMemeDefs.Add(memeDef);
+                            }
+                        }
+                    }
+
+                    List<MemeDef> forcedMemeDefs = null;
+                    if (settings.forcedMemes?.Count > 0)
+                    {
+                        forcedMemeDefs = new List<MemeDef>();
+                        foreach (string memeDefName in settings.forcedMemes)
+                        {
+                            MemeDef memeDef = DefDatabase<MemeDef>.GetNamed(memeDefName, false);
+                            if (memeDef != null)
+                            {
+                                forcedMemeDefs.Add(memeDef);
+                            }
+                        }
+                    }
+
                     IdeoGenerationParms genParms = new IdeoGenerationParms(
                         Find.FactionManager.OfPlayer.def,
                         forceNoExpansionIdeo: false,
-                        null,
-                        null,
-                        null,
+                        disallowedPreceptDefs,
+                        disallowedMemeDefs,
+                        forcedMemeDefs, // this overrides memes, rather than adding to them
                         classicExtra: false,
                         forceNoWeaponPreference: false,
                         settings.fluidIdeo
@@ -737,7 +797,7 @@ namespace RandomStartMod
                     newIdeo = IdeoGenerator.GenerateIdeo(genParms);
                     newIdeo.memes.Clear();
                     int memeCount = settings.randomMemeRange.RandomInRange;
-                    newIdeo.memes.AddRange(IdeoUtility.GenerateRandomMemes(memeCount, genParms));
+                    newIdeo.memes.AddRange(GenerateRandomMemes(memeCount, genParms));
                     newIdeo.SortMemesInDisplayOrder();
                     newIdeo.foundation.RandomizePrecepts(true, genParms);
                 }
@@ -748,6 +808,88 @@ namespace RandomStartMod
                 newIdeo.initialPlayerIdeo = true;
                 Find.IdeoManager.Add(newIdeo);
             }
+        }
+
+        private static List<MemeDef> GenerateRandomMemes(int count, IdeoGenerationParms parms)
+        {
+            FactionDef forFaction = parms.forFaction;
+            bool forPlayerFaction = forFaction != null && forFaction.isPlayer;
+            List<MemeDef> memes = new List<MemeDef>();
+            bool flag = false;
+            if (forFaction != null && forFaction.requiredMemes != null)
+            {
+                for (int i = 0; i < forFaction.requiredMemes.Count; i++)
+                {
+                    memes.Add(forFaction.requiredMemes[i]);
+                    if (forFaction.requiredMemes[i].category == MemeCategory.Normal)
+                    {
+                        count--;
+                    }
+                    else if (forFaction.requiredMemes[i].category == MemeCategory.Structure)
+                    {
+                        flag = true;
+                    }
+                }
+            }
+
+            if (parms.forcedMemes != null)
+            {
+                foreach (MemeDef forcedMeme in parms.forcedMemes)
+                {
+                    if (forcedMeme.category == MemeCategory.Structure)
+                    {
+                        flag = true;
+                        break;
+                    }
+                }
+            }
+
+            if (forFaction != null && forFaction.structureMemeWeights != null && !flag)
+            {
+                MemeWeight result2;
+                if (forFaction.structureMemeWeights.Where((MemeWeight x) => IdeoUtility.CanAdd(x.meme, memes, forFaction, parms.forNewFluidIdeo) && (forPlayerFaction || !IdeoUtility.AnyIdeoHas(x.meme))).TryRandomElementByWeight((MemeWeight x) => x.selectionWeight * x.meme.randomizationSelectionWeightFactor, out var result))
+                {
+                    memes.Add(result.meme);
+                    flag = true;
+                }
+                else if (forFaction.structureMemeWeights.Where((MemeWeight x) => IdeoUtility.CanAdd(x.meme, memes, forFaction, parms.forNewFluidIdeo)).TryRandomElementByWeight((MemeWeight x) => x.selectionWeight * x.meme.randomizationSelectionWeightFactor, out result2))
+                {
+                    memes.Add(result2.meme);
+                    flag = true;
+                }
+            }
+
+            if (!flag)
+            {
+                MemeDef result4;
+                if (DefDatabase<MemeDef>.AllDefs.Where((MemeDef x) => x.category == MemeCategory.Structure && IdeoUtility.CanAdd(x, memes, forFaction, parms.forNewFluidIdeo) && (forPlayerFaction || !IdeoUtility.AnyIdeoHas(x))).TryRandomElement(out var result3))
+                {
+                    memes.Add(result3);
+                }
+                else if (DefDatabase<MemeDef>.AllDefs.Where((MemeDef x) => x.category == MemeCategory.Structure && IdeoUtility.CanAdd(x, memes, forFaction, parms.forNewFluidIdeo)).TryRandomElementByWeight((MemeDef x) => x.randomizationSelectionWeightFactor, out result4))
+                {
+                    memes.Add(result4);
+                }
+            }
+
+            if (parms.forcedMemes != null)
+            {
+                memes.AddRange(parms.forcedMemes);
+            }
+
+            for (int num = memes.Count; num <= count; num++)
+            {
+                MemeDef result6;
+                if (DefDatabase<MemeDef>.AllDefs.Where((MemeDef x) => x.category == MemeCategory.Normal && IdeoUtility.CanAdd(x, memes, forFaction, parms.forNewFluidIdeo) && (forPlayerFaction || !IdeoUtility.AnyIdeoHas(x)) && (parms.disallowedMemes == null || !parms.disallowedMemes.Contains(x))).TryRandomElementByWeight((MemeDef x) => x.randomizationSelectionWeightFactor, out var result5))
+                {
+                    memes.Add(result5);
+                }
+                else if (DefDatabase<MemeDef>.AllDefs.Where((MemeDef x) => x.category == MemeCategory.Normal && IdeoUtility.CanAdd(x, memes, forFaction, parms.forNewFluidIdeo) && (parms.disallowedMemes == null || !parms.disallowedMemes.Contains(x))).TryRandomElementByWeight((MemeDef x) => x.randomizationSelectionWeightFactor, out result6))
+                {
+                    memes.Add(result6);
+                }
+            }
+            return memes;
         }
 
         private static void SetupRandomGenes(RandomStartSettings settings)

@@ -25,5 +25,6 @@
 		<li>Ludeon.RimWorld.Biotech</li>
 		<li>Ludeon.RimWorld.Anomaly</li>
 		<li>phoenix.continuebutton</li>
+		<li>phoenix.continuebutton_steam</li>
 	</loadAfter>
 </ModMetaData>

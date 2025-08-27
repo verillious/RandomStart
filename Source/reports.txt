@@ -11,11 +11,6 @@ allow changing of biome ratios
 one of my all time favourites, but i feel like it doesnt randomize the xenotype of colonists properly, like they usually include all the genes to make a hiveling, and then add a random gene instead of randomizing it from the ground up
 I think it would be cool if there was an option set a specific xenotype for all colonists.
 
-customise random meme count range please?
-config option to limit fluid ideologies to a single meme, instead of 3
-
-So in the options under the Misc Tab under Ideology there is an option to load a saved ideoligon. I added saved ideoligon but my pawns get a random religion anyways. It it supposed to give your starting pawns that religion or is it just supposed to add it to the game or what? I'm not sure how it's supposed to work so I can't tell if it's working or not.
-
 
 Can you add posibility to disable randomization of reputation or rep range for selected factions?
 Will there be support for Biomes! mods for world settings and ReGrowth mod for the world settings as well? Also there seems to be no world settings for the Infestations from the new VFE insectoids 2

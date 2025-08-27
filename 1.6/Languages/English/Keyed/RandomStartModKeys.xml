@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
+	<!-- Existing translations -->
 	<RandomStartMod.Title>Random Start</RandomStartMod.Title>
 	<RandomStartMod.LaunchingWithoutConfiguring>You are launching {0} but you haven't configured it yet.</RandomStartMod.LaunchingWithoutConfiguring>
 	<RandomStartMod.SettingsAccess>(You can access the settings by right-clicking the <b>Random</b> button)</RandomStartMod.SettingsAccess>
@@ -8,4 +9,131 @@
 	<RandomStartMod.ALittleLess>A Little Less</RandomStartMod.ALittleLess>
 	<RandomStartMod.VeryHigh>Very High</RandomStartMod.VeryHigh>
 	<RandomStartMod.VeryLow>Very Low</RandomStartMod.VeryLow>
+
+	<!-- Tab Names -->
+	<RandomStartMod.Tabs.StartingTile>Starting Tile</RandomStartMod.Tabs.StartingTile>
+
+	<!-- Difficulty Settings -->
+	<RandomStartMod.Difficulty.Description>Choose the challenge level and game mode for your colony:</RandomStartMod.Difficulty.Description>
+	<RandomStartMod.Difficulty.AnomalyDescription>Configure anomaly-specific difficulty settings and threat levels:</RandomStartMod.Difficulty.AnomalyDescription>
+	<RandomStartMod.Difficulty.CustomDescription>Fine-tune individual difficulty parameters to create your perfect challenge:</RandomStartMod.Difficulty.CustomDescription>
+	<RandomStartMod.Difficulty.NoPauseChallenge>No Pause Challenge</RandomStartMod.Difficulty.NoPauseChallenge>
+	<RandomStartMod.Difficulty.NoPauseChallengeTooltip>When enabled, your colony will be unable to pause the game. This provides an intense challenge where time never stops flowing, requiring constant attention and quick decision-making.</RandomStartMod.Difficulty.NoPauseChallengeTooltip>
+	<RandomStartMod.Difficulty.HalfSpeedEnabled>Half Speed enabled</RandomStartMod.Difficulty.HalfSpeedEnabled>
+	<RandomStartMod.Difficulty.HalfSpeedEnabledTooltip>When No Pause Challenge is active, this allows you to slow the game to half speed as your only respite from the relentless passage of time.</RandomStartMod.Difficulty.HalfSpeedEnabledTooltip>
+
+	<!-- Scenario Settings -->
+	<RandomStartMod.Scenarios.RandomizeScenarioTooltip>When enabled, a random scenario will be selected from your enabled list. When disabled, you can choose which specific scenarios to include in the random pool.</RandomStartMod.Scenarios.RandomizeScenarioTooltip>
+	<RandomStartMod.Scenarios.Description>Choose which scenarios can be randomly selected for your colony:</RandomStartMod.Scenarios.Description>
+	<RandomStartMod.Scenarios.ResearchDescription>Customize your colony's starting research and technology level:</RandomStartMod.Scenarios.ResearchDescription>
+	<RandomStartMod.Scenarios.RemoveDefaultResearchTooltip>Remove the research items that your colony would normally start with.</RandomStartMod.Scenarios.RemoveDefaultResearchTooltip>
+	<RandomStartMod.Scenarios.RandomizeResearchTooltip>Randomly add research to your colony.</RandomStartMod.Scenarios.RandomizeResearchTooltip>
+	<RandomStartMod.Scenarios.UnlockPrerequisiteResearchTooltip>When unlocking a randomly assigned research, also unlock all other research topics that would normally be required to research it.\n\nFor example, when unlocking 'Battery' also unlock 'Electricity'.</RandomStartMod.Scenarios.UnlockPrerequisiteResearchTooltip>
+	<RandomStartMod.Scenarios.ItemsDescription>Configure your colony's starting equipment and resources:</RandomStartMod.Scenarios.ItemsDescription>
+	<RandomStartMod.Scenarios.RemoveDefaultItemsTooltip>Remove all scattered starting items that your scenario would normally provide. This includes weapons, food, medicine, and other resources scattered around your starting area.</RandomStartMod.Scenarios.RemoveDefaultItemsTooltip>
+	<RandomStartMod.Scenarios.RandomizeItemsTooltip>Randomly add items to your starting area based on the configured count and tech level limits. These will replace any removed default items.</RandomStartMod.Scenarios.RandomizeItemsTooltip>
+	<RandomStartMod.Scenarios.MarketValueLimitTooltip>Set a maximum total market value for all randomly generated starting items. This prevents overpowered starts by limiting the combined worth of random equipment and resources.</RandomStartMod.Scenarios.MarketValueLimitTooltip>
+
+	<!-- Storyteller Settings -->
+	<RandomStartMod.Storyteller.Title>Storyteller Selection</RandomStartMod.Storyteller.Title>
+	<RandomStartMod.Storyteller.Description>Choose which storytellers can be randomly selected to direct your colony's narrative:</RandomStartMod.Storyteller.Description>
+
+	<!-- Faction Settings -->
+	<RandomStartMod.Factions.RequiredTitle>Required Factions</RandomStartMod.Factions.RequiredTitle>
+	<RandomStartMod.Factions.RequiredDescription>These factions will always be present in the world:</RandomStartMod.Factions.RequiredDescription>
+	<RandomStartMod.Factions.RandomTitle>Random Factions</RandomStartMod.Factions.RandomTitle>
+	<RandomStartMod.Factions.RandomDescription>These factions may randomly appear in the world based on the count range:</RandomStartMod.Factions.RandomDescription>
+	<RandomStartMod.Factions.CountLabel>Count:</RandomStartMod.Factions.CountLabel>
+	<RandomStartMod.Factions.UniqueFactions>Unique Factions</RandomStartMod.Factions.UniqueFactions>
+	<RandomStartMod.Factions.UniqueFactionsTooltip>Only generate one of each type of faction.\n\nThis means that the maximum number of randomly generated factions will be the same as the amount of factions selected above.</RandomStartMod.Factions.UniqueFactionsTooltip>
+	<RandomStartMod.Factions.RandomizeFactionGoodwillTooltip>Randomly set your faction's relationship with generated factions.\n\nThis means that factions that are normally friendly to you may be hostile and factions that are normally hostile may be friendly.</RandomStartMod.Factions.RandomizeFactionGoodwillTooltip>
+	<RandomStartMod.Factions.ReputationExclusionsTitle>Reputation Exclusions</RandomStartMod.Factions.ReputationExclusionsTitle>
+	<RandomStartMod.Factions.ReputationExclusionsDescription>These factions will keep their default relationships when reputation randomization is enabled:</RandomStartMod.Factions.ReputationExclusionsDescription>
+	<RandomStartMod.Factions.NoFactionsAvailableToExclude>No factions available to exclude</RandomStartMod.Factions.NoFactionsAvailableToExclude>
+
+	<!-- Planet Settings -->
+	<RandomStartMod.Planet.CoverageTitle>Planet Coverage</RandomStartMod.Planet.CoverageTitle>
+	<RandomStartMod.Planet.CoverageDescription>Determine how much of the planet is generated and explorable:</RandomStartMod.Planet.CoverageDescription>
+	<RandomStartMod.Planet.MapSizeTitle>Map Size</RandomStartMod.Planet.MapSizeTitle>
+	<RandomStartMod.Planet.MapSizeDescription>Set the size of maps for your colonies and encounters:</RandomStartMod.Planet.MapSizeDescription>
+	<RandomStartMod.Planet.GenerationTitle>World Generation</RandomStartMod.Planet.GenerationTitle>
+	<RandomStartMod.Planet.GenerationDescription>Configure world generation parameters and environmental conditions:</RandomStartMod.Planet.GenerationDescription>
+	<RandomStartMod.Planet.RandomizeLabel>Randomize:</RandomStartMod.Planet.RandomizeLabel>
+	<RandomStartMod.Planet.WorldGenDescription>Configure world generation parameters and environmental conditions:</RandomStartMod.Planet.WorldGenDescription>
+	<RandomStartMod.Planet.RandomiseWorldSeedTooltip>Randomly assign the seed used an the generation of your world.</RandomStartMod.Planet.RandomiseWorldSeedTooltip>
+	<RandomStartMod.Planet.RandomizeRainfallTooltip>Randomly set the planet's overall rainfall level, which affects biome distribution and how common wet vs dry areas are across the world.</RandomStartMod.Planet.RandomizeRainfallTooltip>
+	<RandomStartMod.Planet.RandomizeTemperatureTooltip>Randomly set the planet's overall temperature level, which determines how common hot vs cold biomes are and affects the global climate patterns.</RandomStartMod.Planet.RandomizeTemperatureTooltip>
+	<RandomStartMod.Planet.RandomizePopulationTooltip>Randomly set the planet's faction site density, which affects how many settlements, outposts, and faction bases are scattered across the world.</RandomStartMod.Planet.RandomizePopulationTooltip>
+	<RandomStartMod.Planet.RandomizePollutionTooltip>Randomly set the starting pollution level across the planet. Higher pollution creates more wasteland areas and affects plant growth and animal health.</RandomStartMod.Planet.RandomizePollutionTooltip>
+	<RandomStartMod.Planet.RandomizeStartingSeasonTooltip>Randomly choose which season your colony begins in. Different seasons affect temperature, plant growth, and available resources at game start.</RandomStartMod.Planet.RandomizeStartingSeasonTooltip>
+	<RandomStartMod.Planet.RandomizeRealisticPlanetsTooltip>Enable randomization of Realistic Planets Continued mod settings, which affects planetary terrain generation and geographical features.</RandomStartMod.Planet.RandomizeRealisticPlanetsTooltip>
+	<RandomStartMod.Planet.AutoRealRuinsTooltip>Automatically enable Real Ruins generation to populate the world with ruins from other players' colonies, adding variety and exploration opportunities.</RandomStartMod.Planet.AutoRealRuinsTooltip>
+	<RandomStartMod.Planet.RealRuinsBiomeFilteringTooltip>Filter Real Ruins based on biome compatibility, ensuring ruins appear in appropriate environments that match their original settings.</RandomStartMod.Planet.RealRuinsBiomeFilteringTooltip>
+
+	<!-- Starting Tile -->
+	<!-- Optional Features (Misc Tab) -->
+	<RandomStartMod.Misc.GenesTitle>Genetic Traits</RandomStartMod.Misc.GenesTitle>
+	<RandomStartMod.Misc.GenesDescription>Configure genetic traits and xenotypes for your starting colonists:</RandomStartMod.Misc.GenesDescription>
+	<RandomStartMod.Misc.CountLabel>Count:</RandomStartMod.Misc.CountLabel>
+	<RandomStartMod.Misc.RandomizeXenotypeTooltip>Randomly assign xenotypes to your starting pawns from all available xenotype definitions. This affects their genetic traits, abilities, and appearance.</RandomStartMod.Misc.RandomizeXenotypeTooltip>
+	<RandomStartMod.Misc.RespectFactionXenotypesTooltip>When randomizing xenotypes, only choose from xenotypes that are appropriate for your faction's members. This maintains lore consistency for faction-specific genetic traits.</RandomStartMod.Misc.RespectFactionXenotypesTooltip>
+	<RandomStartMod.Misc.RandomizeCustomGenesTooltip>Instead of using predefined xenotypes, randomly assign individual genes to create custom genetic combinations for your starting pawns.</RandomStartMod.Misc.RandomizeCustomGenesTooltip>
+	<RandomStartMod.Misc.MinimumMetabolicEfficiencyTooltip>Set a minimum metabolic efficiency requirement when generating random genes. This prevents creating pawns with extremely poor metabolism that would require excessive food consumption.</RandomStartMod.Misc.MinimumMetabolicEfficiencyTooltip>
+	<RandomStartMod.Misc.IdeologyTitle>Ideology System</RandomStartMod.Misc.IdeologyTitle>
+	<RandomStartMod.Misc.IdeologyDescription>Customize ideology generation and belief systems for your colony:</RandomStartMod.Misc.IdeologyDescription>
+	<RandomStartMod.Misc.PlayClassicModeTooltip>Disable the ideology system and use classic faction relationships instead. This removes ideological mechanics like beliefs, rituals, and precepts from the game.</RandomStartMod.Misc.PlayClassicModeTooltip>
+	<RandomStartMod.Misc.RandomMemeCountLabel>Random Meme Count:</RandomStartMod.Misc.RandomMemeCountLabel>
+	<RandomStartMod.Misc.ForcedMemesTitle>Forced Memes</RandomStartMod.Misc.ForcedMemesTitle>
+	<RandomStartMod.Misc.ForcedMemesDescription>These memes will always be included in your colony's ideology:</RandomStartMod.Misc.ForcedMemesDescription>
+	<RandomStartMod.Misc.DisallowedMemesTitle>Disallowed Memes</RandomStartMod.Misc.DisallowedMemesTitle>
+	<RandomStartMod.Misc.DisallowedMemesDescription>These memes will never be included in randomly generated ideologies:</RandomStartMod.Misc.DisallowedMemesDescription>
+	<RandomStartMod.Misc.DisallowedPrecepts>Disallowed Precepts</RandomStartMod.Misc.DisallowedPrecepts>
+	<RandomStartMod.Misc.DisallowedPreceptsDescription>These specific precepts will be excluded from ideology generation:</RandomStartMod.Misc.DisallowedPreceptsDescription>
+	<RandomStartMod.Misc.LoadExistingIdeologyTooltip>Use a previously saved custom ideology file (.rid) instead of generating a new random ideology. This allows you to reuse ideologies from other colonies or campaigns.</RandomStartMod.Misc.LoadExistingIdeologyTooltip>
+	<RandomStartMod.Misc.StartingColonistsDescription>Configure special requirements for your starting colonists:</RandomStartMod.Misc.StartingColonistsDescription>
+	<RandomStartMod.Misc.StartingPawnsMustBeCapableOfViolenceTooltip>Do not generate starting pawns that are incapable of violence due to medical issues, backgrounds or traits.</RandomStartMod.Misc.StartingPawnsMustBeCapableOfViolenceTooltip>
+
+	<!-- Starting Tile Settings -->
+	<RandomStartMod.StartingTile.Title>Starting Tile</RandomStartMod.StartingTile.Title>
+	<RandomStartMod.StartingTile.FilterStartingBiome>Filter Starting Biome</RandomStartMod.StartingTile.FilterStartingBiome>
+	<RandomStartMod.StartingTile.FilterStartingBiomeTooltip>Enable to filter which biomes are allowed for starting tiles</RandomStartMod.StartingTile.FilterStartingBiomeTooltip>
+	<RandomStartMod.StartingTile.AllowedBiomes>Allowed Biomes:</RandomStartMod.StartingTile.AllowedBiomes>
+	<RandomStartMod.StartingTile.NoBiomesSelected>No biomes selected (will use default behavior)</RandomStartMod.StartingTile.NoBiomesSelected>
+	<RandomStartMod.StartingTile.AddBiome>Add Biome</RandomStartMod.StartingTile.AddBiome>
+	<RandomStartMod.StartingTile.FilterStartingHilliness>Filter Starting Hilliness</RandomStartMod.StartingTile.FilterStartingHilliness>
+	<RandomStartMod.StartingTile.FilterStartingHillinessTooltip>Enable to filter which hilliness types are allowed for starting tiles</RandomStartMod.StartingTile.FilterStartingHillinessTooltip>
+	<RandomStartMod.StartingTile.AllowedHilliness>Allowed Hilliness:</RandomStartMod.StartingTile.AllowedHilliness>
+	<RandomStartMod.StartingTile.NoHillinessSelected>No hilliness selected (will use default behavior)</RandomStartMod.StartingTile.NoHillinessSelected>
+	<RandomStartMod.StartingTile.AddHilliness>Add Hilliness</RandomStartMod.StartingTile.AddHilliness>
+
+	<!-- Tooltip Titles -->
+	<RandomStartMod.TooltipTitles.RemoveDefaultResearch>Remove Default Research</RandomStartMod.TooltipTitles.RemoveDefaultResearch>
+	<RandomStartMod.TooltipTitles.RandomizeResearch>Randomize Research</RandomStartMod.TooltipTitles.RandomizeResearch>
+	<RandomStartMod.TooltipTitles.UnlockPrerequisiteResearch>Unlock Prerequisite Research</RandomStartMod.TooltipTitles.UnlockPrerequisiteResearch>
+	<RandomStartMod.TooltipTitles.RemoveDefaultItems>Remove Default Items</RandomStartMod.TooltipTitles.RemoveDefaultItems>
+	<RandomStartMod.TooltipTitles.RandomizeItems>Randomize Items</RandomStartMod.TooltipTitles.RandomizeItems>
+	<RandomStartMod.TooltipTitles.MarketValueLimit>Market Value Limit</RandomStartMod.TooltipTitles.MarketValueLimit>
+	<RandomStartMod.TooltipTitles.UniqueFactions>Unique Factions</RandomStartMod.TooltipTitles.UniqueFactions>
+	<RandomStartMod.TooltipTitles.RandomizeFactionGoodwill>Randomize Faction Goodwill</RandomStartMod.TooltipTitles.RandomizeFactionGoodwill>
+	<RandomStartMod.TooltipTitles.RandomiseWorldSeed>Randomise World Seed</RandomStartMod.TooltipTitles.RandomiseWorldSeed>
+	<RandomStartMod.TooltipTitles.RandomizeRainfall>Randomize Rainfall</RandomStartMod.TooltipTitles.RandomizeRainfall>
+	<RandomStartMod.TooltipTitles.RandomizeTemperature>Randomize Temperature</RandomStartMod.TooltipTitles.RandomizeTemperature>
+	<RandomStartMod.TooltipTitles.RandomizePopulation>Randomize Population</RandomStartMod.TooltipTitles.RandomizePopulation>
+	<RandomStartMod.TooltipTitles.RandomizePollution>Randomize Pollution</RandomStartMod.TooltipTitles.RandomizePollution>
+	<RandomStartMod.TooltipTitles.RandomizeStartingSeason>Randomize Starting Season</RandomStartMod.TooltipTitles.RandomizeStartingSeason>
+	<RandomStartMod.TooltipTitles.RandomizeRealisticPlanets>Randomize Realistic Planets</RandomStartMod.TooltipTitles.RandomizeRealisticPlanets>
+	<RandomStartMod.TooltipTitles.AutoRealRuins>Auto Real Ruins</RandomStartMod.TooltipTitles.AutoRealRuins>
+	<RandomStartMod.TooltipTitles.RealRuinsBiomeFiltering>Real Ruins Biome Filtering</RandomStartMod.TooltipTitles.RealRuinsBiomeFiltering>
+	<RandomStartMod.TooltipTitles.RandomizeXenotype>Randomize Xenotype</RandomStartMod.TooltipTitles.RandomizeXenotype>
+	<RandomStartMod.TooltipTitles.RespectFactionXenotypes>Respect Faction Xenotypes</RandomStartMod.TooltipTitles.RespectFactionXenotypes>
+	<RandomStartMod.TooltipTitles.RandomizeCustomGenes>Randomize Custom Genes</RandomStartMod.TooltipTitles.RandomizeCustomGenes>
+	<RandomStartMod.TooltipTitles.MinimumMetabolicEfficiency>Minimum Metabolic Efficiency</RandomStartMod.TooltipTitles.MinimumMetabolicEfficiency>
+	<RandomStartMod.TooltipTitles.PlayClassicMode>Play Classic Mode</RandomStartMod.TooltipTitles.PlayClassicMode>
+	<RandomStartMod.TooltipTitles.LoadExistingIdeology>Load Existing Ideology</RandomStartMod.TooltipTitles.LoadExistingIdeology>
+	<RandomStartMod.TooltipTitles.StartingPawnsMustBeCapableOfViolence>Starting Pawns Must be Capable of Violence</RandomStartMod.TooltipTitles.StartingPawnsMustBeCapableOfViolence>
+	<RandomStartMod.TooltipTitles.RandomizeScenario>Randomize Scenario</RandomStartMod.TooltipTitles.RandomizeScenario>
+	<RandomStartMod.TooltipTitles.NoPauseChallenge>No Pause Challenge</RandomStartMod.TooltipTitles.NoPauseChallenge>
+	<RandomStartMod.TooltipTitles.HalfSpeedEnabled>Half Speed Enabled</RandomStartMod.TooltipTitles.HalfSpeedEnabled>
+	<RandomStartMod.TooltipTitles.FilterStartingBiome>Filter Starting Biome</RandomStartMod.TooltipTitles.FilterStartingBiome>
+	<RandomStartMod.TooltipTitles.FilterStartingHilliness>Filter Starting Hilliness</RandomStartMod.TooltipTitles.FilterStartingHilliness>
 </LanguageData>

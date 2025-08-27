@@ -54,6 +54,7 @@ namespace RandomStartMod
         public int maximumFactions = 15;
         public bool uniqueFactions = false;
         public bool randomiseFactionGoodwill = false;
+        public List<string> factionsExcludeFromReputationRandomization = new List<string>();
 
         public bool createRandomScenario = false;
         public bool enableCustomScenarios = true;
@@ -155,6 +156,9 @@ namespace RandomStartMod
         public bool respectFactionXenotypes = true;
         public bool fluidIdeo = false;
         public IntRange randomMemeRange = new IntRange(1, 4);
+        public List<string> forcedMemes = new List<string>();
+        public List<string> disallowedMemes = new List<string>();
+        public List<string> disallowedPrecepts = new List<string>();
         public bool removeStartingResearch = false;
         public bool addRandomResearch = false;
         public IntRange randomResearchRange = new IntRange(5, 15);
@@ -178,6 +182,10 @@ namespace RandomStartMod
 
         public override void ExposeData()
         {
+            // Ensure lists are properly initialized before serialization
+            if (factionsExcludeFromReputationRandomization == null)
+                factionsExcludeFromReputationRandomization = new List<string>();
+                
             Scribe_Values.Look(ref openedSettings, "openedSettings", false);
             Scribe_Values.Look(ref difficulty, "difficulty", "Rough");
             Scribe_Values.Look(ref mapSize, "mapSize", 250);
@@ -270,7 +278,7 @@ namespace RandomStartMod
                 }
             );
             Scribe_Values.Look(ref randomiseFactionGoodwill, "randomiseFactionGoodwill", false);
-
+            Scribe_Collections.Look(ref factionsExcludeFromReputationRandomization, "factionsExcludeFromReputationRandomization", LookMode.Value, new List<string>());
 
             Scribe_Values.Look(ref randomFactionRange, "randomFactionRange", new IntRange(5, 15));
             Scribe_Values.Look(ref uniqueFactions, "uniqueFactions", false);
@@ -348,6 +356,9 @@ namespace RandomStartMod
             Scribe_Values.Look(ref disableIdeo, "disableIdeo", false);
             Scribe_Values.Look(ref fluidIdeo, "fluidIdeo", false);
             Scribe_Values.Look(ref randomMemeRange, "randomMemeRange", new IntRange(1, 4));
+            Scribe_Collections.Look(ref forcedMemes, "forcedMemes", LookMode.Value, new List<string>());
+            Scribe_Collections.Look(ref disallowedMemes, "disallowedMemes", LookMode.Value, new List<string>());
+            Scribe_Collections.Look(ref disallowedPrecepts, "disallowedPrecepts", LookMode.Value, new List<string>());
             Scribe_Values.Look(ref overrideIdeo, "overrideIdeo", false);
             Scribe_Values.Look(ref customIdeoOverrideFile, "customIdeoOverrideFile", null);
 
@@ -506,6 +517,7 @@ namespace RandomStartMod
             randomFactionRange = new IntRange(5, 15);
             uniqueFactions = false;
             randomiseFactionGoodwill = false;
+            factionsExcludeFromReputationRandomization = new List<string>();
         }
         public void ResetScenarios()
         {
@@ -542,6 +554,9 @@ namespace RandomStartMod
             disableIdeo = false;
             fluidIdeo = false;
             randomMemeRange = new IntRange(1, 4);
+            forcedMemes = new List<string>();
+            disallowedMemes = new List<string>();
+            disallowedPrecepts = new List<string>();
             overrideIdeo = false;
             customIdeoOverrideFile = null;
         }
