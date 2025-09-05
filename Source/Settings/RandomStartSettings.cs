@@ -1,4 +1,6 @@
+using RimWorld;
 using System.Collections.Generic;
+using System.Linq;
 using Verse;
 
 namespace RandomStartMod
@@ -16,7 +18,7 @@ namespace RandomStartMod
         public bool randomiseWorldSeed = true;
         public string worldSeed = "village";
 
-        public IntRange randomiseRainfallRange = new IntRange(2, 4);
+        public IntRange randomiseRainfallRange = new IntRange(1, 3);
         public IntRange randomiseTemperatureRange = new IntRange(2, 4);
         public IntRange randomisePopulationRange = new IntRange(2, 4);
         public IntRange randomiseLandmarkDensityRange = new IntRange(2, 4);
@@ -27,12 +29,12 @@ namespace RandomStartMod
         public bool randomisePopulation = true;
         public bool randomiseLandmarkDensity = true;
         public bool randomisePollution = true;
-        public bool randomiseSeason = false;
+        public bool randomiseSeason = true;
         public bool disableIdeo = false;
         public bool overrideIdeo = false;
         public string customIdeoOverrideFile = null;
 
-        public int rainfall = 3;
+        public int rainfall = 2;
         public int temperature = 3;
         public int population = 3;
         public int landmarkDensity = 3;
@@ -42,7 +44,7 @@ namespace RandomStartMod
         // Starting Tile Settings
         public bool filterStartingBiome = false;
         public List<string> allowedBiomes = new List<string>();
-        
+
         public bool filterStartingHilliness = false;
         public List<int> allowedHilliness = new List<int>();
 
@@ -173,19 +175,44 @@ namespace RandomStartMod
 
         //Compat
         public int myLittlePlanetSubcount = 10;
-        public int realisticPlanetsWorldType = 3;
-        public bool randomiseRealisticPlanets = true;
+
+        public bool realisticPlanetsUseWordType = false;
+        public float realisticPlanetsUseWordTypeChance = 0.5f;
+
+        public string realisticPlanetsWorldType = "Planets.Vanilla";
+        public bool randomiseRealisticPlanets = false;
+
+        public int realisticPlanetsOceanType = 3;
+        public bool randomiseOceanType = true;
+        public IntRange randomiseOceanTypeRange = new IntRange(2, 4);
+
+        public int realisticPlanetsAxialTilt = 2;
+        public bool randomiseAxialTilt = true;
+        public IntRange randomiseAxialTiltRange = new IntRange(1, 3);
         public bool enableAutoRealRuins = true;
         public bool realRuinsBiomeFilter = false;
         public bool noPauseEnabled = true;
         public bool noPauseHalfSpeedEnabled = false;
+
+        public bool randomisePawnName = true;
+        public string PawnFirstName;
+        public string PawnNickName;
+        public string PawnLastName;
+        public bool randomisePawnAge = false;
+        public IntRange randomisePawnAgeRange = new IntRange(20, 40);
+        public bool randomisePawnSex = true;
+        public int PawnSex = 0;
+        public bool PawnNotDisabledWorkTags = false;
+
+        public bool limitStartingTileTemperature = false;
+        public FloatRange limitStartingTileTemperatureRange = new FloatRange(-10f, 30f);
 
         public override void ExposeData()
         {
             // Ensure lists are properly initialized before serialization
             if (factionsExcludeFromReputationRandomization == null)
                 factionsExcludeFromReputationRandomization = new List<string>();
-                
+
             Scribe_Values.Look(ref openedSettings, "openedSettings", false);
             Scribe_Values.Look(ref difficulty, "difficulty", "Rough");
             Scribe_Values.Look(ref mapSize, "mapSize", 250);
@@ -210,7 +237,7 @@ namespace RandomStartMod
                 true
             );
 
-            Scribe_Values.Look(ref rainfall, "rainfall", 3);
+            Scribe_Values.Look(ref rainfall, "rainfall", 2);
             Scribe_Values.Look(ref temperature, "temperature", 3);
             Scribe_Values.Look(ref population, "population", 3);
             Scribe_Values.Look(ref landmarkDensity, "landmarkDensity", 3);
@@ -376,17 +403,38 @@ namespace RandomStartMod
             Scribe_Values.Look(ref randomItemTotalMarketValueLimit, "randomItemTotalMarketValueLimit", 10000);
 
             Scribe_Values.Look(ref myLittlePlanetSubcount, "myLittlePlanetSubcount", 10);
-            Scribe_Values.Look(ref realisticPlanetsWorldType, "realisticPlanetsWorldType", 3);
-            Scribe_Values.Look(ref randomiseRealisticPlanets, "randomiseRealisticPlanets", true);
 
+            Scribe_Values.Look(ref realisticPlanetsUseWordType, "realisticPlanetsUseWordType", defaultValue: false);
+            Scribe_Values.Look(ref realisticPlanetsUseWordTypeChance, "realisticPlanetsUseWordTypeChance", 0.5f);
 
-            Scribe_Values.Look(ref enableAutoRealRuins, "enableAutoRealRuins", true);
-            Scribe_Values.Look(ref realRuinsBiomeFilter, "realRuinsBiomeFilter", false);
+            Scribe_Values.Look(ref realisticPlanetsWorldType, "realisticPlanetsWorldType", "Planets.Vanilla");
+            Scribe_Values.Look(ref randomiseRealisticPlanets, "randomiseRealisticPlanets", defaultValue: false);
 
-            Scribe_Values.Look(ref noPauseEnabled, "noPauseEnabled", true);
-            Scribe_Values.Look(ref noPauseHalfSpeedEnabled, "noPauseHalfSpeedEnabled", false);
+            Scribe_Values.Look(ref randomiseOceanTypeRange, "randomiseOceanTypeRange", new IntRange(2, 4));
+            Scribe_Values.Look(ref realisticPlanetsOceanType, "realisticPlanetsOceanType", 3);
+            Scribe_Values.Look(ref randomiseOceanType, "randomiseOceanType", defaultValue: true);
 
+            Scribe_Values.Look(ref randomiseAxialTiltRange, "randomiseAxialTiltRange", new IntRange(1, 3));
+            Scribe_Values.Look(ref randomiseAxialTilt, "randomiseAxialTilt", defaultValue: true);
+            Scribe_Values.Look(ref realisticPlanetsAxialTilt, "realisticPlanetsAxialTilt", 2);
 
+            Scribe_Values.Look(ref enableAutoRealRuins, "enableAutoRealRuins", defaultValue: true);
+            Scribe_Values.Look(ref realRuinsBiomeFilter, "realRuinsBiomeFilter", defaultValue: false);
+            Scribe_Values.Look(ref noPauseEnabled, "noPauseEnabled", defaultValue: true);
+            Scribe_Values.Look(ref noPauseHalfSpeedEnabled, "noPauseHalfSpeedEnabled", defaultValue: false);
+
+            Scribe_Values.Look(ref randomisePawnName, "randomisePawnName", defaultValue: true);
+            Scribe_Values.Look(ref PawnFirstName, "PawnFirstName", null);
+            Scribe_Values.Look(ref PawnNickName, "PawnNickName", null);
+            Scribe_Values.Look(ref PawnLastName, "PawnLastName", null);
+            Scribe_Values.Look(ref randomisePawnAge, "randomisePawnAge", defaultValue: false);
+            Scribe_Values.Look(ref randomisePawnAgeRange, "randomisePawnAgeRange", new IntRange(20, 40));
+            Scribe_Values.Look(ref randomisePawnSex, "randomisePawnSex", defaultValue: true);
+            Scribe_Values.Look(ref PawnSex, "PawnSex", 0);
+            Scribe_Values.Look(ref PawnNotDisabledWorkTags, "PawnNotDisabledWorkTags", defaultValue: false);
+
+            Scribe_Values.Look(ref limitStartingTileTemperature, "limitStartingTileTemperature", defaultValue: false);
+            Scribe_Values.Look(ref limitStartingTileTemperatureRange, "limitStartingTileTemperatureRange", new FloatRange(-10f, 30f));
 
             base.ExposeData();
         }
@@ -459,13 +507,13 @@ namespace RandomStartMod
             randomisePopulation = true;
             randomiseLandmarkDensity = true;
             randomisePollution = true;
-            randomiseRainfallRange = new IntRange(2, 4);
+            randomiseRainfallRange = new IntRange(1, 3);
             randomiseTemperatureRange = new IntRange(2, 4);
             randomisePopulationRange = new IntRange(2, 4);
             randomiseLandmarkDensityRange = new IntRange(2, 4);
             randomisePollutionRange = new FloatRange(0.05f, 0.25f);
-            randomiseSeason = false;
-            rainfall = 3;
+            randomiseSeason = true;
+            rainfall = 2;
             temperature = 3;
             population = 3;
             landmarkDensity = 3;
@@ -475,44 +523,41 @@ namespace RandomStartMod
             // Starting Tile Settings
             filterStartingBiome = false;
             allowedBiomes = new List<string>();
-            
+
             myLittlePlanetSubcount = 10;
-            randomiseRealisticPlanets = true;
-            realisticPlanetsWorldType = 3;
+
+            realisticPlanetsUseWordType = false;
+            realisticPlanetsUseWordTypeChance = 0.5f;
+            randomiseRealisticPlanets = false;
+            realisticPlanetsWorldType = "Planets.Vanilla";
+            realisticPlanetsOceanType = 3;
+            randomiseOceanType = true;
+            randomiseOceanTypeRange = new IntRange(2, 4);
+            realisticPlanetsAxialTilt = 2;
+            randomiseAxialTilt = true;
+            randomiseAxialTiltRange = new IntRange(1, 3);
+
             enableAutoRealRuins = true;
             realRuinsBiomeFilter = false;
         }
         public void ResetFactions()
         {
-            factionsAlwaysAdd = new List<string>()
+            var allFactions = FactionGenerator.ConfigurableFactions.Where(faction => faction.startingCountAtWorldCreation > 0);
+            factionsAlwaysAdd = allFactions.Where(faction => faction.maxConfigurableAtWorldCreation == 1).Select(faction => faction.defName).ToList();
+
+            var randomFactions = allFactions.Where(faction => faction.maxConfigurableAtWorldCreation != 1).ToList();
+            using (IEnumerator<FactionDef> enumerator = FactionGenerator.ConfigurableFactions.GetEnumerator())
             {
-                "Ancients",
-                "AncientsHostile",
-                "Mechanoid",
-                "Insect",
-                "Empire",
-                "HoraxCult",
-                "Entities",
-                "VFEE_Deserters",
-            };
-            factionsRandomlyAdd = new List<string>()
-            {
-                "OutlanderCivil",
-                "OutlanderRough",
-                "TribeCivil",
-                "TribeRough",
-                "TribeSavage",
-                "Pirate",
-                "Empire",
-                "CannibalPirate",
-                "NudistTribe",
-                "TribeCannibal",
-                "TribeRoughNeanderthal",
-                "PirateYttakin",
-                "TribeSavageImpid",
-                "OutlanderRoughPig",
-                "PirateWaster",
-            };
+                while (enumerator.MoveNext())
+                {
+                    FactionDef faction = enumerator.Current;
+                    if (faction.replacesFaction != null)
+                    {
+                        randomFactions.RemoveAll((FactionDef x) => x == faction.replacesFaction);
+                    }
+                }
+            }
+            factionsRandomlyAdd = randomFactions.Select(faction => faction.defName).ToList();
 
             randomFactionRange = new IntRange(5, 15);
             uniqueFactions = false;
@@ -586,11 +631,19 @@ namespace RandomStartMod
             allowedBiomes = new List<string>();
             filterStartingHilliness = false;
             allowedHilliness = new List<int>();
+            limitStartingTileTemperature = false;
+            limitStartingTileTemperatureRange = new FloatRange(-10f, 30f);
         }
 
         public void ResetStartingColonists()
         {
             startingPawnForceViolence = false;
+            randomisePawnName = true;
+            randomisePawnAge = false;
+            randomisePawnAgeRange = new IntRange(20, 40);
+            randomisePawnSex = true;
+            PawnSex = 0;
+            PawnNotDisabledWorkTags = false;
         }
     }
 }

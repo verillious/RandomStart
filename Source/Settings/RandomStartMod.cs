@@ -1,4 +1,5 @@
 using Mono.Cecil;
+using RandomStartMod.Compat;
 using RimWorld;
 using RimWorld.Planet;
 using System;
@@ -95,6 +96,11 @@ namespace RandomStartMod
                     currentTab = 1;
                     WriteSettings();
                 }, currentTab == 1),
+                new TabRecord("RandomStartMod.Characters".Translate(),  () =>
+                {
+                    currentTab = 7;
+                    WriteSettings();
+                }, currentTab == 7)
         };
             if (ModsConfig.BiotechActive || ModsConfig.IdeologyActive)
             {
@@ -135,6 +141,10 @@ namespace RandomStartMod
             else if (currentTab == 6)
             {
                 DoStartingTileSettingsTabContents(mainRect.ContractedBy(15f));
+            }
+            else if (currentTab == 7)
+            {
+                DoCharactersSettingsTabContents(mainRect.ContractedBy(15f));
             }
         }
 
@@ -463,7 +473,7 @@ namespace RandomStartMod
             scenarioListingHeight += 24f + Text.LineHeight;
             Text.Font = GameFont.Small;
             Text.Font = GameFont.Tiny;
-            Widgets.Label(listingStandard.GetRect(Text.LineHeight), "Configure your colony's starting equipment and resources:");
+            Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Scenarios.ItemsDescription".Translate());
             scenarioListingHeight += Text.LineHeight;
             Text.Font = GameFont.Small;
 
@@ -802,7 +812,7 @@ namespace RandomStartMod
             factionListingHeight += 24f;
             DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate() + ": " + "Goodwill".Translate(), "RandomStartMod.TooltipTitles.RandomizeFactionGoodwill".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Factions.RandomizeFactionGoodwillTooltip".Translate(), ref settings.randomiseFactionGoodwill);
             factionListingHeight += 24f;
-            
+
             // Reputation exclusion section
             if (settings.randomiseFactionGoodwill)
             {
@@ -816,7 +826,7 @@ namespace RandomStartMod
                 Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Factions.ReputationExclusionsDescription".Translate());
                 factionListingHeight += Text.LineHeight;
                 Text.Font = GameFont.Small;
-                
+
                 // Show excluded factions as rows
                 List<FactionDef> factionsExcludeFromReputation = new List<FactionDef>();
                 if (settings.factionsExcludeFromReputationRandomization != null)
@@ -828,7 +838,7 @@ namespace RandomStartMod
                             factionsExcludeFromReputation.Add(faction);
                     }
                 }
-                
+
                 for (int i = 0; i < factionsExcludeFromReputation.Count; i++)
                 {
                     listingStandard.Gap(4f);
@@ -839,7 +849,7 @@ namespace RandomStartMod
                     listingStandard.Gap(4f);
                     factionListingHeight += 32f;
                 }
-                
+
                 // Add button for selecting factions to exclude
                 if (listingStandard.ButtonText("Add".Translate().CapitalizeFirst() + "..."))
                 {
@@ -848,7 +858,7 @@ namespace RandomStartMod
                     {
                         settings.factionsExcludeFromReputationRandomization = new List<string>();
                     }
-                    
+
                     List<FloatMenuOption> excludeList = new List<FloatMenuOption>();
                     foreach (FactionDef localDef in FactionGenerator.ConfigurableFactions.Where(def => !settings.factionsExcludeFromReputationRandomization.Contains(def.defName)))
                     {
@@ -869,7 +879,7 @@ namespace RandomStartMod
                 }
                 factionListingHeight += 28f;
             }
-            
+
             listingStandard.Gap();
             factionListingHeight += 12f;
             if (listingStandard.ButtonText("RestoreToDefaultSettings".Translate()))
@@ -1016,13 +1026,27 @@ namespace RandomStartMod
             {
                 listingStandard.Gap(2f);
                 Rect rainfallRect = listingStandard.GetRect(30f);
-                settings.rainfall = Mathf.RoundToInt(Widgets.HorizontalSlider(rainfallRect, (float)settings.rainfall, 0f, OverallRainfallUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabel(settings.rainfall), null, null, 1f));
+                if (ModsConfig.IsActive("koth.RealisticPlanets1.6") || ModsConfig.IsActive("koth.RealisticPlanets1.6_Steam"))
+                {
+                    settings.rainfall = Mathf.RoundToInt(Widgets.HorizontalSlider(rainfallRect, settings.rainfall, 0, 4, middleAlignment: true, Util.GetIntLabelShort(settings.rainfall), null, null, 1f));
+                }
+                else
+                {
+                    settings.rainfall = Mathf.RoundToInt(Widgets.HorizontalSlider(rainfallRect, settings.rainfall, 0, OverallRainfallUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabel(settings.rainfall), null, null, 1f));
+                }
                 planetListingHeight += 32f;
             }
             else
             {
                 Rect rainfallRect = listingStandard.GetRect(32f);
-                Widgets.IntRange(rainfallRect, 1623498654, ref settings.randomiseRainfallRange, 0, 6, Util.GetIntRangeLabel(settings.randomiseRainfallRange));
+                if (ModsConfig.IsActive("koth.RealisticPlanets1.6") || ModsConfig.IsActive("koth.RealisticPlanets1.6_Steam"))
+                {
+                    Widgets.IntRange(rainfallRect, 1623498654, ref settings.randomiseRainfallRange, 0, 4, Util.GetIntRangeLabelShort(settings.randomiseRainfallRange));
+                }
+                else
+                {
+                    Widgets.IntRange(rainfallRect, 1623498654, ref settings.randomiseRainfallRange, 0, OverallRainfallUtility.EnumValuesCount - 1, Util.GetIntRangeLabel(settings.randomiseRainfallRange));
+                }
                 planetListingHeight += 32f;
             }
 
@@ -1063,25 +1087,23 @@ namespace RandomStartMod
                 planetListingHeight += 32f;
             }
 
-            // WAITING FOR ODYSSEY
+            listingStandard.Gap();
+            DoSettingToggle(listingStandard.GetRect(24f), "PlanetLandmarkDensity".Translate(), null, ref settings.randomiseLandmarkDensity);
+            planetListingHeight += 12f + 24f;
 
-            //listingStandard.Gap();
-            //DoSettingToggle(listingStandard.GetRect(24f), "PlanetLandmarks".Translate(), null, ref settings.randomiseLandmarkDensity);
-            //planetListingHeight += 12f + 24f;
-
-            //if (!settings.randomiseLandmarkDensity)
-            //{
-            //    listingStandard.Gap(2f);
-            //    Rect landmarkRect = listingStandard.GetRect(30f);
-            //    settings.population = Mathf.RoundToInt(Widgets.HorizontalSlider(landmarkRect, (float)settings.landmarkDensity, 0f, LandmarkDensityUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabel(settings.landmarkDensity), null, null, 1f));
-            //    planetListingHeight += 32f;
-            //}
-            //else
-            //{
-            //    Rect landmarkRect = listingStandard.GetRect(32f);
-            //    Widgets.IntRange(landmarkRect, 1623498668, ref settings.randomiseLandmarkDensityRange, 0, 6, Util.GetIntRangeLabel(settings.randomiseLandmarkDensityRange));
-            //    planetListingHeight += 32f;
-            //}
+            if (!settings.randomiseLandmarkDensity)
+            {
+                listingStandard.Gap(2f);
+                Rect landmarkRect = listingStandard.GetRect(30f);
+                settings.landmarkDensity = Mathf.RoundToInt(Widgets.HorizontalSlider(landmarkRect, (float)settings.landmarkDensity, 0f, LandmarkDensityUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabel(settings.landmarkDensity), null, null, 1f));
+                planetListingHeight += 32f;
+            }
+            else
+            {
+                Rect landmarkRect = listingStandard.GetRect(32f);
+                Widgets.IntRange(landmarkRect, 1623498668, ref settings.randomiseLandmarkDensityRange, 0, LandmarkDensityUtility.EnumValuesCount - 1, Util.GetIntRangeLabel(settings.randomiseLandmarkDensityRange));
+                planetListingHeight += 32f;
+            }
 
             listingStandard.Gap();
             DoSettingToggle(listingStandard.GetRect(24f), "Pollution_Label".Translate(), "RandomStartMod.TooltipTitles.RandomizePollution".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Planet.RandomizePollutionTooltip".Translate(), ref settings.randomisePollution);
@@ -1147,22 +1169,65 @@ namespace RandomStartMod
                 planetListingHeight += 30f;
             }
 
-            if (ModsConfig.IsActive("zvq.RealisticPlanetsContinued") || ModsConfig.IsActive("Woolstrand.RealisticPlanetsContinued_Steam"))
+            if (ModsConfig.IsActive("koth.RealisticPlanets1.6") || ModsConfig.IsActive("koth.RealisticPlanets1.6_Steam"))
             {
                 listingStandard.Gap();
                 Text.Font = GameFont.Medium;
-                listingStandard.Label("Realistic Planets Continued");
+                listingStandard.Label("Realistic Planets");
                 listingStandard.GapLine();
-                planetListingHeight += 12f + 24f + Text.LineHeight;
+                planetListingHeight += 36f + Text.LineHeight;
                 Text.Font = GameFont.Small;
-                DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate(), "Randomize Realistic Planets".AsTipTitle() + "\n\n" + "Enable randomization of Realistic Planets Continued mod settings, which affects planetary terrain generation and geographical features.", ref settings.randomiseRealisticPlanets);
-                planetListingHeight += 24f;
+                DoSettingToggle(listingStandard.GetRect(24f), "Planets.WorldPresets".Translate(), null, ref settings.randomiseRealisticPlanets);
+                TooltipHandler.TipRegion(new Rect(0f, planetListingHeight - 18, inRect.width, 30), "RandomStartMod.RandomiseWorldPresetsTip".Translate());
+                planetListingHeight += 44f;
                 if (!settings.randomiseRealisticPlanets)
                 {
-                    Compat.RealisticPlanetsCompat.DoWorldTypeSelectionButton(listingStandard);
+                    RealisticPlanetsCompat.DoWorldTypeSelectionButton(listingStandard);
                     planetListingHeight += 32f;
                 }
-
+                listingStandard.Gap();
+                DoSettingToggle(listingStandard.GetRect(24f), "Planets.OceanType".Translate(), null, ref settings.randomiseOceanType);
+                planetListingHeight += 36f;
+                if (!settings.randomiseOceanType)
+                {
+                    listingStandard.Gap(2f);
+                    Rect rect4 = listingStandard.GetRect(30f);
+                    settings.realisticPlanetsOceanType = Mathf.RoundToInt(Widgets.HorizontalSlider(rect4, settings.realisticPlanetsOceanType, 0, Planets_Code.WorldGen.WorldTypeUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabel(settings.realisticPlanetsOceanType), null, null, 1f));
+                    planetListingHeight += 32f;
+                }
+                else
+                {
+                    Rect rect5 = listingStandard.GetRect(32f);
+                    Widgets.IntRange(rect5, 1623498657, ref settings.randomiseOceanTypeRange, 0, Planets_Code.WorldGen.WorldTypeUtility.EnumValuesCount - 1, Util.GetIntRangeLabel(settings.randomiseOceanTypeRange));
+                    planetListingHeight += 32f;
+                }
+                DoSettingToggle(listingStandard.GetRect(24f), "Planets.AxialTilt".Translate(), null, ref settings.randomiseAxialTilt);
+                planetListingHeight += 36f;
+                if (!settings.randomiseAxialTilt)
+                {
+                    listingStandard.Gap(2f);
+                    Rect rect4 = listingStandard.GetRect(30f);
+                    settings.realisticPlanetsAxialTilt = Mathf.RoundToInt(Widgets.HorizontalSlider(rect4, settings.realisticPlanetsAxialTilt, 0, Planets_Code.WorldGen.AxialTiltUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabelShort(settings.realisticPlanetsAxialTilt), null, null, 1f));
+                    planetListingHeight += 32f;
+                }
+                else
+                {
+                    Rect rect5 = listingStandard.GetRect(32f);
+                    Widgets.IntRange(rect5, 1623498659, ref settings.randomiseAxialTiltRange, 0, Planets_Code.WorldGen.AxialTiltUtility.EnumValuesCount - 1, Util.GetIntRangeLabelShort(settings.randomiseAxialTiltRange));
+                    planetListingHeight += 32f;
+                }
+                listingStandard.Gap();
+                DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.UseRPWordType".Translate(), null, ref settings.realisticPlanetsUseWordType);
+                planetListingHeight += 36f;
+                if (settings.realisticPlanetsUseWordType)
+                {
+                    listingStandard.Gap(2f);
+                    Rect rect8 = listingStandard.GetRect(30f);
+                    settings.realisticPlanetsUseWordTypeChance = Widgets.HorizontalSlider(rect8, settings.realisticPlanetsUseWordTypeChance, 0f, 1f, middleAlignment: true, settings.realisticPlanetsUseWordTypeChance.ToStringPercent(), null, null, 0.05f);
+                    planetListingHeight += 32f;
+                }
+                planetListingHeight += 32f;
+                listingStandard.Gap();
             }
 
             if (ModsConfig.IsActive("Woolstrand.RealRuins") || ModsConfig.IsActive("Woolstrand.RealRuins_Steam"))
@@ -1198,7 +1263,7 @@ namespace RandomStartMod
                 Util.LogMessage("Settings is null in DoOptionalFeaturesTabContents");
                 return;
             }
-            
+
             Rect rect = new Rect(0f, 60f, inRect.width, optionalFeaturesListingHeight);
             optionalFeaturesListingHeight = 0f;
             Widgets.BeginScrollView(inRect, ref mainScrollPosition, rect, false);
@@ -1260,7 +1325,7 @@ namespace RandomStartMod
                 {
                     DoSettingToggle(listingStandard.GetRect(24f), "CreateFluid".Translate(), "FluidIdeoTip".Translate(), ref settings.fluidIdeo);
                     optionalFeaturesListingHeight += 24f;
-                    
+
                     // Random Meme Range
                     listingStandard.Indent(8);
                     listingStandard.Label("RandomStartMod.Misc.RandomMemeCountLabel".Translate());
@@ -1270,12 +1335,12 @@ namespace RandomStartMod
                     optionalFeaturesListingHeight += 32f;
                     listingStandard.Gap(2f);
                     optionalFeaturesListingHeight += 2f;
-                    
+
                     // Ensure ideology lists are initialized
                     if (settings.forcedMemes == null) settings.forcedMemes = new List<string>();
                     if (settings.disallowedMemes == null) settings.disallowedMemes = new List<string>();
                     if (settings.disallowedPrecepts == null) settings.disallowedPrecepts = new List<string>();
-                    
+
                     // Forced Memes Section
                     listingStandard.Gap();
                     Text.Font = GameFont.Medium;
@@ -1312,7 +1377,7 @@ namespace RandomStartMod
                         MemeDef localDef = memeDef;
                         string text = localDef.LabelCap;
                         Action action = () => settings.forcedMemes.Add(localDef.defName);
-                        
+
                         AcceptanceReport acceptanceReport = CanAddForcedMeme(localDef);
                         if (!acceptanceReport)
                         {
@@ -1322,7 +1387,7 @@ namespace RandomStartMod
                                 text = text + " (" + acceptanceReport.Reason + ")";
                             }
                         }
-                        
+
                         Texture2D icon = localDef.Icon ?? GetSourceIcon(localDef);
                         FloatMenuOption floatMenuOption = new FloatMenuOption(text, action, icon, Color.white, MenuOptionPriority.Default, null, null, 24f, (Rect r) => Widgets.InfoCardButton(r.x, r.y + 3f, localDef), null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true);
                         floatMenuOption.tooltip = text.AsTipTitle() + "\n" + localDef.description;
@@ -1336,7 +1401,7 @@ namespace RandomStartMod
                         }
                         optionalFeaturesListingHeight += 28f;
                     }
-                    
+
                     // Disallowed Memes Section
                     listingStandard.Gap();
                     Text.Font = GameFont.Medium;
@@ -1389,16 +1454,16 @@ namespace RandomStartMod
                         }
                         optionalFeaturesListingHeight += 28f;
                     }
-                    
+
                     // Disallowed Precepts Section
                     listingStandard.Gap();
                     Text.Font = GameFont.Medium;
-                    listingStandard.Label("Disallowed Precepts");
+                    listingStandard.Label("RandomStartMod.Misc.DisallowedPrecepts".Translate());
                     listingStandard.GapLine();
                     optionalFeaturesListingHeight += 24f + Text.LineHeight;
                     Text.Font = GameFont.Small;
                     Text.Font = GameFont.Tiny;
-                    Widgets.Label(listingStandard.GetRect(Text.LineHeight), "These specific precepts will be excluded from ideology generation:");
+                    Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Misc.DisallowedPreceptsDescription".Translate());
                     optionalFeaturesListingHeight += Text.LineHeight;
                     Text.Font = GameFont.Small;
                     Text.Font = GameFont.Small;
@@ -1452,10 +1517,10 @@ namespace RandomStartMod
                         }
                         optionalFeaturesListingHeight += 28f;
                     }
-                    
+
                     if (GenFilePaths.AllCustomIdeoFiles.Any())
                     {
-                        DoSettingToggle(listingStandard.GetRect(24f), "LoadExistingIdeoligion".Translate(), "Load Existing Ideology".AsTipTitle() + "\n\n" + "Use a previously saved custom ideology file (.rid) instead of generating a new random ideology. This allows you to reuse ideologies from other colonies or campaigns.", ref settings.overrideIdeo);
+                        DoSettingToggle(listingStandard.GetRect(24f), "LoadExistingIdeoligion".Translate(), "RandomStartMod.TooltipTitles.LoadExistingIdeology".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Misc.LoadExistingIdeologyTooltip".Translate(), ref settings.overrideIdeo);
                         optionalFeaturesListingHeight += 24f;
                         if (settings.overrideIdeo)
                         {
@@ -1490,19 +1555,6 @@ namespace RandomStartMod
                 }
 
             }
-
-            listingStandard.Gap();
-            Text.Font = GameFont.Medium;
-            listingStandard.Label("SelectCaravanColonists".Translate());
-            listingStandard.GapLine();
-            optionalFeaturesListingHeight += 24f + Text.LineHeight;
-            Text.Font = GameFont.Small;
-            Text.Font = GameFont.Tiny;
-            Widgets.Label(listingStandard.GetRect(Text.LineHeight), "Configure special requirements for your starting colonists:");
-            optionalFeaturesListingHeight += Text.LineHeight;
-            Text.Font = GameFont.Small;
-            DoSettingToggle(listingStandard.GetRect(24f), "Pawns Must Be Capable of Violence".Translate(), "Starting Pawns Must be Capable of Violence".AsTipTitle() + "\n\n" + "Do not generate starting pawns that are incapable of violence due to medical issues, backgrounds or traits.", ref settings.startingPawnForceViolence);
-            optionalFeaturesListingHeight += 24f;
 
             listingStandard.Gap();
             optionalFeaturesListingHeight += 12f;
@@ -1650,7 +1702,7 @@ namespace RandomStartMod
             if (settings.filterStartingHilliness)
             {
                 listingStandard.Gap();
-                listingStandard.Label("Allowed Hilliness:");
+                listingStandard.Label("RandomStartMod.StartingTile.AllowedHilliness".Translate());
                 startingTileListingHeight += 12f + Text.LineHeight;
 
                 // Ensure allowedHilliness list is not null
@@ -1683,7 +1735,7 @@ namespace RandomStartMod
 
                 if (hillinessAllowed.Count == 0)
                 {
-                    listingStandard.Label("No hilliness selected (will use default behavior)");
+                    listingStandard.Label("RandomStartMod.StartingTile.NoHillinessSelected".Translate());
                     startingTileListingHeight += Text.LineHeight;
                 }
 
@@ -1691,7 +1743,7 @@ namespace RandomStartMod
                 startingTileListingHeight += 12f;
 
                 // Add hilliness button
-                if (listingStandard.ButtonText("Add Hilliness"))
+                if (listingStandard.ButtonText("RandomStartMod.StartingTile.AddHilliness".Translate()))
                 {
                     List<FloatMenuOption> list = new List<FloatMenuOption>();
                     List<int> availableHilliness = new List<int> { 1, 2, 3, 4 }; // Flat, SmallHills, LargeHills, Mountainous
@@ -1707,13 +1759,13 @@ namespace RandomStartMod
                             case 3: hillinessKey = "Hilliness_LargeHills"; break;
                             case 4: hillinessKey = "Hilliness_Mountainous"; break;
                         }
-                        
+
                         string text = hillinessKey.Translate();
                         Action action = delegate
                         {
                             settings.allowedHilliness.Add(localValue);
                         };
-                        
+
                         AcceptanceReport acceptanceReport = CanAddHilliness(localValue);
                         if (!acceptanceReport)
                         {
@@ -1731,7 +1783,7 @@ namespace RandomStartMod
                                 text = text + " (" + num + ")";
                             }
                         }
-                        
+
                         FloatMenuOption floatMenuOption = new FloatMenuOption(text, action, BaseContent.BadTex, Color.white);
                         list.Add(floatMenuOption);
                     }
@@ -1743,13 +1795,126 @@ namespace RandomStartMod
                 }
                 startingTileListingHeight += 32f + 12f;
             }
-            
+
+            listingStandard.Gap();
+            startingTileListingHeight += 36f + Text.LineHeight;
+            Text.Font = GameFont.Small;
+            DoSettingToggle(listingStandard.GetRect(24f), "Temperature".Translate(), null, ref settings.limitStartingTileTemperature);
+            startingTileListingHeight += 36f + Text.LineHeight;
+            if (settings.limitStartingTileTemperature)
+            {
+                Widgets.FloatRange(listingStandard.GetRect(32f), 1623498652, ref settings.limitStartingTileTemperatureRange, -50f, 50f);
+                startingTileListingHeight += 32f + 12f;
+            }
+
+            listingStandard.Gap();
+            startingTileListingHeight += 12f;
+
             if (listingStandard.ButtonText("RestoreToDefaultSettings".Translate()))
             {
                 settings.ResetStartingTile();
             }
             startingTileListingHeight += 32f;
 
+            listingStandard.End();
+            Widgets.EndScrollView();
+        }
+
+        private void DoCharactersSettingsTabContents(Rect inRect)
+        {
+            Rect rect = new Rect(0f, 60f, inRect.width, planetListingHeight);
+            planetListingHeight = 0f;
+            Widgets.BeginScrollView(inRect, ref planetScrollPosition, rect, showScrollbars: false);
+            Listing_Standard listingStandard = new Listing_Standard();
+            listingStandard.Begin(rect);
+            listingStandard.Gap();
+            Text.Font = GameFont.Medium;
+            listingStandard.Label("RandomStartMod.Characters".Translate());
+
+            listingStandard.GapLine();
+            planetListingHeight += 24f + Text.LineHeight;
+            optionalFeaturesListingHeight += 24f + Text.LineHeight;
+            Text.Font = GameFont.Tiny;
+            Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Misc.StartingColonistsDescription".Translate());
+            optionalFeaturesListingHeight += Text.LineHeight;
+            Text.Font = GameFont.Small;
+            DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.TooltipTitles.StartingPawnsMustBeCapableOfViolence".Translate(), "RandomStartMod.TooltipTitles.StartingPawnsMustBeCapableOfViolence".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Misc.StartingPawnsMustBeCapableOfViolenceTooltip".Translate(), ref settings.startingPawnForceViolence);
+            optionalFeaturesListingHeight += 24f;
+
+            listingStandard.Gap();
+            Text.Font = GameFont.Small;
+            planetListingHeight += 12f;
+            listingStandard.Label("RandomStartMod.Characters".Translate() + " 1:");
+
+            listingStandard.Gap();
+            planetListingHeight += 12f;
+            DoSettingToggle(listingStandard.GetRect(24f), "Name".Translate(), null, ref settings.randomisePawnName);
+            planetListingHeight += 36f;
+            if (!settings.randomisePawnName)
+            {
+                Rect originalRect = listingStandard.GetRect(32f);
+                float segmentWidtht = originalRect.width / 3;
+                Rect fRect = new Rect(originalRect.x, originalRect.y, segmentWidtht, originalRect.height);
+                Rect nRect = new Rect(originalRect.x + segmentWidtht, originalRect.y, segmentWidtht, originalRect.height);
+                Rect lRect = new Rect(originalRect.x + segmentWidtht * 2, originalRect.y, segmentWidtht, originalRect.height);
+                settings.PawnFirstName = Widgets.TextField(fRect, settings.PawnFirstName);
+                settings.PawnNickName = Widgets.TextField(nRect, settings.PawnNickName);
+                settings.PawnLastName = Widgets.TextField(lRect, settings.PawnLastName);
+                planetListingHeight += 32f;
+            }
+
+            listingStandard.Gap();
+            planetListingHeight += 36f;
+            DoSettingToggle(listingStandard.GetRect(24f), "Stat_Age_Label".Translate(), null, ref settings.randomisePawnAge);
+            planetListingHeight += 36f + Text.LineHeight;
+            if (!settings.randomisePawnAge)
+            {
+                Rect rect9 = listingStandard.GetRect(32f);
+                Widgets.IntRange(rect9, 1623498651, ref settings.randomisePawnAgeRange, 0, 100, Util.GetAgeRangeLabelPercent(settings.randomisePawnAgeRange));
+                planetListingHeight += 32f;
+            }
+
+            listingStandard.Gap();
+            planetListingHeight += 36f + Text.LineHeight;
+            DoSettingToggle(listingStandard.GetRect(24f), "Sex".Translate(), null, ref settings.randomisePawnSex);
+            planetListingHeight += 44f;
+            if (!settings.randomisePawnSex)
+            {
+                List<string> list = Enum.GetNames(typeof(Gender)).ToList();
+                int num = settings.PawnSex;
+                if (num >= list.Count)
+                {
+                    num = 0;
+                    settings.PawnSex = 0;
+                }
+                if (listingStandard.ButtonText(list[num]))
+                {
+                    List<FloatMenuOption> list2 = new List<FloatMenuOption>();
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        int sex = i;
+                        FloatMenuOption item = new FloatMenuOption(list[i], delegate
+                        {
+                            settings.PawnSex = sex;
+                        });
+                        list2.Add(item);
+                    }
+                    Find.WindowStack.Add(new FloatMenu(list2));
+                }
+                planetListingHeight += 32f;
+            }
+
+            planetListingHeight += 36f + Text.LineHeight;
+            DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.PawnNotDisabledWorkTags".Translate(), null, ref settings.PawnNotDisabledWorkTags);
+            planetListingHeight += 32f;
+
+            listingStandard.Gap();
+            planetListingHeight += 12f;
+            if (listingStandard.ButtonText("RestoreToDefaultSettings".Translate()))
+            {
+                settings.ResetStartingColonists();
+            }
+            planetListingHeight += 32f;
             listingStandard.End();
             Widgets.EndScrollView();
         }
@@ -1863,7 +2028,7 @@ namespace RandomStartMod
         private static void DrawCustomSectionEnd(Listing_Standard listing, Listing_Standard section, out float height)
         {
             listing.EndSection(section);
-           
+
             height = section.CurHeight;
         }
 
@@ -2092,7 +2257,7 @@ namespace RandomStartMod
             }
             Widgets.BeginGroup(rect);
             WidgetRow widgetRow = new WidgetRow(6f, 0f);
-            
+
             // Draw biome icon if available, otherwise use a default texture
             Texture2D biomeIcon = BaseContent.BadTex; // Simple fallback for now
             if (!biomeDef.texture.NullOrEmpty())
@@ -2102,11 +2267,11 @@ namespace RandomStartMod
             GUI.color = Color.white;
             widgetRow.Icon(biomeIcon);
             widgetRow.Gap(4f);
-            
+
             Text.Anchor = TextAnchor.MiddleCenter;
             widgetRow.Label(biomeDef.LabelCap);
             Text.Anchor = TextAnchor.UpperLeft;
-            
+
             if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
             {
                 SoundDefOf.Click.PlayOneShotOnCamera();
@@ -2114,7 +2279,7 @@ namespace RandomStartMod
                 result = true;
             }
             Widgets.EndGroup();
-            
+
             if (Mouse.IsOver(rect2))
             {
                 string tooltip = biomeDef.LabelCap.AsTipTitle() + "\n" + biomeDef.description;
@@ -2138,11 +2303,11 @@ namespace RandomStartMod
             }
             Widgets.BeginGroup(rect);
             WidgetRow widgetRow = new WidgetRow(6f, 0f);
-            
+
             GUI.color = Color.white;
             widgetRow.Icon(BaseContent.BadTex); // Simple icon for hilliness
             widgetRow.Gap(4f);
-            
+
             // Get the translated hilliness name
             string hillinessName = "";
             switch (hillinessValue)
@@ -2153,11 +2318,11 @@ namespace RandomStartMod
                 case 4: hillinessName = "Hilliness_Mountainous".Translate(); break;
                 default: hillinessName = "Unknown"; break;
             }
-            
+
             Text.Anchor = TextAnchor.MiddleCenter;
             widgetRow.Label(hillinessName);
             Text.Anchor = TextAnchor.UpperLeft;
-            
+
             if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
             {
                 SoundDefOf.Click.PlayOneShotOnCamera();
@@ -2165,7 +2330,7 @@ namespace RandomStartMod
                 result = true;
             }
             Widgets.EndGroup();
-            
+
             if (Mouse.IsOver(rect2))
             {
                 string tooltip = hillinessName.AsTipTitle();
@@ -2282,10 +2447,10 @@ namespace RandomStartMod
         {
             if (settings.allowedBiomes == null)
                 return;
-                
+
             // Remove any excluded biomes from the settings
             string[] excludedBiomes = { "Underground", "Labyrinth", "MetalHell", "Undercave" };
-            
+
             List<string> biomesToRemove = new List<string>();
             foreach (string biomeName in settings.allowedBiomes)
             {
@@ -2294,7 +2459,7 @@ namespace RandomStartMod
                     biomesToRemove.Add(biomeName);
                 }
             }
-            
+
             foreach (string biomeToRemove in biomesToRemove)
             {
                 settings.allowedBiomes.Remove(biomeToRemove);
@@ -2305,10 +2470,10 @@ namespace RandomStartMod
         {
             if (settings.allowedHilliness == null)
                 return;
-                
+
             // Remove any invalid hilliness values (only allow 1-4: Flat, SmallHills, LargeHills, Mountainous)
             List<int> validHilliness = new List<int> { 1, 2, 3, 4 };
-            
+
             List<int> hillinessToRemove = new List<int>();
             foreach (int hillinessValue in settings.allowedHilliness)
             {
@@ -2317,7 +2482,7 @@ namespace RandomStartMod
                     hillinessToRemove.Add(hillinessValue);
                 }
             }
-            
+
             foreach (int hillinessToRemove_item in hillinessToRemove)
             {
                 settings.allowedHilliness.Remove(hillinessToRemove_item);
@@ -2330,14 +2495,14 @@ namespace RandomStartMod
             {
                 return "Already added";
             }
-            
+
             // Manually filter out underground biomes that don't appear on planet surface
             string[] excludedBiomes = { "Underground", "Labyrinth", "MetalHell", "Undercave" };
             if (excludedBiomes.Contains(b.defName))
             {
                 return "Not available on planet surface";
             }
-            
+
             return AcceptanceReport.WasAccepted;
         }
 
@@ -2347,7 +2512,7 @@ namespace RandomStartMod
             {
                 return "Already added";
             }
-            
+
             return AcceptanceReport.WasAccepted;
         }
 
@@ -2357,7 +2522,7 @@ namespace RandomStartMod
             {
                 return "Already added";
             }
-            
+
             // Check if this is a Structure meme and if there's already one in the list
             if (memeDef.category == MemeCategory.Structure)
             {
@@ -2370,7 +2535,7 @@ namespace RandomStartMod
                     }
                 }
             }
-            
+
             return AcceptanceReport.WasAccepted;
         }
 
@@ -2386,7 +2551,7 @@ namespace RandomStartMod
             }
             Widgets.BeginGroup(rect);
             WidgetRow widgetRow = new WidgetRow(6f, 0f);
-            
+
             // Get icon from meme itself or source mod
             Texture2D icon = memeDef.Icon ?? GetSourceIcon(memeDef);
             GUI.color = Color.white;
@@ -2396,7 +2561,7 @@ namespace RandomStartMod
             Text.Anchor = TextAnchor.MiddleCenter;
             widgetRow.Label(memeDef.LabelCap);
             Text.Anchor = TextAnchor.UpperLeft;
-            
+
             if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
             {
                 SoundDefOf.Click.PlayOneShotOnCamera();
@@ -2404,7 +2569,7 @@ namespace RandomStartMod
                 result = true;
             }
             Widgets.EndGroup();
-            
+
             if (Mouse.IsOver(rect2))
             {
                 string tooltip = memeDef.LabelCap.AsTipTitle() + "\n" + memeDef.description;
@@ -2438,7 +2603,7 @@ namespace RandomStartMod
             }
             Widgets.BeginGroup(rect);
             WidgetRow widgetRow = new WidgetRow(6f, 0f);
-            
+
             // Get icon from precept itself or source mod
             Texture2D icon = preceptDef.Icon ?? GetSourceIcon(preceptDef);
             GUI.color = Color.white;
@@ -2450,7 +2615,7 @@ namespace RandomStartMod
 
             widgetRow.Label(text);
             Text.Anchor = TextAnchor.UpperLeft;
-            
+
             if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
             {
                 SoundDefOf.Click.PlayOneShotOnCamera();
@@ -2458,7 +2623,7 @@ namespace RandomStartMod
                 result = true;
             }
             Widgets.EndGroup();
-            
+
             if (Mouse.IsOver(rect2))
             {
                 string tooltip = text.AsTipTitle() + "\n" + preceptDef.description;

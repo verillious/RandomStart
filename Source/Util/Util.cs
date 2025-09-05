@@ -1,6 +1,7 @@
 ﻿using RimWorld;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Verse;
 
@@ -28,9 +29,29 @@ namespace RandomStartMod
             return string1.Translate();
         }
 
+        public static TaggedString GetIntRangeLabelShort(IntRange range)
+        {
+            List<string> list = new List<string> { "PlanetRainfall_Low", "RandomStartMod.ALittleLess", "PlanetRainfall_Normal", "RandomStartMod.ALittleMore", "PlanetRainfall_High" };
+            string key = list[range.min];
+            string key2 = list[range.max];
+            return key.Translate() + " - " + key2.Translate();
+        }
+
+        public static string GetIntLabelShort(int input)
+        {
+            List<string> list = new List<string> { "PlanetRainfall_Low", "RandomStartMod.ALittleLess", "PlanetRainfall_Normal", "RandomStartMod.ALittleMore", "PlanetRainfall_High" };
+            string key = list[input];
+            return key.Translate();
+        }
+
         public static string GetFloatRangeLabelPercent(FloatRange range)
         {
             return $"{(int)(range.min * 100)}% - {(int)(range.max * 100)}%";
+        }
+
+        public static string GetAgeRangeLabelPercent(IntRange range)
+        {
+            return $"{range.min} - {range.max}";
         }
 
         public static void DrawCountAdjuster(ref int value, Rect inRect, ref string buffer, int min, int max, bool readOnly = false, int? setToMin = null, int? setToMax = null)
@@ -79,6 +100,12 @@ namespace RandomStartMod
             {
                 value = val;
             }
+        }
+
+        public static Pawn RandomizePawn()
+        {
+            StartingPawnUtility.RandomizePawn(0);
+            return Find.GameInitData.startingAndOptionalPawns.FirstOrDefault();
         }
     }
 }

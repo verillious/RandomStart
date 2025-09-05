@@ -69,6 +69,8 @@
 	<RandomStartMod.Planet.RandomizeRealisticPlanetsTooltip>Enable randomization of Realistic Planets Continued mod settings, which affects planetary terrain generation and geographical features.</RandomStartMod.Planet.RandomizeRealisticPlanetsTooltip>
 	<RandomStartMod.Planet.AutoRealRuinsTooltip>Automatically enable Real Ruins generation to populate the world with ruins from other players' colonies, adding variety and exploration opportunities.</RandomStartMod.Planet.AutoRealRuinsTooltip>
 	<RandomStartMod.Planet.RealRuinsBiomeFilteringTooltip>Filter Real Ruins based on biome compatibility, ensuring ruins appear in appropriate environments that match their original settings.</RandomStartMod.Planet.RealRuinsBiomeFilteringTooltip>
+	<RandomStartMod.UseRPWordType>Other WorldPresets insert randomise</RandomStartMod.UseRPWordType>
+	<RandomStartMod.RandomiseWorldPresetsTip>When checked, the 'Realistic Planets' random system will be used instead of the random values here, except for PlanetCoverage, LandmarkDensity, and Season.</RandomStartMod.RandomiseWorldPresetsTip>
 
 	<!-- Starting Tile -->
 	<!-- Optional Features (Misc Tab) -->
@@ -90,6 +92,10 @@
 	<RandomStartMod.Misc.DisallowedPrecepts>Disallowed Precepts</RandomStartMod.Misc.DisallowedPrecepts>
 	<RandomStartMod.Misc.DisallowedPreceptsDescription>These specific precepts will be excluded from ideology generation:</RandomStartMod.Misc.DisallowedPreceptsDescription>
 	<RandomStartMod.Misc.LoadExistingIdeologyTooltip>Use a previously saved custom ideology file (.rid) instead of generating a new random ideology. This allows you to reuse ideologies from other colonies or campaigns.</RandomStartMod.Misc.LoadExistingIdeologyTooltip>
+	
+	<!-- Characters Settings -->
+	<RandomStartMod.Characters>Characters</RandomStartMod.Characters>
+	<RandomStartMod.PawnNotDisabledWorkTags>Not Disabled WorkType</RandomStartMod.PawnNotDisabledWorkTags>
 	<RandomStartMod.Misc.StartingColonistsDescription>Configure special requirements for your starting colonists:</RandomStartMod.Misc.StartingColonistsDescription>
 	<RandomStartMod.Misc.StartingPawnsMustBeCapableOfViolenceTooltip>Do not generate starting pawns that are incapable of violence due to medical issues, backgrounds or traits.</RandomStartMod.Misc.StartingPawnsMustBeCapableOfViolenceTooltip>
 
