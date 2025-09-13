@@ -452,12 +452,7 @@ namespace RandomStartMod
 
             Scribe_Values.Look(ref randomisePawnName, "randomisePawnName", defaultValue: true);
             Scribe_Collections.Look(ref pawnNames, "pawnNames", LookMode.Deep);
-            
-            else if (pawnNames == null)
-            {
-                pawnNames = new List<PawnNameData>();
-            }
-            
+
             Scribe_Values.Look(ref randomisePawnAge, "randomisePawnAge", defaultValue: false);
             Scribe_Values.Look(ref randomisePawnAgeRange, "randomisePawnAgeRange", new IntRange(20, 40));
             Scribe_Values.Look(ref randomisePawnSex, "randomisePawnSex", defaultValue: true);
