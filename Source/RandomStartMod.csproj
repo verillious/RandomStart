@@ -41,39 +41,43 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="KCSG">
-      <HintPath>..\..\..\..\..\workshop\content\294100\2023507013\1.5\Assemblies\KCSG.dll</HintPath>
-      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\2023507013\1.5\Assemblies\KCSG.dll</HintPath>
+      <HintPath>..\..\..\..\..\workshop\content\294100\2023507013\1.6\Assemblies\KCSG.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\2023507013\1.6\Assemblies\KCSG.dll</HintPath>
       <CopyLocal>False</CopyLocal>
       <Private>False</Private>
     </Reference>
     <Reference Include="MyLittlePlanet">
-      <HintPath>..\..\..\..\..\workshop\content\294100\1117406550\1.4\Assemblies\MyLittlePlanet.dll</HintPath>
+      <HintPath>..\..\..\..\..\workshop\content\294100\1117406550\1.6\Assemblies\MyLittlePlanet.dll</HintPath>
       <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1117406550\1.4\Assemblies\MyLittlePlanet.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="NoPauseChallenge">
-      <HintPath>..\..\..\..\..\workshop\content\294100\1517419925\1.5\Assemblies\NoPauseChallenge.dll</HintPath>
-      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1517419925\1.5\Assemblies\NoPauseChallenge.dll</HintPath>
+      <HintPath>..\..\..\..\..\workshop\content\294100\1517419925\1.6\Assemblies\NoPauseChallenge.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1517419925\1.6\Assemblies\NoPauseChallenge.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Realistic_Planets_Continued">
-      <HintPath>..\..\..\..\..\workshop\content\294100\3225521979\1.5\Assemblies\Realistic_Planets_Continued.dll</HintPath>
-      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\3225521979\1.5\Assemblies\Realistic_Planets_Continued.dll</HintPath>
+    <Reference Include="PrepareModerately">
+      <HintPath>..\..\2057362949\1.6\Assemblies\PrepareModerately.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Realistic_Planets_1.6">
+      <HintPath>..\..\..\..\..\workshop\content\294100\3533147031\1.6\Assemblies\Realistic_Planets_1.6.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\3533147031\1.6\Assemblies\Realistic_Planets_1.6.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="RealRuins">
-      <HintPath>..\..\..\..\..\workshop\content\294100\1552146295\1.5\Assemblies\RealRuins.dll</HintPath>
-      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1552146295\1.5\Assemblies\RealRuins.dll</HintPath>
+      <HintPath>..\..\..\..\..\workshop\content\294100\1552146295\1.6\Assemblies\RealRuins.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1552146295\1.6\Assemblies\RealRuins.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="ShipsHaveInsides">
-      <HintPath>..\..\..\..\..\workshop\content\294100\1909914131\1.5\Assemblies\ShipsHaveInsides.dll</HintPath>
-      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1909914131\1.5\Assemblies\ShipsHaveInsides.dll</HintPath>
+      <HintPath>..\..\..\..\..\workshop\content\294100\1909914131\1.6\Assemblies\ShipsHaveInsides.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1909914131\1.6\Assemblies\ShipsHaveInsides.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="VFECore">
-      <HintPath>..\..\..\..\..\workshop\content\294100\2023507013\1.5\Assemblies\VFECore.dll</HintPath>
-      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\2023507013\1.5\Assemblies\VFECore.dll</HintPath>
+    <Reference Include="VEF">
+      <HintPath>..\..\..\..\..\workshop\content\294100\2023507013\1.6\Assemblies\VEF.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\2023507013\1.6\Assemblies\VEF.dll</HintPath>
       <CopyLocal>False</CopyLocal>
       <Private>False</Private>
     </Reference>

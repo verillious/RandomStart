@@ -1,7 +1,10 @@
 ﻿using RimWorld;
 using RimWorld.Planet;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using Verse;
 
@@ -106,94 +109,114 @@ namespace RandomStartMod.Compat
     {
         public static void DoWorldTypeSelectionButton(Listing_Standard listingStandard)
         {
-            List<string> worldTypeNames = new List<string>() {
-            "Barren",
-            "Very Dry",
-            "Dry",
-            "Vanilla",
-            "Earthlike",
-            "Islands",
-            "Waterworld"
-        };
+            var array = Planets_Code.Presets.WorldPresetUtility.WorldPresets.Where((Planets_Code.Presets.WorldPreset p) => p.Name != "Planets.Custom").ToList();
+            List<string> list = Planets_Code.Presets.WorldPresetUtility.WorldPresets.Where((Planets_Code.Presets.WorldPreset p) => p.Name != "Planets.Custom").Select(w => w.Name).ToList();
             RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
 
-            listingStandard.Label("Planets.WorldPresets".Translate());
-            int currentWorldType = settings.realisticPlanetsWorldType;
-
-            if (currentWorldType >= worldTypeNames.Count)
+            string worldTypeName = settings.realisticPlanetsWorldType;
+            if (!list.Contains(worldTypeName))
             {
-                currentWorldType = 3;
-                settings.realisticPlanetsWorldType = 3;
+                worldTypeName = "Planets.Vanilla";
+                settings.realisticPlanetsWorldType = worldTypeName;
             }
-
-            if (listingStandard.ButtonText(worldTypeNames[currentWorldType]))
+            if (listingStandard.ButtonText(worldTypeName))
             {
                 List<FloatMenuOption> floatMenuOptions = new List<FloatMenuOption>();
-                for (int i = 0; i < worldTypeNames.Count; i++)
+                foreach (Planets_Code.Presets.WorldPreset worldPreset in array)
                 {
-                    int worldType = i;
-                    FloatMenuOption floatMenuOption = new FloatMenuOption(worldTypeNames[i], delegate
+                    FloatMenuOption item = new FloatMenuOption(worldPreset.Name.Translate(), delegate
                     {
-                        settings.realisticPlanetsWorldType = worldType;
+                        settings.realisticPlanetsWorldType = worldPreset.Name;
+                        settings.realisticPlanetsOceanType = (int)worldPreset.WorldType;
+                        settings.realisticPlanetsAxialTilt = (int)worldPreset.AxialTilt;
+                        settings.rainfall = (int)worldPreset.RainfallModifier;
+                        settings.temperature = (int)worldPreset.Temperature;
+                        settings.population = (int)worldPreset.Population;
                     });
-                    floatMenuOptions.Add(floatMenuOption);
+                    floatMenuOptions.Add(item);
                 }
                 Find.WindowStack.Add(new FloatMenu(floatMenuOptions));
             }
         }
 
-        public static void GenerateRealisticPlanetWorld(float planetCoverage, string seedString, OverallRainfall overallRainfall, OverallTemperature overallTemperature, OverallPopulation population, LandmarkDensity landmarkDensity, List<FactionDef> factions = null, float pollution = 0f, int worldType = -1)
+        public static void GenerateRealisticPlanetWorld(float planetCoverage, string seedString, OverallRainfall overallRainfall, OverallTemperature overallTemperature, OverallPopulation population, LandmarkDensity landmarkDensity, List<FactionDef> factions = null, float pollution = 0f, int oceanType = 3, int axialTilt = 2, string worldTypeName = "Planets.Vanilla", bool randomiseWorld = false)
         {
-            Util.LogMessage("[RealisticPlanetsCompat] Generating Realistic Planets World");
+            Util.LogMessage("[RealisticPlanetsCompat] Set Realistic Planets Start");
             RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
+            RealisticPlanetsCreateWorldParams planet = new RealisticPlanetsCreateWorldParams();
+            planet.PreOpen();
 
             if (ModsConfig.IsActive("Oblitus.MyLittlePlanet") || ModsConfig.IsActive("Oblitus.MyLittlePlanet_Steam"))
             {
-                Util.LogMessage("[RealisticPlanetsCompat] My Little Planet is running");
-                Planets_Code.Planets_GameComponent.subcount = settings.myLittlePlanetSubcount;
+                Util.LogMessage("[RealisticPlanetsCompat] Set My Little Planet");
+                Planets_Code.Core.Planets_GameComponent.subcount = settings.myLittlePlanetSubcount;
             }
             else
             {
-                Planets_Code.Planets_GameComponent.subcount = 10;
+                Planets_Code.Core.Planets_GameComponent.subcount = 10;
             }
 
-            Planets_Code.Planets_GameComponent.axialTilt = Planets_Code.Planets_Random.GetRandomAxialTilt();
-            if (worldType != -1)
+            if (settings.realisticPlanetsUseWordType && Rand.Range(0f, 1f) < settings.realisticPlanetsUseWordTypeChance)
             {
-                Planets_Code.Planets_GameComponent.worldType = (Planets_Code.WorldType)worldType;
+                Planets_Code.Presets.WorldPreset[] array = Planets_Code.Presets.WorldPresetUtility.WorldPresets.Where((Planets_Code.Presets.WorldPreset p) => p.Name != "Planets.Custom").ToArray();
+                Planets_Code.Presets.WorldPreset worldPreset = array[Rand.Range(0, array.Length)];
+                Util.LogMessage($"[RealisticPlanetsCompat] Using WorldPreset: {worldPreset.Name}");
+                Planets_Code.Core.Planets_GameComponent.worldPreset = worldPreset.Name;
+                Planets_Code.Core.Planets_GameComponent.worldType = worldPreset.WorldType;
+                Planets_Code.Core.Planets_GameComponent.axialTilt = worldPreset.AxialTilt;
+                planet.RainfallMod = worldPreset.RainfallModifier;
+                planet.temperature = worldPreset.Temperature;
+                planet.population = worldPreset.Population;
+                planet.pollution = pollution;
+            }
+            else if (randomiseWorld)
+            {
+                planet.Randomize();
             }
             else
             {
-                Planets_Code.Planets_GameComponent.worldType = Planets_Code.Planets_Random.GetRandomWorldType();
+                Planets_Code.Core.Planets_GameComponent.worldPreset = worldTypeName;
+                Planets_Code.Core.Planets_GameComponent.worldType = (Planets_Code.WorldGen.WorldType)oceanType;
+                Planets_Code.Core.Planets_GameComponent.axialTilt = (Planets_Code.WorldGen.AxialTilt)axialTilt;
+                planet.RainfallMod = (Planets_Code.WorldGen.RainfallModifier)overallRainfall;
+                planet.temperature = overallTemperature;
+                planet.population = population;
+                planet.pollution = pollution;
             }
-            Planets_Code.Controller.Settings.randomPlanet = true;
 
-            Planets_Code.RainfallModifier rainfallMod = Planets_Code.RainfallModifier.Little;
+            planet.seedString = seedString;
+            planet.planetCoverage = planetCoverage;
+            planet.landmarkDensity = landmarkDensity;
+            planet.factions = factions;
 
-            if (overallRainfall == OverallRainfall.LittleBitLess)
-                rainfallMod = Planets_Code.RainfallModifier.LittleBitLess;
+            Util.LogMessage("[RealisticPlanetsCompat] Set Realistic Planets End");
+            planet.GenerateWorld();
 
-            if (overallRainfall == OverallRainfall.Normal)
-                rainfallMod = Planets_Code.RainfallModifier.Normal;
+            Type longEventHandlerType = typeof(LongEventHandler);
+            var eventQueueField = longEventHandlerType.GetField("eventQueue", BindingFlags.Static | BindingFlags.NonPublic);
+            var actionField = longEventHandlerType.GetNestedType("QueuedLongEvent", BindingFlags.NonPublic).GetField("eventAction", BindingFlags.Instance | BindingFlags.Public);
 
-            if (overallRainfall == OverallRainfall.LittleBitMore)
-                rainfallMod = Planets_Code.RainfallModifier.LittleBitMore;
+            object eventQueue = eventQueueField.GetValue(null);
+            IEnumerable queueItems = (IEnumerable)eventQueue;
 
-            if (overallRainfall == OverallRainfall.High)
-                rainfallMod = Planets_Code.RainfallModifier.High;
+            Util.LogMessage("[RealisticPlanetsCompat] Invoke EventQueue Generating Realistic Planets World");
+            foreach (object queuedEvent in queueItems)
+            {
+                Action eventAction = (Action)actionField.GetValue(queuedEvent);
+                eventAction?.Invoke();
+            }
 
-            if (overallRainfall == OverallRainfall.AlmostNone)
-                rainfallMod = Planets_Code.RainfallModifier.Little;
+            LongEventHandler.ClearQueuedEvents();
+            planet = null;
+        }
 
-            if (overallRainfall == OverallRainfall.VeryHigh)
-                rainfallMod = Planets_Code.RainfallModifier.High;
+        public class RealisticPlanetsCreateWorldParams : Planets_Code.Core.Planets_CreateWorldParams
+        {
+            public void GenerateWorld()
+            {
+                base.CanDoNext();
+            }
 
-            OverallRainfall rainfall = Planets_Code.RainfallModifierUtility.GetModifiedRainfall(Planets_Code.Planets_GameComponent.worldType, rainfallMod);
-
-            Planets_Code.Planets_TemperatureTuning.SetSeasonalCurve();
-            Find.GameInitData.ResetWorldRelatedMapInitData();
-
-            Current.Game.World = WorldGenerator.GenerateWorld(planetCoverage, seedString, rainfall, overallTemperature, population, landmarkDensity, factions, pollution);
         }
     }
 
@@ -224,6 +247,15 @@ namespace RandomStartMod.Compat
             RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
             NoPauseChallenge.Main.noPauseEnabled = settings.noPauseEnabled;
             NoPauseChallenge.Main.halfSpeedActive = settings.noPauseHalfSpeedEnabled;
+        }
+    }
+
+    public static class PrepareModeratelyCompat
+    {
+        public static void SetMod()
+        {
+            Lakuna.PrepareModerately.Patches.PagePatch.Instance = new Page_ConfigureStartingPawns();
+            Lakuna.PrepareModerately.Patches.RandomizePatch.IsActivelyRolling = true;
         }
     }
 }

@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection.Emit;
+using RandomStartMod.Compat;
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
 using Verse;
-using VFECore;
+using VEF;
 using static RimWorld.PsychicRitualRoleDef;
 
 namespace RandomStartMod
@@ -97,7 +98,9 @@ namespace RandomStartMod
                         || filterHilliness.Count == 0
                         || filterHilliness.Contains(tile.hilliness);
 
-                    return biomeMatch && hillinessMatch;
+                    bool temperatureRangeMatch = !settings.limitStartingTileTemperature || (tile.MinTemperature <= settings.limitStartingTileTemperatureRange.min && tile.MaxTemperature <= settings.limitStartingTileTemperatureRange.max);
+
+                    return biomeMatch && hillinessMatch && temperatureRangeMatch;
                 });
 
                 foreach (Tile filteredTile in filteredTiles)
@@ -153,7 +156,7 @@ namespace RandomStartMod
 
             Season startingSeason = (Season)settings.startingSeason;
             if (settings.randomiseSeason)
-                startingSeason = (Season)Rand.Range(1, 6);
+                startingSeason = (Season)Rand.Range(1, 4);
 
             Find.GameInitData.startingSeason = startingSeason;
             Find.GameInitData.mapSize = settings.mapSize;
@@ -188,6 +191,50 @@ namespace RandomStartMod
                 }
             }
 
+            if (!settings.randomisePawnAge || !settings.randomisePawnSex || !settings.randomisePawnName)
+            {
+                if (ModsConfig.IsActive("Lakuna.PrepareModerately") || ModsConfig.IsActive("Lakuna.PrepareModerately_Steam"))
+                {
+                    PrepareModeratelyCompat.SetMod();
+                }
+
+                Util.LogMessage("Randomizing starting pawn");
+                Pawn pawn = Find.GameInitData.startingAndOptionalPawns.FirstOrDefault();
+                int randomCount = 0;
+                for (randomCount = 0; randomCount < 100; randomCount++)
+                {
+                    if (settings.PawnNotDisabledWorkTags && pawn.GetDisabledWorkTypes(true).Count > 0)
+                    {
+                        pawn = Util.RandomizePawn();
+                        continue;
+                    }
+                    if (settings.randomisePawnAge == false && (pawn.ageTracker.AgeBiologicalYears < settings.randomisePawnAgeRange.min || pawn.ageTracker.AgeBiologicalYears > settings.randomisePawnAgeRange.max))
+                    {
+                        pawn = Util.RandomizePawn();
+                        continue;
+                    }
+                    if (settings.randomisePawnSex == false && pawn.gender != (Gender)settings.PawnSex)
+                    {
+                        pawn = Util.RandomizePawn();
+                        continue;
+                    }
+                    Util.LogMessage($"Pawn after {randomCount} random");
+                    break;
+                }
+                if (randomCount > 99)
+                {
+                    Util.LogMessage("After 100 random, none pawn the target criteria");
+                }
+                if (!settings.randomisePawnName && pawn.Name is NameTriple nameTriple)
+                {
+                    pawn.Name = new NameTriple(
+                        string.IsNullOrWhiteSpace(settings.PawnFirstName) ? nameTriple.First : settings.PawnFirstName,
+                        string.IsNullOrWhiteSpace(settings.PawnNickName) ? nameTriple.Nick : settings.PawnNickName,
+                        string.IsNullOrWhiteSpace(settings.PawnLastName) ? nameTriple.Last : settings.PawnLastName
+                        );
+                }
+            }
+
             if (ModsConfig.BiotechActive)
             {
                 SetupRandomGenes(settings);
@@ -201,12 +248,12 @@ namespace RandomStartMod
                 foreach (Faction item in Find.FactionManager.AllFactionsListForReading)
                 {
                     // Skip faction if it's excluded from reputation randomization
-                    if (settings.factionsExcludeFromReputationRandomization != null && 
+                    if (settings.factionsExcludeFromReputationRandomization != null &&
                         settings.factionsExcludeFromReputationRandomization.Contains(item.def.defName))
                     {
                         continue;
                     }
-                    
+
                     // Only remove relations for factions that aren't excluded
                     List<FactionRelation> relationsToRemove = new List<FactionRelation>();
                     foreach (FactionRelation relation in item.relations)
@@ -221,19 +268,19 @@ namespace RandomStartMod
                     {
                         item.relations.Remove(relation);
                     }
-                    
+
                     foreach (Faction item2 in Find.FactionManager.AllFactionsListForReading)
                     {
                         if (item != item2)
                         {
                             // Skip if either faction is excluded from reputation randomization
-                            if (settings.factionsExcludeFromReputationRandomization != null && 
+                            if (settings.factionsExcludeFromReputationRandomization != null &&
                                 (settings.factionsExcludeFromReputationRandomization.Contains(item.def.defName) ||
                                  settings.factionsExcludeFromReputationRandomization.Contains(item2.def.defName)))
                             {
                                 continue;
                             }
-                            
+
                             if (item.RelationWith(item2, allowNull: true) == null)
                             {
                                 int initialGoodwill = GetInitialGoodwill(item, item2);
@@ -518,10 +565,9 @@ namespace RandomStartMod
             if (settings.randomisePopulation)
                 population = (OverallPopulation)settings.randomisePopulationRange.RandomInRange;
 
-            // WAITING FOR ODYSSEY
-            //LandmarkDensity landmarkDensity = (LandmarkDensity)settings.landmarkDensity;
-            //if (settings.randomiseLandmarkDensity)
-            //    landmarkDensity = (LandmarkDensity)settings.randomiseLandmarkDensityRange.RandomInRange;
+            LandmarkDensity landmarkDensity = (LandmarkDensity)settings.landmarkDensity;
+            if (settings.randomiseLandmarkDensity)
+                landmarkDensity = (LandmarkDensity)settings.randomiseLandmarkDensityRange.RandomInRange;
 
             float pollution = settings.pollution;
             if (settings.randomisePollution)
@@ -635,24 +681,21 @@ namespace RandomStartMod
             Util.LogMessage($"Using world seed: '{worldSeed}'");
 
             if (
-                ModsConfig.IsActive("zvq.RealisticPlanetsContinued")
-                || ModsConfig.IsActive("kentington.RealisticPlanetsContinued_Steam")
+                ModsConfig.IsActive("koth.RealisticPlanets1.6")
+                || ModsConfig.IsActive("koth.RealisticPlanets1.6_Steam")
             )
             {
-                int worldType = settings.realisticPlanetsWorldType;
-                if (settings.randomiseRealisticPlanets)
-                    worldType = -1;
-                Compat.RealisticPlanetsCompat.GenerateRealisticPlanetWorld(
-                    settings.planetCoverage,
-                    worldSeed,
-                    rainfall,
-                    temperature,
-                    population,
-                    LandmarkDensity.Normal,
-                    worldFactions,
-                    pollution,
-                    worldType
-                );
+                int oceanType = settings.realisticPlanetsOceanType;
+                if (settings.randomiseOceanType)
+                {
+                    oceanType = settings.randomiseOceanTypeRange.RandomInRange;
+                }
+                int axialTilt = settings.realisticPlanetsAxialTilt;
+                if (settings.randomiseAxialTilt)
+                {
+                    axialTilt = settings.randomiseAxialTiltRange.RandomInRange;
+                }
+                RealisticPlanetsCompat.GenerateRealisticPlanetWorld(settings.planetCoverage, GenText.RandomSeedString(), rainfall, temperature, population, landmarkDensity, worldFactions, pollution, oceanType, axialTilt, settings.realisticPlanetsWorldType, settings.randomiseRealisticPlanets);
             }
             else
             {
@@ -662,7 +705,7 @@ namespace RandomStartMod
                     rainfall,
                     temperature,
                     population,
-                    LandmarkDensity.Normal,
+                    landmarkDensity,
                     worldFactions,
                     pollution
                 );

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+	<!-- Existing translations -->
+	<RandomStartMod.Title>随机开局</RandomStartMod.Title>
+	<RandomStartMod.LaunchingWithoutConfiguring>您正在启动{0}，但尚未对其进行配置。</RandomStartMod.LaunchingWithoutConfiguring>
+	<RandomStartMod.SettingsAccess>（您可以通过右键单击<b>Random</b>按钮来访问设置）</RandomStartMod.SettingsAccess>
+	<RandomStartMod.RespectMemberXenotypes>仅选择玩家派系的异种</RandomStartMod.RespectMemberXenotypes>
+	<RandomStartMod.ALittleMore>略多</RandomStartMod.ALittleMore>
+	<RandomStartMod.ALittleLess>略少</RandomStartMod.ALittleLess>
+	<RandomStartMod.VeryHigh>很高</RandomStartMod.VeryHigh>
+	<RandomStartMod.VeryLow>很低</RandomStartMod.VeryLow>
+
+	<!-- Tab Names -->
+	<RandomStartMod.Tabs.StartingTile>起始格子</RandomStartMod.Tabs.StartingTile>
+
+	<!-- Difficulty Settings -->
+	<RandomStartMod.Difficulty.Description>选择定殖点的挑战等级和游戏模式：</RandomStartMod.Difficulty.Description>
+	<RandomStartMod.Difficulty.AnomalyDescription>配置异常事件的专属难度设置与威胁等级：</RandomStartMod.Difficulty.AnomalyDescription>
+	<RandomStartMod.Difficulty.CustomDescription>细调各项难度参数以创造你的理想挑战：</RandomStartMod.Difficulty.CustomDescription>
+	<RandomStartMod.Difficulty.NoPauseChallenge>无暂停挑战</RandomStartMod.Difficulty.NoPauseChallenge>
+	<RandomStartMod.Difficulty.NoPauseChallengeTooltip>启用后，你的殖民地将无法暂停游戏。这提供了一个极具强度的挑战，时间不会停止，需要持续注意力与快速决策。</RandomStartMod.Difficulty.NoPauseChallengeTooltip>
+	<RandomStartMod.Difficulty.HalfSpeedEnabled>启用半速</RandomStartMod.Difficulty.HalfSpeedEnabled>
+	<RandomStartMod.Difficulty.HalfSpeedEnabledTooltip>当“无暂停挑战”激活时，允许将游戏速度减至半速作为你唯一的喘息机会。</RandomStartMod.Difficulty.HalfSpeedEnabledTooltip>
+
+	<!-- Scenario Settings -->
+	<RandomStartMod.Scenarios.RandomizeScenarioTooltip>启用后，会从你启用的场景列表中随机选择一个场景。禁用时，你可以选择哪些场景被包含在随机池中。</RandomStartMod.Scenarios.RandomizeScenarioTooltip>
+	<RandomStartMod.Scenarios.Description>选择可随机选取的场景：</RandomStartMod.Scenarios.Description>
+	<RandomStartMod.Scenarios.ResearchDescription>定制你殖民地的起始研究与科技等级：</RandomStartMod.Scenarios.ResearchDescription>
+	<RandomStartMod.Scenarios.RemoveDefaultResearchTooltip>移除你场景通常会提供的起始研究项目。</RandomStartMod.Scenarios.RemoveDefaultResearchTooltip>
+	<RandomStartMod.Scenarios.RandomizeResearchTooltip>随机为你的殖民地添加研究项目。</RandomStartMod.Scenarios.RandomizeResearchTooltip>
+	<RandomStartMod.Scenarios.UnlockPrerequisiteResearchTooltip>解锁随机指定研究时，同时解锁通常需要先研究的所有其他研究。\n\n例如，解锁“Battery”时同时解锁“Electricity”。</RandomStartMod.Scenarios.UnlockPrerequisiteResearchTooltip>
+	<RandomStartMod.Scenarios.ItemsDescription>配置殖民地的起始装备与资源：</RandomStartMod.Scenarios.ItemsDescription>
+	<RandomStartMod.Scenarios.RemoveDefaultItemsTooltip>移除场景通常提供的所有散落起始物品（包括武器、食物、药物等）。</RandomStartMod.Scenarios.RemoveDefaultItemsTooltip>
+	<RandomStartMod.Scenarios.RandomizeItemsTooltip>根据配置的数量与科技等级上限随机向起始区域添加物品，替代任何移除的默认物品。</RandomStartMod.Scenarios.RandomizeItemsTooltip>
+	<RandomStartMod.Scenarios.MarketValueLimitTooltip>为所有随机生成的起始物品设定最大市场价值总和，限制随机装备与资源的总价值以防过强开局。</RandomStartMod.Scenarios.MarketValueLimitTooltip>
+
+	<!-- Storyteller Settings -->
+	<RandomStartMod.Storyteller.Title>故事讲述者选择</RandomStartMod.Storyteller.Title>
+	<RandomStartMod.Storyteller.Description>选择可被随机选取来引导你殖民地叙事的故事讲述者：</RandomStartMod.Storyteller.Description>
+
+	<!-- Faction Settings -->
+	<RandomStartMod.Factions.RequiredTitle>必选派系</RandomStartMod.Factions.RequiredTitle>
+	<RandomStartMod.Factions.RequiredDescription>这些派系将始终出现在世界中：</RandomStartMod.Factions.RequiredDescription>
+	<RandomStartMod.Factions.RandomTitle>随机派系</RandomStartMod.Factions.RandomTitle>
+	<RandomStartMod.Factions.RandomDescription>这些派系会根据数量范围在世界中随机出现：</RandomStartMod.Factions.RandomDescription>
+	<RandomStartMod.Factions.CountLabel>数量：</RandomStartMod.Factions.CountLabel>
+	<RandomStartMod.Factions.UniqueFactions>唯一派系</RandomStartMod.Factions.UniqueFactions>
+	<RandomStartMod.Factions.UniqueFactionsTooltip>每种派系仅生成一个。\n\n这意味着随机生成的最大派系数量将等于上方所选派系的数量。</RandomStartMod.Factions.UniqueFactionsTooltip>
+	<RandomStartMod.Factions.RandomizeFactionGoodwillTooltip>随机设置你的派系与生成派系的关系。\n\n这意味着通常友好的派系可能变为敌对，通常敌对的派系可能变为友好。</RandomStartMod.Factions.RandomizeFactionGoodwillTooltip>
+	<RandomStartMod.Factions.ReputationExclusionsTitle>声望排除</RandomStartMod.Factions.ReputationExclusionsTitle>
+	<RandomStartMod.Factions.ReputationExclusionsDescription>当启用声望随机化时，这些派系将保持默认关系：</RandomStartMod.Factions.ReputationExclusionsDescription>
+	<RandomStartMod.Factions.NoFactionsAvailableToExclude>无可排除的派系</RandomStartMod.Factions.NoFactionsAvailableToExclude>
+
+	<!-- Planet Settings -->
+	<RandomStartMod.Planet.CoverageTitle>行星覆盖率</RandomStartMod.Planet.CoverageTitle>
+	<RandomStartMod.Planet.CoverageDescription>决定行星生成与可探索范围的比例：</RandomStartMod.Planet.CoverageDescription>
+	<RandomStartMod.Planet.MapSizeTitle>地图大小</RandomStartMod.Planet.MapSizeTitle>
+	<RandomStartMod.Planet.MapSizeDescription>设置殖民地与遭遇地图的大小：</RandomStartMod.Planet.MapSizeDescription>
+	<RandomStartMod.Planet.GenerationTitle>世界生成</RandomStartMod.Planet.GenerationTitle>
+	<RandomStartMod.Planet.GenerationDescription>配置世界生成参数与环境条件：</RandomStartMod.Planet.GenerationDescription>
+	<RandomStartMod.Planet.RandomizeLabel>随机化：</RandomStartMod.Planet.RandomizeLabel>
+	<RandomStartMod.Planet.WorldGenDescription>配置世界生成参数与环境条件：</RandomStartMod.Planet.WorldGenDescription>
+	<RandomStartMod.Planet.RandomiseWorldSeedTooltip>随机分配用于世界生成的种子。</RandomStartMod.Planet.RandomiseWorldSeedTooltip>
+	<RandomStartMod.Planet.RandomizeRainfallTooltip>随机设置行星的总体降雨水平，影响生物群落分布以及湿润与干燥地区的普遍程度。</RandomStartMod.Planet.RandomizeRainfallTooltip>
+	<RandomStartMod.Planet.RandomizeTemperatureTooltip>随机设置行星的总体温度水平，决定热带与寒带生物群落的比例并影响全球气候模式。</RandomStartMod.Planet.RandomizeTemperatureTooltip>
+	<RandomStartMod.Planet.RandomizePopulationTooltip>随机设置行星的派系点密度，影响殖民地、前哨与派系基地在世界上的分布数量。</RandomStartMod.Planet.RandomizePopulationTooltip>
+	<RandomStartMod.Planet.RandomizePollutionTooltip>随机设置行星的初始污染水平。更高污染产生更多废土区域并影响植物生长与动物健康。</RandomStartMod.Planet.RandomizePollutionTooltip>
+	<RandomStartMod.Planet.RandomizeStartingSeasonTooltip>随机选择殖民地开始时的季节。不同季节影响温度、植物生长与起始可用资源。</RandomStartMod.Planet.RandomizeStartingSeasonTooltip>
+	<RandomStartMod.Planet.RandomizeRealisticPlanetsTooltip>启用对 真是星球 模组设置的随机化，这会影响行星地形生成与地理特征。</RandomStartMod.Planet.RandomizeRealisticPlanetsTooltip>
+	<RandomStartMod.Planet.AutoRealRuinsTooltip>自动启用 真是废墟 生成功能，用他人殖民地遗迹填充世界，增加探索机会与多样性。</RandomStartMod.Planet.AutoRealRuinsTooltip>
+	<RandomStartMod.Planet.RealRuinsBiomeFilteringTooltip>根据生物群落兼容性过滤 Real Ruins，确保遗迹出现在与其原始设置相符的环境。</RandomStartMod.Planet.RealRuinsBiomeFilteringTooltip>
+	<RandomStartMod.UseRPWordType>其他世界预设插入随机</RandomStartMod.UseRPWordType>
+	<RandomStartMod.RandomiseWorldPresetsTip>勾选后,会使用'真实星球'的随机系统替代这里的随机值. 除了, 全球覆盖率, 地标, 季节</RandomStartMod.RandomiseWorldPresetsTip>
+
+	<!-- Starting Tile -->
+	<!-- Optional Features (Misc Tab) -->
+	<RandomStartMod.Misc.GenesTitle>遗传特征</RandomStartMod.Misc.GenesTitle>
+	<RandomStartMod.Misc.GenesDescription>配置起始殖民者的遗传特征与异种类型：</RandomStartMod.Misc.GenesDescription>
+	<RandomStartMod.Misc.CountLabel>数量：</RandomStartMod.Misc.CountLabel>
+	<RandomStartMod.Misc.RandomizeXenotypeTooltip>从所有可用异种定义中随机为起始小人分配异种。这会影响他们的基因特性、能力与外观。</RandomStartMod.Misc.RandomizeXenotypeTooltip>
+	<RandomStartMod.Misc.RespectFactionXenotypesTooltip>在随机分配异种时，仅从适合你派系成员的异种中选择，以保持派系一致性。</RandomStartMod.Misc.RespectFactionXenotypesTooltip>
+	<RandomStartMod.Misc.RandomizeCustomGenesTooltip>不使用预设异种，而是随机分配单个基因来为起始小人创造自定义基因组合。</RandomStartMod.Misc.RandomizeCustomGenesTooltip>
+	<RandomStartMod.Misc.MinimumMetabolicEfficiencyTooltip>在生成随机基因时设定最低代谢效率要求，避免生成极低代谢导致食物消耗过高的个体。</RandomStartMod.Misc.MinimumMetabolicEfficiencyTooltip>
+	<RandomStartMod.Misc.IdeologyTitle>意识形态系统</RandomStartMod.Misc.IdeologyTitle>
+	<RandomStartMod.Misc.IdeologyDescription>自定义意识形态生成与信仰体系：</RandomStartMod.Misc.IdeologyDescription>
+	<RandomStartMod.Misc.PlayClassicModeTooltip>禁用意识形态系统并使用经典派系关系。这会移除信仰、仪式与主张等意识形态机制。</RandomStartMod.Misc.PlayClassicModeTooltip>
+	<RandomStartMod.Misc.RandomMemeCountLabel>随机信念数量：</RandomStartMod.Misc.RandomMemeCountLabel>
+	<RandomStartMod.Misc.ForcedMemesTitle>强制信念</RandomStartMod.Misc.ForcedMemesTitle>
+	<RandomStartMod.Misc.ForcedMemesDescription>这些信念将始终包含在你殖民地的意识形态中：</RandomStartMod.Misc.ForcedMemesDescription>
+	<RandomStartMod.Misc.DisallowedMemesTitle>禁止信念</RandomStartMod.Misc.DisallowedMemesTitle>
+	<RandomStartMod.Misc.DisallowedMemesDescription>这些信念将永远不会被随机生成到意识形态中：</RandomStartMod.Misc.DisallowedMemesDescription>
+	<RandomStartMod.Misc.DisallowedPrecepts>禁止条款</RandomStartMod.Misc.DisallowedPrecepts>
+	<RandomStartMod.Misc.DisallowedPreceptsDescription>这些特定条款将从意识形态生成中排除：</RandomStartMod.Misc.DisallowedPreceptsDescription>
+	<RandomStartMod.Misc.LoadExistingIdeologyTooltip>使用之前保存的自定义意识形态文件（.rid）而不是生成新的随机意识形态。这允许你重用其他殖民地或战役的意识形态。</RandomStartMod.Misc.LoadExistingIdeologyTooltip>
+	
+	<!-- Characters Settings -->
+	<RandomStartMod.Characters>角色</RandomStartMod.Characters>
+	<RandomStartMod.PawnNotDisabledWorkTags>没有禁用工作类型</RandomStartMod.PawnNotDisabledWorkTags>
+	<RandomStartMod.Misc.StartingColonistsDescription>配置起始殖民者的特殊要求：</RandomStartMod.Misc.StartingColonistsDescription>
+	<RandomStartMod.Misc.StartingPawnsMustBeCapableOfViolenceTooltip>不生成因医疗问题、背景或特质而无法施暴的起始小人。</RandomStartMod.Misc.StartingPawnsMustBeCapableOfViolenceTooltip>
+
+	<!-- Starting Tile Settings -->
+	<RandomStartMod.StartingTile.Title>起始格子</RandomStartMod.StartingTile.Title>
+	<RandomStartMod.StartingTile.FilterStartingBiome>过滤起始生物群落</RandomStartMod.StartingTile.FilterStartingBiome>
+	<RandomStartMod.StartingTile.FilterStartingBiomeTooltip>启用以过滤允许用作起始格子的生物群落</RandomStartMod.StartingTile.FilterStartingBiomeTooltip>
+	<RandomStartMod.StartingTile.AllowedBiomes>允许的生物群落：</RandomStartMod.StartingTile.AllowedBiomes>
+	<RandomStartMod.StartingTile.NoBiomesSelected>未选择生物群落（将使用默认行为）</RandomStartMod.StartingTile.NoBiomesSelected>
+	<RandomStartMod.StartingTile.AddBiome>添加生物群落</RandomStartMod.StartingTile.AddBiome>
+	<RandomStartMod.StartingTile.FilterStartingHilliness>过滤起始地形起伏</RandomStartMod.StartingTile.FilterStartingHilliness>
+	<RandomStartMod.StartingTile.FilterStartingHillinessTooltip>启用以过滤允许用作起始格子的地形起伏类型</RandomStartMod.StartingTile.FilterStartingHillinessTooltip>
+	<RandomStartMod.StartingTile.AllowedHilliness>允许的地形起伏：</RandomStartMod.StartingTile.AllowedHilliness>
+	<RandomStartMod.StartingTile.NoHillinessSelected>未选择地形起伏（将使用默认行为）</RandomStartMod.StartingTile.NoHillinessSelected>
+	<RandomStartMod.StartingTile.AddHilliness>添加地形起伏</RandomStartMod.StartingTile.AddHilliness>
+
+	<!-- Tooltip Titles -->
+	<RandomStartMod.TooltipTitles.RemoveDefaultResearch>移除默认研究</RandomStartMod.TooltipTitles.RemoveDefaultResearch>
+	<RandomStartMod.TooltipTitles.RandomizeResearch>随机化研究</RandomStartMod.TooltipTitles.RandomizeResearch>
+	<RandomStartMod.TooltipTitles.UnlockPrerequisiteResearch>解锁先决研究</RandomStartMod.TooltipTitles.UnlockPrerequisiteResearch>
+	<RandomStartMod.TooltipTitles.RemoveDefaultItems>移除默认物品</RandomStartMod.TooltipTitles.RemoveDefaultItems>
+	<RandomStartMod.TooltipTitles.RandomizeItems>随机化物品</RandomStartMod.TooltipTitles.RandomizeItems>
+	<RandomStartMod.TooltipTitles.MarketValueLimit>市场价值上限</RandomStartMod.TooltipTitles.MarketValueLimit>
+	<RandomStartMod.TooltipTitles.UniqueFactions>唯一派系</RandomStartMod.TooltipTitles.UniqueFactions>
+	<RandomStartMod.TooltipTitles.RandomizeFactionGoodwill>随机化派系友善度</RandomStartMod.TooltipTitles.RandomizeFactionGoodwill>
+	<RandomStartMod.TooltipTitles.RandomiseWorldSeed>随机化世界种子</RandomStartMod.TooltipTitles.RandomiseWorldSeed>
+	<RandomStartMod.TooltipTitles.RandomizeRainfall>随机化降雨</RandomStartMod.TooltipTitles.RandomizeRainfall>
+	<RandomStartMod.TooltipTitles.RandomizeTemperature>随机化温度</RandomStartMod.TooltipTitles.RandomizeTemperature>
+	<RandomStartMod.TooltipTitles.RandomizePopulation>随机化人口</RandomStartMod.TooltipTitles.RandomizePopulation>
+	<RandomStartMod.TooltipTitles.RandomizePollution>随机化污染</RandomStartMod.TooltipTitles.RandomizePollution>
+	<RandomStartMod.TooltipTitles.RandomizeStartingSeason>随机化起始季节</RandomStartMod.TooltipTitles.RandomizeStartingSeason>
+	<RandomStartMod.TooltipTitles.RandomizeRealisticPlanets>随机化真实星球</RandomStartMod.TooltipTitles.RandomizeRealisticPlanets>
+	<RandomStartMod.TooltipTitles.AutoRealRuins>自动真实废墟</RandomStartMod.TooltipTitles.AutoRealRuins>
+	<RandomStartMod.TooltipTitles.RealRuinsBiomeFiltering>真实废墟生物群落过滤</RandomStartMod.TooltipTitles.RealRuinsBiomeFiltering>
+	<RandomStartMod.TooltipTitles.RandomizeXenotype>随机化异种</RandomStartMod.TooltipTitles.RandomizeXenotype>
+	<RandomStartMod.TooltipTitles.RespectFactionXenotypes>尊重派系异种</RandomStartMod.TooltipTitles.RespectFactionXenotypes>
+	<RandomStartMod.TooltipTitles.RandomizeCustomGenes>随机化自定义基因</RandomStartMod.TooltipTitles.RandomizeCustomGenes>
+	<RandomStartMod.TooltipTitles.MinimumMetabolicEfficiency>最低代谢效率</RandomStartMod.TooltipTitles.MinimumMetabolicEfficiency>
+	<RandomStartMod.TooltipTitles.PlayClassicMode>使用经典模式</RandomStartMod.TooltipTitles.PlayClassicMode>
+	<RandomStartMod.TooltipTitles.LoadExistingIdeology>加载已存在的意识形态</RandomStartMod.TooltipTitles.LoadExistingIdeology>
+	<RandomStartMod.TooltipTitles.StartingPawnsMustBeCapableOfViolence>起始小人必须能施暴</RandomStartMod.TooltipTitles.StartingPawnsMustBeCapableOfViolence>
+	<RandomStartMod.TooltipTitles.RandomizeScenario>随机化场景</RandomStartMod.TooltipTitles.RandomizeScenario>
+	<RandomStartMod.TooltipTitles.NoPauseChallenge>无暂停挑战</RandomStartMod.TooltipTitles.NoPauseChallenge>
+	<RandomStartMod.TooltipTitles.HalfSpeedEnabled>启用半速</RandomStartMod.TooltipTitles.HalfSpeedEnabled>
+	<RandomStartMod.TooltipTitles.FilterStartingBiome>过滤起始生物群落</RandomStartMod.TooltipTitles.FilterStartingBiome>
+	<RandomStartMod.TooltipTitles.FilterStartingHilliness>过滤起始地形起伏</RandomStartMod.TooltipTitles.FilterStartingHilliness>
+</LanguageData>
