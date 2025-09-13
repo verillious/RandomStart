@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
 	<!-- Existing translations -->
-	<RandomStartMod.Ti	<RandomStartMod.StartingTile.FilterStartingHilliness>过滤起始地形</RandomStartMod.StartingTile.FilterStartingHilliness>
+	<RandomStartMod.Title>随机开局</RandomStartMod.Title>
+	<RandomStartMod.StartingTile.FilterStartingHilliness>过滤起始地形</RandomStartMod.StartingTile.FilterStartingHilliness>
 	<RandomStartMod.StartingTile.FilterStartingHillinessTooltip>启用以过滤允许用作起始格子的地形起伏类型</RandomStartMod.StartingTile.FilterStartingHillinessTooltip>
 	<RandomStartMod.StartingTile.AllowedHilliness>允许的地形起伏：</RandomStartMod.StartingTile.AllowedHilliness>
 	<RandomStartMod.StartingTile.NoHillinessSelected>未选择地形起伏（将使用默认行为）</RandomStartMod.StartingTile.NoHillinessSelected>
