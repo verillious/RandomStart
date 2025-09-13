@@ -225,12 +225,6 @@ namespace RandomStartMod
 
         public bool randomisePawnName = true;
         public List<PawnNameData> pawnNames = new List<PawnNameData>();
-        [Obsolete("Use pawnNames list instead")]
-        public string PawnFirstName;
-        [Obsolete("Use pawnNames list instead")]
-        public string PawnNickName;
-        [Obsolete("Use pawnNames list instead")]
-        public string PawnLastName;
         public bool randomisePawnAge = false;
         public IntRange randomisePawnAgeRange = new IntRange(20, 40);
         public bool randomisePawnSex = true;
@@ -459,23 +453,6 @@ namespace RandomStartMod
             Scribe_Values.Look(ref randomisePawnName, "randomisePawnName", defaultValue: true);
             Scribe_Collections.Look(ref pawnNames, "pawnNames", LookMode.Deep);
             
-            // Backwards compatibility - migrate old single name fields to new list
-            if (Scribe.mode == LoadSaveMode.LoadingVars)
-            {
-                string oldFirstName = null, oldNickName = null, oldLastName = null;
-                Scribe_Values.Look(ref oldFirstName, "PawnFirstName", null);
-                Scribe_Values.Look(ref oldNickName, "PawnNickName", null);
-                Scribe_Values.Look(ref oldLastName, "PawnLastName", null);
-                
-                if (pawnNames == null)
-                    pawnNames = new List<PawnNameData>();
-                    
-                // If we have old data and no new data, migrate it
-                if (pawnNames.Count == 0 && (!string.IsNullOrEmpty(oldFirstName) || !string.IsNullOrEmpty(oldNickName) || !string.IsNullOrEmpty(oldLastName)))
-                {
-                    pawnNames.Add(new PawnNameData(oldFirstName, oldNickName, oldLastName));
-                }
-            }
             else if (pawnNames == null)
             {
                 pawnNames = new List<PawnNameData>();
