@@ -1,10 +1,39 @@
 using RimWorld;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Verse;
 
 namespace RandomStartMod
 {
+    public class PawnNameData : IExposable
+    {
+        public string firstName = "";
+        public string nickName = "";
+        public string lastName = "";
+
+        public PawnNameData() { }
+
+        public PawnNameData(string first, string nick, string last)
+        {
+            firstName = first ?? "";
+            nickName = nick ?? "";
+            lastName = last ?? "";
+        }
+
+        public void ExposeData()
+        {
+            Scribe_Values.Look(ref firstName, "firstName", "");
+            Scribe_Values.Look(ref nickName, "nickName", "");
+            Scribe_Values.Look(ref lastName, "lastName", "");
+        }
+
+        public bool IsEmpty()
+        {
+            return string.IsNullOrEmpty(firstName) && string.IsNullOrEmpty(nickName) && string.IsNullOrEmpty(lastName);
+        }
+    }
+
     public class RandomStartSettings : ModSettings
     {
         public bool openedSettings = false;
@@ -195,8 +224,12 @@ namespace RandomStartMod
         public bool noPauseHalfSpeedEnabled = false;
 
         public bool randomisePawnName = true;
+        public List<PawnNameData> pawnNames = new List<PawnNameData>();
+        [Obsolete("Use pawnNames list instead")]
         public string PawnFirstName;
+        [Obsolete("Use pawnNames list instead")]
         public string PawnNickName;
+        [Obsolete("Use pawnNames list instead")]
         public string PawnLastName;
         public bool randomisePawnAge = false;
         public IntRange randomisePawnAgeRange = new IntRange(20, 40);
@@ -424,9 +457,30 @@ namespace RandomStartMod
             Scribe_Values.Look(ref noPauseHalfSpeedEnabled, "noPauseHalfSpeedEnabled", defaultValue: false);
 
             Scribe_Values.Look(ref randomisePawnName, "randomisePawnName", defaultValue: true);
-            Scribe_Values.Look(ref PawnFirstName, "PawnFirstName", null);
-            Scribe_Values.Look(ref PawnNickName, "PawnNickName", null);
-            Scribe_Values.Look(ref PawnLastName, "PawnLastName", null);
+            Scribe_Collections.Look(ref pawnNames, "pawnNames", LookMode.Deep);
+            
+            // Backwards compatibility - migrate old single name fields to new list
+            if (Scribe.mode == LoadSaveMode.LoadingVars)
+            {
+                string oldFirstName = null, oldNickName = null, oldLastName = null;
+                Scribe_Values.Look(ref oldFirstName, "PawnFirstName", null);
+                Scribe_Values.Look(ref oldNickName, "PawnNickName", null);
+                Scribe_Values.Look(ref oldLastName, "PawnLastName", null);
+                
+                if (pawnNames == null)
+                    pawnNames = new List<PawnNameData>();
+                    
+                // If we have old data and no new data, migrate it
+                if (pawnNames.Count == 0 && (!string.IsNullOrEmpty(oldFirstName) || !string.IsNullOrEmpty(oldNickName) || !string.IsNullOrEmpty(oldLastName)))
+                {
+                    pawnNames.Add(new PawnNameData(oldFirstName, oldNickName, oldLastName));
+                }
+            }
+            else if (pawnNames == null)
+            {
+                pawnNames = new List<PawnNameData>();
+            }
+            
             Scribe_Values.Look(ref randomisePawnAge, "randomisePawnAge", defaultValue: false);
             Scribe_Values.Look(ref randomisePawnAgeRange, "randomisePawnAgeRange", new IntRange(20, 40));
             Scribe_Values.Look(ref randomisePawnSex, "randomisePawnSex", defaultValue: true);
@@ -639,6 +693,7 @@ namespace RandomStartMod
         {
             startingPawnForceViolence = false;
             randomisePawnName = true;
+            pawnNames = new List<PawnNameData>();
             randomisePawnAge = false;
             randomisePawnAgeRange = new IntRange(20, 40);
             randomisePawnSex = true;

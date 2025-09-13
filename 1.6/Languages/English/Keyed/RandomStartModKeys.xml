@@ -95,7 +95,8 @@
 	
 	<!-- Characters Settings -->
 	<RandomStartMod.Characters>Characters</RandomStartMod.Characters>
-	<RandomStartMod.PawnNotDisabledWorkTags>Not Disabled WorkType</RandomStartMod.PawnNotDisabledWorkTags>
+	<RandomStartMod.PawnNotDisabledWorkTags>Starting Pawns Must be Capable of Everything</RandomStartMod.PawnNotDisabledWorkTags>
+	<RandomStartMod.PawnNotDisabledWorkTagsTooltip>Do not generate starting pawns that have any disabled work types. This ensures all starting colonists are fully capable of performing all jobs and tasks.</RandomStartMod.PawnNotDisabledWorkTagsTooltip>
 	<RandomStartMod.Misc.StartingColonistsDescription>Configure special requirements for your starting colonists:</RandomStartMod.Misc.StartingColonistsDescription>
 	<RandomStartMod.Misc.StartingPawnsMustBeCapableOfViolenceTooltip>Do not generate starting pawns that are incapable of violence due to medical issues, backgrounds or traits.</RandomStartMod.Misc.StartingPawnsMustBeCapableOfViolenceTooltip>
 
@@ -111,6 +112,17 @@
 	<RandomStartMod.StartingTile.AllowedHilliness>Allowed Hilliness:</RandomStartMod.StartingTile.AllowedHilliness>
 	<RandomStartMod.StartingTile.NoHillinessSelected>No hilliness selected (will use default behavior)</RandomStartMod.StartingTile.NoHillinessSelected>
 	<RandomStartMod.StartingTile.AddHilliness>Add Hilliness</RandomStartMod.StartingTile.AddHilliness>
+	<RandomStartMod.StartingTile.FilterStartingTemperature>Filter Starting Temperature</RandomStartMod.StartingTile.FilterStartingTemperature>
+	<RandomStartMod.StartingTile.FilterStartingTemperatureTooltip>Enable to filter starting tiles based on their temperature range</RandomStartMod.StartingTile.FilterStartingTemperatureTooltip>
+
+	<!-- Character Settings -->
+	<RandomStartMod.Characters.OverrideName>Override Name</RandomStartMod.Characters.OverrideName>
+	<RandomStartMod.Characters.OverrideNameTooltip>When enabled, you can specify custom names for your starting colonists. Leave fields empty to use randomly generated names.</RandomStartMod.Characters.OverrideNameTooltip>
+	<RandomStartMod.Characters.OverrideAge>Override Age</RandomStartMod.Characters.OverrideAge>
+	<RandomStartMod.Characters.OverrideAgeTooltip>When enabled, you can specify an age range for your starting colonists instead of using random ages.</RandomStartMod.Characters.OverrideAgeTooltip>
+	<RandomStartMod.Characters.OverrideSex>Override Sex</RandomStartMod.Characters.OverrideSex>
+	<RandomStartMod.Characters.OverrideSexTooltip>When enabled, you can specify the gender for your starting colonists instead of using random genders.</RandomStartMod.Characters.OverrideSexTooltip>
+	<RandomStartMod.Characters.AddPawnName>Add Pawn Name</RandomStartMod.Characters.AddPawnName>
 
 	<!-- Tooltip Titles -->
 	<RandomStartMod.TooltipTitles.RemoveDefaultResearch>Remove Default Research</RandomStartMod.TooltipTitles.RemoveDefaultResearch>
@@ -142,4 +154,5 @@
 	<RandomStartMod.TooltipTitles.HalfSpeedEnabled>Half Speed Enabled</RandomStartMod.TooltipTitles.HalfSpeedEnabled>
 	<RandomStartMod.TooltipTitles.FilterStartingBiome>Filter Starting Biome</RandomStartMod.TooltipTitles.FilterStartingBiome>
 	<RandomStartMod.TooltipTitles.FilterStartingHilliness>Filter Starting Hilliness</RandomStartMod.TooltipTitles.FilterStartingHilliness>
+	<RandomStartMod.TooltipTitles.FilterStartingTemperature>Filter Starting Temperature</RandomStartMod.TooltipTitles.FilterStartingTemperature>
 </LanguageData>

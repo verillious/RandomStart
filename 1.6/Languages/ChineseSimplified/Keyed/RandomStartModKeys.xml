@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
 	<!-- Existing translations -->
-	<RandomStartMod.Title>随机开局</RandomStartMod.Title>
+	<RandomStartMod.Ti	<RandomStartMod.StartingTile.FilterStartingHilliness>过滤起始地形</RandomStartMod.StartingTile.FilterStartingHilliness>
+	<RandomStartMod.StartingTile.FilterStartingHillinessTooltip>启用以过滤允许用作起始格子的地形起伏类型</RandomStartMod.StartingTile.FilterStartingHillinessTooltip>
+	<RandomStartMod.StartingTile.AllowedHilliness>允许的地形起伏：</RandomStartMod.StartingTile.AllowedHilliness>
+	<RandomStartMod.StartingTile.NoHillinessSelected>未选择地形起伏（将使用默认行为）</RandomStartMod.StartingTile.NoHillinessSelected>
+	<RandomStartMod.StartingTile.AddHilliness>添加地形起伏</RandomStartMod.StartingTile.AddHilliness>
+	<RandomStartMod.StartingTile.FilterStartingTemperature>过滤起始温度</RandomStartMod.StartingTile.FilterStartingTemperature>
+	<RandomStartMod.StartingTile.FilterStartingTemperatureTooltip>启用以根据温度范围过滤起始地点</RandomStartMod.StartingTile.FilterStartingTemperatureTooltip>
+
+	<!-- Character Settings -->局</RandomStartMod.Title>
 	<RandomStartMod.LaunchingWithoutConfiguring>您正在启动{0}，但尚未对其进行配置。</RandomStartMod.LaunchingWithoutConfiguring>
 	<RandomStartMod.SettingsAccess>（您可以通过右键单击<b>Random</b>按钮来访问设置）</RandomStartMod.SettingsAccess>
 	<RandomStartMod.RespectMemberXenotypes>仅选择玩家派系的异种</RandomStartMod.RespectMemberXenotypes>
@@ -112,6 +120,15 @@
 	<RandomStartMod.StartingTile.NoHillinessSelected>未选择地形起伏（将使用默认行为）</RandomStartMod.StartingTile.NoHillinessSelected>
 	<RandomStartMod.StartingTile.AddHilliness>添加地形起伏</RandomStartMod.StartingTile.AddHilliness>
 
+	<!-- Character Settings -->
+	<RandomStartMod.Characters.OverrideName>覆盖姓名</RandomStartMod.Characters.OverrideName>
+	<RandomStartMod.Characters.OverrideNameTooltip>启用后，您可以为起始殖民者指定自定义姓名。将字段留空以使用随机生成的姓名。</RandomStartMod.Characters.OverrideNameTooltip>
+	<RandomStartMod.Characters.OverrideAge>覆盖年龄</RandomStartMod.Characters.OverrideAge>
+	<RandomStartMod.Characters.OverrideAgeTooltip>启用后，您可以为起始殖民者指定年龄范围，而不是使用随机年龄。</RandomStartMod.Characters.OverrideAgeTooltip>
+	<RandomStartMod.Characters.OverrideSex>覆盖性别</RandomStartMod.Characters.OverrideSex>
+	<RandomStartMod.Characters.OverrideSexTooltip>启用后，您可以为起始殖民者指定性别，而不是使用随机性别。</RandomStartMod.Characters.OverrideSexTooltip>
+	<RandomStartMod.Characters.AddPawnName>添加小人姓名</RandomStartMod.Characters.AddPawnName>
+
 	<!-- Tooltip Titles -->
 	<RandomStartMod.TooltipTitles.RemoveDefaultResearch>移除默认研究</RandomStartMod.TooltipTitles.RemoveDefaultResearch>
 	<RandomStartMod.TooltipTitles.RandomizeResearch>随机化研究</RandomStartMod.TooltipTitles.RandomizeResearch>
@@ -142,4 +159,5 @@
 	<RandomStartMod.TooltipTitles.HalfSpeedEnabled>启用半速</RandomStartMod.TooltipTitles.HalfSpeedEnabled>
 	<RandomStartMod.TooltipTitles.FilterStartingBiome>过滤起始生物群落</RandomStartMod.TooltipTitles.FilterStartingBiome>
 	<RandomStartMod.TooltipTitles.FilterStartingHilliness>过滤起始地形起伏</RandomStartMod.TooltipTitles.FilterStartingHilliness>
+	<RandomStartMod.TooltipTitles.FilterStartingTemperature>过滤起始温度</RandomStartMod.TooltipTitles.FilterStartingTemperature>
 </LanguageData>

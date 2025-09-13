@@ -1799,7 +1799,7 @@ namespace RandomStartMod
             listingStandard.Gap();
             startingTileListingHeight += 36f + Text.LineHeight;
             Text.Font = GameFont.Small;
-            DoSettingToggle(listingStandard.GetRect(24f), "Temperature".Translate(), null, ref settings.limitStartingTileTemperature);
+            DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.StartingTile.FilterStartingTemperature".Translate(), "RandomStartMod.TooltipTitles.FilterStartingTemperature".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.StartingTile.FilterStartingTemperatureTooltip".Translate(), ref settings.limitStartingTileTemperature);
             startingTileListingHeight += 36f + Text.LineHeight;
             if (settings.limitStartingTileTemperature)
             {
@@ -1840,34 +1840,64 @@ namespace RandomStartMod
             Text.Font = GameFont.Small;
             DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.TooltipTitles.StartingPawnsMustBeCapableOfViolence".Translate(), "RandomStartMod.TooltipTitles.StartingPawnsMustBeCapableOfViolence".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Misc.StartingPawnsMustBeCapableOfViolenceTooltip".Translate(), ref settings.startingPawnForceViolence);
             optionalFeaturesListingHeight += 24f;
+            DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.PawnNotDisabledWorkTags".Translate(), "RandomStartMod.PawnNotDisabledWorkTags".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.PawnNotDisabledWorkTagsTooltip".Translate(), ref settings.PawnNotDisabledWorkTags);
+            planetListingHeight += 32f;
 
             listingStandard.Gap();
-            Text.Font = GameFont.Small;
-            planetListingHeight += 12f;
-            listingStandard.Label("RandomStartMod.Characters".Translate() + " 1:");
 
-            listingStandard.Gap();
-            planetListingHeight += 12f;
-            DoSettingToggle(listingStandard.GetRect(24f), "Name".Translate(), null, ref settings.randomisePawnName);
+            bool overrideName = !settings.randomisePawnName;
+            DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.Characters.OverrideName".Translate(), "RandomStartMod.Characters.OverrideNameTooltip".Translate(), ref overrideName);
+            settings.randomisePawnName = !overrideName;
             planetListingHeight += 36f;
-            if (!settings.randomisePawnName)
+            if (overrideName)
             {
-                Rect originalRect = listingStandard.GetRect(32f);
-                float segmentWidtht = originalRect.width / 3;
-                Rect fRect = new Rect(originalRect.x, originalRect.y, segmentWidtht, originalRect.height);
-                Rect nRect = new Rect(originalRect.x + segmentWidtht, originalRect.y, segmentWidtht, originalRect.height);
-                Rect lRect = new Rect(originalRect.x + segmentWidtht * 2, originalRect.y, segmentWidtht, originalRect.height);
-                settings.PawnFirstName = Widgets.TextField(fRect, settings.PawnFirstName);
-                settings.PawnNickName = Widgets.TextField(nRect, settings.PawnNickName);
-                settings.PawnLastName = Widgets.TextField(lRect, settings.PawnLastName);
-                planetListingHeight += 32f;
+                // Ensure pawnNames list is initialized
+                if (settings.pawnNames == null)
+                    settings.pawnNames = new List<PawnNameData>();
+
+                // Add space for column headers
+                if (settings.pawnNames.Count > 0)
+                {
+                    listingStandard.Gap(14f); // Extra gap before headers (increased from 8f)
+                    planetListingHeight += 32f; // Increased space for headers (increased from 26f)
+                }
+
+                // Display existing pawn name rows
+                for (int i = 0; i < settings.pawnNames.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        listingStandard.Gap(2f); // Small gap for first row
+                    }
+                    else
+                    {
+                        listingStandard.Gap(4f); // Normal gap for subsequent rows
+                    }
+                    if (DoPawnNameRow(listingStandard.GetRect(32f), settings.pawnNames[i], i))
+                    {
+                        settings.pawnNames.RemoveAt(i);
+                        i--; // Adjust index after removal
+                    }
+                    listingStandard.Gap(4f);
+                    planetListingHeight += 40f;
+                }
+
+                // Add new pawn name row button
+                listingStandard.Gap();
+                if (listingStandard.ButtonText("RandomStartMod.Characters.AddPawnName".Translate()))
+                {
+                    settings.pawnNames.Add(new PawnNameData());
+                }
+                planetListingHeight += 44f;
             }
 
             listingStandard.Gap();
             planetListingHeight += 36f;
-            DoSettingToggle(listingStandard.GetRect(24f), "Stat_Age_Label".Translate(), null, ref settings.randomisePawnAge);
+            bool overrideAge = !settings.randomisePawnAge;
+            DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.Characters.OverrideAge".Translate(), "RandomStartMod.Characters.OverrideAgeTooltip".Translate(), ref overrideAge);
+            settings.randomisePawnAge = !overrideAge;
             planetListingHeight += 36f + Text.LineHeight;
-            if (!settings.randomisePawnAge)
+            if (overrideAge)
             {
                 Rect rect9 = listingStandard.GetRect(32f);
                 Widgets.IntRange(rect9, 1623498651, ref settings.randomisePawnAgeRange, 0, 100, Util.GetAgeRangeLabelPercent(settings.randomisePawnAgeRange));
@@ -1876,26 +1906,33 @@ namespace RandomStartMod
 
             listingStandard.Gap();
             planetListingHeight += 36f + Text.LineHeight;
-            DoSettingToggle(listingStandard.GetRect(24f), "Sex".Translate(), null, ref settings.randomisePawnSex);
+            bool overrideSex = !settings.randomisePawnSex;
+            DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.Characters.OverrideSex".Translate(), "RandomStartMod.Characters.OverrideSexTooltip".Translate(), ref overrideSex);
+            settings.randomisePawnSex = !overrideSex;
             planetListingHeight += 44f;
-            if (!settings.randomisePawnSex)
+            if (overrideSex)
             {
-                List<string> list = Enum.GetNames(typeof(Gender)).ToList();
+                List<string> list = Enum.GetNames(typeof(Gender)).Where(name => name != "None").ToList();
+                List<Gender> genderValues = Enum.GetValues(typeof(Gender)).Cast<Gender>().Where(g => g != Gender.None).ToList();
                 int num = settings.PawnSex;
-                if (num >= list.Count)
+                
+                // Find the index in the filtered list
+                int displayIndex = genderValues.FindIndex(g => (int)g == num);
+                if (displayIndex == -1)
                 {
-                    num = 0;
-                    settings.PawnSex = 0;
+                    displayIndex = 0;
+                    settings.PawnSex = (int)genderValues[0];
                 }
-                if (listingStandard.ButtonText(list[num]))
+                
+                if (listingStandard.ButtonText(list[displayIndex]))
                 {
                     List<FloatMenuOption> list2 = new List<FloatMenuOption>();
                     for (int i = 0; i < list.Count; i++)
                     {
-                        int sex = i;
+                        int index = i;
                         FloatMenuOption item = new FloatMenuOption(list[i], delegate
                         {
-                            settings.PawnSex = sex;
+                            settings.PawnSex = (int)genderValues[index];
                         });
                         list2.Add(item);
                     }
@@ -1905,8 +1942,7 @@ namespace RandomStartMod
             }
 
             planetListingHeight += 36f + Text.LineHeight;
-            DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.PawnNotDisabledWorkTags".Translate(), null, ref settings.PawnNotDisabledWorkTags);
-            planetListingHeight += 32f;
+
 
             listingStandard.Gap();
             planetListingHeight += 12f;
@@ -2635,6 +2671,49 @@ namespace RandomStartMod
                 Widgets.DrawHighlight(rect2);
             }
             return result;
+        }
+
+        private bool DoPawnNameRow(Rect rect, PawnNameData pawnNameData, int index)
+        {
+            bool remove = false;
+            
+            // Create segments for the three text fields and remove button
+            float buttonWidth = 24f;
+            float spacing = 4f;
+            float fieldWidth = (rect.width - buttonWidth - (3 * spacing)) / 3f;
+            
+            Rect firstRect = new Rect(rect.x, rect.y, fieldWidth, rect.height);
+            Rect nickRect = new Rect(rect.x + fieldWidth + spacing, rect.y, fieldWidth, rect.height);
+            Rect lastRect = new Rect(rect.x + (fieldWidth + spacing) * 2, rect.y, fieldWidth, rect.height);
+            Rect removeRect = new Rect(rect.x + rect.width - buttonWidth, rect.y, buttonWidth, rect.height);
+
+            // Draw labels above the text fields (only for the first row)
+            if (index == 0)
+            {
+                Rect labelRect = new Rect(rect.x, rect.y - 18f, rect.width, 16f);
+                GUI.color = Color.gray;
+                Text.Font = GameFont.Tiny;
+                
+                Widgets.Label(new Rect(firstRect.x, labelRect.y, fieldWidth, 16f), "First");
+                Widgets.Label(new Rect(nickRect.x, labelRect.y, fieldWidth, 16f), "Nick");
+                Widgets.Label(new Rect(lastRect.x, labelRect.y, fieldWidth, 16f), "Last");
+                
+                Text.Font = GameFont.Small;
+                GUI.color = Color.white;
+            }
+
+            // Draw text fields
+            pawnNameData.firstName = Widgets.TextField(firstRect, pawnNameData.firstName ?? "");
+            pawnNameData.nickName = Widgets.TextField(nickRect, pawnNameData.nickName ?? "");
+            pawnNameData.lastName = Widgets.TextField(lastRect, pawnNameData.lastName ?? "");
+
+            // Remove button
+            if (Widgets.ButtonText(removeRect, "X"))
+            {
+                remove = true;
+            }
+
+            return remove;
         }
     }
 }

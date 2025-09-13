@@ -181,57 +181,68 @@ namespace RandomStartMod
 
             if (settings.startingPawnForceViolence)
             {
+                if (ModsConfig.IsActive("Lakuna.PrepareModerately") || ModsConfig.IsActive("Lakuna.PrepareModerately_Steam"))
+                {
+                    PrepareModeratelyCompat.SetMod();
+                }
                 StartingPawnUtility.ClearAllStartingPawns();
                 for (int i = 0; i < 10; i++)
                 {
                     PawnGenerationRequest request = StartingPawnUtility.DefaultStartingPawnRequest;
                     request.MustBeCapableOfViolence = true;
-                    StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.Add(request);
-                    StartingPawnUtility.AddNewPawn(i);
-                }
-            }
-
-            if (!settings.randomisePawnAge || !settings.randomisePawnSex || !settings.randomisePawnName)
-            {
-                if (ModsConfig.IsActive("Lakuna.PrepareModerately") || ModsConfig.IsActive("Lakuna.PrepareModerately_Steam"))
-                {
-                    PrepareModeratelyCompat.SetMod();
-                }
-
-                Util.LogMessage("Randomizing starting pawn");
-                Pawn pawn = Find.GameInitData.startingAndOptionalPawns.FirstOrDefault();
-                int randomCount = 0;
-                for (randomCount = 0; randomCount < 100; randomCount++)
-                {
-                    if (settings.PawnNotDisabledWorkTags && pawn.GetDisabledWorkTypes(true).Count > 0)
+                    if (!settings.randomisePawnAge)
                     {
-                        pawn = Util.RandomizePawn();
-                        continue;
-                    }
-                    if (settings.randomisePawnAge == false && (pawn.ageTracker.AgeBiologicalYears < settings.randomisePawnAgeRange.min || pawn.ageTracker.AgeBiologicalYears > settings.randomisePawnAgeRange.max))
-                    {
-                        pawn = Util.RandomizePawn();
-                        continue;
-                    }
-                    if (settings.randomisePawnSex == false && pawn.gender != (Gender)settings.PawnSex)
-                    {
-                        pawn = Util.RandomizePawn();
-                        continue;
-                    }
-                    Util.LogMessage($"Pawn after {randomCount} random");
-                    break;
-                }
-                if (randomCount > 99)
-                {
-                    Util.LogMessage("After 100 random, none pawn the target criteria");
-                }
-                if (!settings.randomisePawnName && pawn.Name is NameTriple nameTriple)
-                {
-                    pawn.Name = new NameTriple(
-                        string.IsNullOrWhiteSpace(settings.PawnFirstName) ? nameTriple.First : settings.PawnFirstName,
-                        string.IsNullOrWhiteSpace(settings.PawnNickName) ? nameTriple.Nick : settings.PawnNickName,
-                        string.IsNullOrWhiteSpace(settings.PawnLastName) ? nameTriple.Last : settings.PawnLastName
+                        request.BiologicalAgeRange = new FloatRange(
+                            settings.randomisePawnAgeRange.min,
+                            settings.randomisePawnAgeRange.max
                         );
+                        request.ExcludeBiologicalAgeRange = null;
+                    }
+                    if (!settings.randomisePawnSex)
+                    {
+                        request.FixedGender = (Gender)settings.PawnSex;
+                    }
+                    if (settings.PawnNotDisabledWorkTags)
+                    {
+                        StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.Add(request);
+                        StartingPawnUtility.AddNewPawn(i);
+                        int iterations = 0;
+                        while (Find.GameInitData.startingAndOptionalPawns[i].GetDisabledWorkTypes(true).Count > 0)
+                        {
+                            StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.RemoveAt(i);
+                            Find.GameInitData.startingAndOptionalPawns.RemoveAt(i);
+                            StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.Add(request);
+                            StartingPawnUtility.AddNewPawn(i);
+                            iterations++;
+                            if (iterations > 99)
+                            {
+                                Log.Warning("[Random Start] Could not generate starting pawn without disabled work tags after 100 tries, accepting disabled work tags");
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.Add(request);
+                        StartingPawnUtility.AddNewPawn(i);
+                    }
+                }
+                
+                // Handle name assignment for all generated pawns using new pawn names list
+                if (!settings.randomisePawnName && settings.pawnNames != null && settings.pawnNames.Count > 0)
+                {
+                    for (int pawnIndex = 0; pawnIndex < Find.GameInitData.startingAndOptionalPawns.Count && pawnIndex < settings.pawnNames.Count; pawnIndex++)
+                    {
+                        Pawn pawn = Find.GameInitData.startingAndOptionalPawns[pawnIndex];
+                        PawnNameData nameData = settings.pawnNames[pawnIndex];
+                        NameTriple originalName = pawn.Name as NameTriple ?? new NameTriple("", "", "");
+                        
+                        string firstName = string.IsNullOrWhiteSpace(nameData.firstName) ? originalName.First : nameData.firstName;
+                        string nickName = string.IsNullOrWhiteSpace(nameData.nickName) ? originalName.Nick : nameData.nickName;
+                        string lastName = string.IsNullOrWhiteSpace(nameData.lastName) ? originalName.Last : nameData.lastName;
+                        
+                        pawn.Name = new NameTriple(firstName, nickName, lastName);
+                    }
                 }
             }
 
