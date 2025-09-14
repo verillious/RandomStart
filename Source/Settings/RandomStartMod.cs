@@ -1177,6 +1177,9 @@ namespace RandomStartMod
                 listingStandard.GapLine();
                 planetListingHeight += 36f + Text.LineHeight;
                 Text.Font = GameFont.Small;
+                listingStandard.Label("RandomStartMod.Planet.RandomizeLabel".Translate());
+                listingStandard.Gap();
+                planetListingHeight += 12f;
                 DoSettingToggle(listingStandard.GetRect(24f), "Planets.WorldPresets".Translate(), null, ref settings.randomiseRealisticPlanets);
                 TooltipHandler.TipRegion(new Rect(0f, planetListingHeight - 18, inRect.width, 30), "RandomStartMod.RandomiseWorldPresetsTip".Translate());
                 planetListingHeight += 44f;
@@ -1216,17 +1219,6 @@ namespace RandomStartMod
                     Widgets.IntRange(rect5, 1623498659, ref settings.randomiseAxialTiltRange, 0, Planets_Code.WorldGen.AxialTiltUtility.EnumValuesCount - 1, Util.GetIntRangeLabelShort(settings.randomiseAxialTiltRange));
                     planetListingHeight += 32f;
                 }
-                listingStandard.Gap();
-                DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.UseRPWordType".Translate(), null, ref settings.realisticPlanetsUseWordType);
-                planetListingHeight += 36f;
-                if (settings.realisticPlanetsUseWordType)
-                {
-                    listingStandard.Gap(2f);
-                    Rect rect8 = listingStandard.GetRect(30f);
-                    settings.realisticPlanetsUseWordTypeChance = Widgets.HorizontalSlider(rect8, settings.realisticPlanetsUseWordTypeChance, 0f, 1f, middleAlignment: true, settings.realisticPlanetsUseWordTypeChance.ToStringPercent(), null, null, 0.05f);
-                    planetListingHeight += 32f;
-                }
-                planetListingHeight += 32f;
                 listingStandard.Gap();
             }
 
@@ -1842,6 +1834,64 @@ namespace RandomStartMod
             optionalFeaturesListingHeight += 24f;
             DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.PawnNotDisabledWorkTags".Translate(), "RandomStartMod.PawnNotDisabledWorkTags".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.PawnNotDisabledWorkTagsTooltip".Translate(), ref settings.PawnNotDisabledWorkTags);
             planetListingHeight += 32f;
+
+            // PrepareModerately Integration
+            if (PrepareModeratelyCompat.IsAvailable)
+            {
+                DoSettingToggle(listingStandard.GetRect(24f), "PrepareModerately Integration", "Enable integration with PrepareModerately mod for advanced pawn filtering during random start generation.", ref settings.enablePrepareModeratelyIntegration);
+                optionalFeaturesListingHeight += 24f;
+
+                if (settings.enablePrepareModeratelyIntegration)
+                {
+                    listingStandard.Gap();
+                    optionalFeaturesListingHeight += 12f;
+
+                    // Filter selection dropdown
+                    var filterNames = PrepareModeratelyCompat.GetAvailableFilterNames();
+                    if (filterNames.Count > 0)
+                    {
+                        var currentFilterName = settings.selectedPrepareModeratelyFilter;
+                        if (string.IsNullOrEmpty(currentFilterName) || !filterNames.Contains(currentFilterName))
+                        {
+                            currentFilterName = filterNames.FirstOrDefault() ?? "";
+                            settings.selectedPrepareModeratelyFilter = currentFilterName;
+                        }
+
+                        var labelRect = listingStandard.GetRect(24f);
+                        var dropdownRect = new Rect(labelRect.x + 200f, labelRect.y, labelRect.width - 200f, labelRect.height);
+                        labelRect.width = 200f;
+
+                        Widgets.Label(labelRect, "Selected Filter:");
+                        if (Widgets.ButtonText(dropdownRect, currentFilterName.NullOrEmpty() ? "None" : currentFilterName))
+                        {
+                            var options = new List<FloatMenuOption>();
+                            foreach (var filterName in filterNames)
+                            {
+                                var filterDescription = PrepareModeratelyCompat.GetFilterDescription(filterName);
+                                var option = new FloatMenuOption(filterName, () => {
+                                    settings.selectedPrepareModeratelyFilter = filterName;
+                                    PrepareModeratelyCompat.SetCurrentFilter(filterName);
+                                });
+                                
+                                // Add tooltip if description is available
+                                if (!string.IsNullOrEmpty(filterDescription))
+                                {
+                                    option.tooltip = filterDescription;
+                                }
+                                
+                                options.Add(option);
+                            }
+                            Find.WindowStack.Add(new FloatMenu(options));
+                        }
+                        optionalFeaturesListingHeight += 24f;
+                    }
+                    else
+                    {
+                        Widgets.Label(listingStandard.GetRect(24f), "No PrepareModerately filters found.");
+                        optionalFeaturesListingHeight += 24f;
+                    }
+                }
+            }
 
             listingStandard.Gap();
 

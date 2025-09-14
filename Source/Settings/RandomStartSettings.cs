@@ -80,6 +80,10 @@ namespace RandomStartMod
         // Starting Colonist Settings
         public bool startingPawnForceViolence = true;
 
+        // PrepareModerately Integration Settings
+        public bool enablePrepareModeratelyIntegration = false;
+        public string selectedPrepareModeratelyFilter = "";
+        
         public IntRange randomFactionRange = new IntRange(5, 15);
         public int minimumFactions = 5;
         public int maximumFactions = 15;
@@ -205,9 +209,6 @@ namespace RandomStartMod
         //Compat
         public int myLittlePlanetSubcount = 10;
 
-        public bool realisticPlanetsUseWordType = false;
-        public float realisticPlanetsUseWordTypeChance = 0.5f;
-
         public string realisticPlanetsWorldType = "Planets.Vanilla";
         public bool randomiseRealisticPlanets = false;
 
@@ -279,6 +280,10 @@ namespace RandomStartMod
 
             // Starting Colonist Settings
             Scribe_Values.Look(ref startingPawnForceViolence, "startingPawnForceViolence", false);
+            
+            // PrepareModerately Integration Settings
+            Scribe_Values.Look(ref enablePrepareModeratelyIntegration, "enablePrepareModeratelyIntegration", false);
+            Scribe_Values.Look(ref selectedPrepareModeratelyFilter, "selectedPrepareModeratelyFilter", "");
 
             Scribe_Collections.Look(
                 ref disabledStorytellers,
@@ -431,9 +436,6 @@ namespace RandomStartMod
 
             Scribe_Values.Look(ref myLittlePlanetSubcount, "myLittlePlanetSubcount", 10);
 
-            Scribe_Values.Look(ref realisticPlanetsUseWordType, "realisticPlanetsUseWordType", defaultValue: false);
-            Scribe_Values.Look(ref realisticPlanetsUseWordTypeChance, "realisticPlanetsUseWordTypeChance", 0.5f);
-
             Scribe_Values.Look(ref realisticPlanetsWorldType, "realisticPlanetsWorldType", "Planets.Vanilla");
             Scribe_Values.Look(ref randomiseRealisticPlanets, "randomiseRealisticPlanets", defaultValue: false);
 
@@ -552,8 +554,6 @@ namespace RandomStartMod
 
             myLittlePlanetSubcount = 10;
 
-            realisticPlanetsUseWordType = false;
-            realisticPlanetsUseWordTypeChance = 0.5f;
             randomiseRealisticPlanets = false;
             realisticPlanetsWorldType = "Planets.Vanilla";
             realisticPlanetsOceanType = 3;
@@ -664,6 +664,11 @@ namespace RandomStartMod
         public void ResetStartingColonists()
         {
             startingPawnForceViolence = false;
+            
+            // PrepareModerately Integration Settings
+            enablePrepareModeratelyIntegration = false;
+            selectedPrepareModeratelyFilter = "";
+            
             randomisePawnName = true;
             pawnNames = new List<PawnNameData>();
             randomisePawnAge = false;

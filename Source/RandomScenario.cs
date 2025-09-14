@@ -7,8 +7,8 @@ using RandomStartMod.Compat;
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
-using Verse;
 using VEF;
+using Verse;
 using static RimWorld.PsychicRitualRoleDef;
 
 namespace RandomStartMod
@@ -98,7 +98,12 @@ namespace RandomStartMod
                         || filterHilliness.Count == 0
                         || filterHilliness.Contains(tile.hilliness);
 
-                    bool temperatureRangeMatch = !settings.limitStartingTileTemperature || (tile.MinTemperature <= settings.limitStartingTileTemperatureRange.min && tile.MaxTemperature <= settings.limitStartingTileTemperatureRange.max);
+                    bool temperatureRangeMatch =
+                        !settings.limitStartingTileTemperature
+                        || (
+                            tile.MinTemperature <= settings.limitStartingTileTemperatureRange.min
+                            && tile.MaxTemperature <= settings.limitStartingTileTemperatureRange.max
+                        );
 
                     return biomeMatch && hillinessMatch && temperatureRangeMatch;
                 });
@@ -179,23 +184,46 @@ namespace RandomStartMod
                 allPart.PostIdeoChosen();
             }
 
-            if (settings.startingPawnForceViolence)
+            if (
+                settings.startingPawnForceViolence
+                || settings.enablePrepareModeratelyIntegration
+                || !settings.randomisePawnAge
+                || !settings.randomisePawnSex
+                || !settings.randomisePawnName
+                || settings.PawnNotDisabledWorkTags
+                || (settings.pawnNames != null && settings.pawnNames.Count > 0)
+            )
             {
-                if (ModsConfig.IsActive("Lakuna.PrepareModerately") || ModsConfig.IsActive("Lakuna.PrepareModerately_Steam"))
+                if (
+                    ModsConfig.IsActive("Lakuna.PrepareModerately")
+                    || ModsConfig.IsActive("Lakuna.PrepareModerately_Steam")
+                )
                 {
                     PrepareModeratelyCompat.SetMod();
+
+                    // Apply selected filter if integration is enabled
+                    if (
+                        settings.enablePrepareModeratelyIntegration
+                        && !string.IsNullOrEmpty(settings.selectedPrepareModeratelyFilter)
+                    )
+                    {
+                        PrepareModeratelyCompat.SetCurrentFilter(
+                            settings.selectedPrepareModeratelyFilter
+                        );
+                    }
                 }
                 StartingPawnUtility.ClearAllStartingPawns();
                 for (int i = 0; i < 10; i++)
                 {
                     PawnGenerationRequest request = StartingPawnUtility.DefaultStartingPawnRequest;
-                    request.MustBeCapableOfViolence = true;
+                    if (settings.startingPawnForceViolence)
+                    {
+                        request.MustBeCapableOfViolence = true;
+                    }
                     if (!settings.randomisePawnAge)
                     {
-                        request.BiologicalAgeRange = new FloatRange(
-                            settings.randomisePawnAgeRange.min,
-                            settings.randomisePawnAgeRange.max
-                        );
+                        request.FixedBiologicalAge = settings.randomisePawnAgeRange.RandomInRange;
+                        request.BiologicalAgeRange = null;
                         request.ExcludeBiologicalAgeRange = null;
                     }
                     if (!settings.randomisePawnSex)
@@ -207,16 +235,26 @@ namespace RandomStartMod
                         StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.Add(request);
                         StartingPawnUtility.AddNewPawn(i);
                         int iterations = 0;
-                        while (Find.GameInitData.startingAndOptionalPawns[i].GetDisabledWorkTypes(true).Count > 0)
+                        while (
+                            Find.GameInitData.startingAndOptionalPawns[i]
+                                .GetDisabledWorkTypes(true)
+                                .Count > 0
+                        )
                         {
-                            StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.RemoveAt(i);
+                            StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.RemoveAt(
+                                i
+                            );
                             Find.GameInitData.startingAndOptionalPawns.RemoveAt(i);
-                            StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.Add(request);
+                            StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.Add(
+                                request
+                            );
                             StartingPawnUtility.AddNewPawn(i);
                             iterations++;
                             if (iterations > 99)
                             {
-                                Log.Warning("[Random Start] Could not generate starting pawn without disabled work tags after 100 tries, accepting disabled work tags");
+                                Log.Warning(
+                                    "[Random Start] Could not generate starting pawn without disabled work tags after 100 tries, accepting disabled work tags"
+                                );
                                 break;
                             }
                         }
@@ -227,20 +265,36 @@ namespace RandomStartMod
                         StartingPawnUtility.AddNewPawn(i);
                     }
                 }
-                
+
                 // Handle name assignment for all generated pawns using new pawn names list
-                if (!settings.randomisePawnName && settings.pawnNames != null && settings.pawnNames.Count > 0)
+                if (
+                    !settings.randomisePawnName
+                    && settings.pawnNames != null
+                    && settings.pawnNames.Count > 0
+                )
                 {
-                    for (int pawnIndex = 0; pawnIndex < Find.GameInitData.startingAndOptionalPawns.Count && pawnIndex < settings.pawnNames.Count; pawnIndex++)
+                    for (
+                        int pawnIndex = 0;
+                        pawnIndex < Find.GameInitData.startingAndOptionalPawns.Count
+                            && pawnIndex < settings.pawnNames.Count;
+                        pawnIndex++
+                    )
                     {
                         Pawn pawn = Find.GameInitData.startingAndOptionalPawns[pawnIndex];
                         PawnNameData nameData = settings.pawnNames[pawnIndex];
-                        NameTriple originalName = pawn.Name as NameTriple ?? new NameTriple("", "", "");
-                        
-                        string firstName = string.IsNullOrWhiteSpace(nameData.firstName) ? originalName.First : nameData.firstName;
-                        string nickName = string.IsNullOrWhiteSpace(nameData.nickName) ? originalName.Nick : nameData.nickName;
-                        string lastName = string.IsNullOrWhiteSpace(nameData.lastName) ? originalName.Last : nameData.lastName;
-                        
+                        NameTriple originalName =
+                            pawn.Name as NameTriple ?? new NameTriple("", "", "");
+
+                        string firstName = string.IsNullOrWhiteSpace(nameData.firstName)
+                            ? originalName.First
+                            : nameData.firstName;
+                        string nickName = string.IsNullOrWhiteSpace(nameData.nickName)
+                            ? originalName.Nick
+                            : nameData.nickName;
+                        string lastName = string.IsNullOrWhiteSpace(nameData.lastName)
+                            ? originalName.Last
+                            : nameData.lastName;
+
                         pawn.Name = new NameTriple(firstName, nickName, lastName);
                     }
                 }
@@ -259,8 +313,12 @@ namespace RandomStartMod
                 foreach (Faction item in Find.FactionManager.AllFactionsListForReading)
                 {
                     // Skip faction if it's excluded from reputation randomization
-                    if (settings.factionsExcludeFromReputationRandomization != null &&
-                        settings.factionsExcludeFromReputationRandomization.Contains(item.def.defName))
+                    if (
+                        settings.factionsExcludeFromReputationRandomization != null
+                        && settings.factionsExcludeFromReputationRandomization.Contains(
+                            item.def.defName
+                        )
+                    )
                     {
                         continue;
                     }
@@ -269,8 +327,12 @@ namespace RandomStartMod
                     List<FactionRelation> relationsToRemove = new List<FactionRelation>();
                     foreach (FactionRelation relation in item.relations)
                     {
-                        if (settings.factionsExcludeFromReputationRandomization == null ||
-                            !settings.factionsExcludeFromReputationRandomization.Contains(relation.other.def.defName))
+                        if (
+                            settings.factionsExcludeFromReputationRandomization == null
+                            || !settings.factionsExcludeFromReputationRandomization.Contains(
+                                relation.other.def.defName
+                            )
+                        )
                         {
                             relationsToRemove.Add(relation);
                         }
@@ -285,9 +347,17 @@ namespace RandomStartMod
                         if (item != item2)
                         {
                             // Skip if either faction is excluded from reputation randomization
-                            if (settings.factionsExcludeFromReputationRandomization != null &&
-                                (settings.factionsExcludeFromReputationRandomization.Contains(item.def.defName) ||
-                                 settings.factionsExcludeFromReputationRandomization.Contains(item2.def.defName)))
+                            if (
+                                settings.factionsExcludeFromReputationRandomization != null
+                                && (
+                                    settings.factionsExcludeFromReputationRandomization.Contains(
+                                        item.def.defName
+                                    )
+                                    || settings.factionsExcludeFromReputationRandomization.Contains(
+                                        item2.def.defName
+                                    )
+                                )
+                            )
                             {
                                 continue;
                             }
@@ -578,7 +648,8 @@ namespace RandomStartMod
 
             LandmarkDensity landmarkDensity = (LandmarkDensity)settings.landmarkDensity;
             if (settings.randomiseLandmarkDensity)
-                landmarkDensity = (LandmarkDensity)settings.randomiseLandmarkDensityRange.RandomInRange;
+                landmarkDensity = (LandmarkDensity)
+                    settings.randomiseLandmarkDensityRange.RandomInRange;
 
             float pollution = settings.pollution;
             if (settings.randomisePollution)
@@ -706,7 +777,20 @@ namespace RandomStartMod
                 {
                     axialTilt = settings.randomiseAxialTiltRange.RandomInRange;
                 }
-                RealisticPlanetsCompat.GenerateRealisticPlanetWorld(settings.planetCoverage, GenText.RandomSeedString(), rainfall, temperature, population, landmarkDensity, worldFactions, pollution, oceanType, axialTilt, settings.realisticPlanetsWorldType, settings.randomiseRealisticPlanets);
+                RealisticPlanetsCompat.GenerateRealisticPlanetWorld(
+                    settings.planetCoverage,
+                    GenText.RandomSeedString(),
+                    rainfall,
+                    temperature,
+                    population,
+                    landmarkDensity,
+                    worldFactions,
+                    pollution,
+                    oceanType,
+                    axialTilt,
+                    settings.realisticPlanetsWorldType,
+                    settings.randomiseRealisticPlanets
+                );
             }
             else
             {
@@ -802,7 +886,10 @@ namespace RandomStartMod
                         disallowedPreceptDefs = new List<PreceptDef>();
                         foreach (string preceptDefName in settings.disallowedPrecepts)
                         {
-                            PreceptDef preceptDef = DefDatabase<PreceptDef>.GetNamed(preceptDefName, false);
+                            PreceptDef preceptDef = DefDatabase<PreceptDef>.GetNamed(
+                                preceptDefName,
+                                false
+                            );
                             if (preceptDef != null)
                             {
                                 disallowedPreceptDefs.Add(preceptDef);
@@ -901,12 +988,35 @@ namespace RandomStartMod
             if (forFaction != null && forFaction.structureMemeWeights != null && !flag)
             {
                 MemeWeight result2;
-                if (forFaction.structureMemeWeights.Where((MemeWeight x) => IdeoUtility.CanAdd(x.meme, memes, forFaction, parms.forNewFluidIdeo) && (forPlayerFaction || !IdeoUtility.AnyIdeoHas(x.meme))).TryRandomElementByWeight((MemeWeight x) => x.selectionWeight * x.meme.randomizationSelectionWeightFactor, out var result))
+                if (
+                    forFaction
+                        .structureMemeWeights.Where(
+                            (MemeWeight x) =>
+                                IdeoUtility.CanAdd(x.meme, memes, forFaction, parms.forNewFluidIdeo)
+                                && (forPlayerFaction || !IdeoUtility.AnyIdeoHas(x.meme))
+                        )
+                        .TryRandomElementByWeight(
+                            (MemeWeight x) =>
+                                x.selectionWeight * x.meme.randomizationSelectionWeightFactor,
+                            out var result
+                        )
+                )
                 {
                     memes.Add(result.meme);
                     flag = true;
                 }
-                else if (forFaction.structureMemeWeights.Where((MemeWeight x) => IdeoUtility.CanAdd(x.meme, memes, forFaction, parms.forNewFluidIdeo)).TryRandomElementByWeight((MemeWeight x) => x.selectionWeight * x.meme.randomizationSelectionWeightFactor, out result2))
+                else if (
+                    forFaction
+                        .structureMemeWeights.Where(
+                            (MemeWeight x) =>
+                                IdeoUtility.CanAdd(x.meme, memes, forFaction, parms.forNewFluidIdeo)
+                        )
+                        .TryRandomElementByWeight(
+                            (MemeWeight x) =>
+                                x.selectionWeight * x.meme.randomizationSelectionWeightFactor,
+                            out result2
+                        )
+                )
                 {
                     memes.Add(result2.meme);
                     flag = true;
@@ -916,11 +1026,31 @@ namespace RandomStartMod
             if (!flag)
             {
                 MemeDef result4;
-                if (DefDatabase<MemeDef>.AllDefs.Where((MemeDef x) => x.category == MemeCategory.Structure && IdeoUtility.CanAdd(x, memes, forFaction, parms.forNewFluidIdeo) && (forPlayerFaction || !IdeoUtility.AnyIdeoHas(x))).TryRandomElement(out var result3))
+                if (
+                    DefDatabase<MemeDef>
+                        .AllDefs.Where(
+                            (MemeDef x) =>
+                                x.category == MemeCategory.Structure
+                                && IdeoUtility.CanAdd(x, memes, forFaction, parms.forNewFluidIdeo)
+                                && (forPlayerFaction || !IdeoUtility.AnyIdeoHas(x))
+                        )
+                        .TryRandomElement(out var result3)
+                )
                 {
                     memes.Add(result3);
                 }
-                else if (DefDatabase<MemeDef>.AllDefs.Where((MemeDef x) => x.category == MemeCategory.Structure && IdeoUtility.CanAdd(x, memes, forFaction, parms.forNewFluidIdeo)).TryRandomElementByWeight((MemeDef x) => x.randomizationSelectionWeightFactor, out result4))
+                else if (
+                    DefDatabase<MemeDef>
+                        .AllDefs.Where(
+                            (MemeDef x) =>
+                                x.category == MemeCategory.Structure
+                                && IdeoUtility.CanAdd(x, memes, forFaction, parms.forNewFluidIdeo)
+                        )
+                        .TryRandomElementByWeight(
+                            (MemeDef x) => x.randomizationSelectionWeightFactor,
+                            out result4
+                        )
+                )
                 {
                     memes.Add(result4);
                 }
@@ -934,11 +1064,42 @@ namespace RandomStartMod
             for (int num = memes.Count; num <= count; num++)
             {
                 MemeDef result6;
-                if (DefDatabase<MemeDef>.AllDefs.Where((MemeDef x) => x.category == MemeCategory.Normal && IdeoUtility.CanAdd(x, memes, forFaction, parms.forNewFluidIdeo) && (forPlayerFaction || !IdeoUtility.AnyIdeoHas(x)) && (parms.disallowedMemes == null || !parms.disallowedMemes.Contains(x))).TryRandomElementByWeight((MemeDef x) => x.randomizationSelectionWeightFactor, out var result5))
+                if (
+                    DefDatabase<MemeDef>
+                        .AllDefs.Where(
+                            (MemeDef x) =>
+                                x.category == MemeCategory.Normal
+                                && IdeoUtility.CanAdd(x, memes, forFaction, parms.forNewFluidIdeo)
+                                && (forPlayerFaction || !IdeoUtility.AnyIdeoHas(x))
+                                && (
+                                    parms.disallowedMemes == null
+                                    || !parms.disallowedMemes.Contains(x)
+                                )
+                        )
+                        .TryRandomElementByWeight(
+                            (MemeDef x) => x.randomizationSelectionWeightFactor,
+                            out var result5
+                        )
+                )
                 {
                     memes.Add(result5);
                 }
-                else if (DefDatabase<MemeDef>.AllDefs.Where((MemeDef x) => x.category == MemeCategory.Normal && IdeoUtility.CanAdd(x, memes, forFaction, parms.forNewFluidIdeo) && (parms.disallowedMemes == null || !parms.disallowedMemes.Contains(x))).TryRandomElementByWeight((MemeDef x) => x.randomizationSelectionWeightFactor, out result6))
+                else if (
+                    DefDatabase<MemeDef>
+                        .AllDefs.Where(
+                            (MemeDef x) =>
+                                x.category == MemeCategory.Normal
+                                && IdeoUtility.CanAdd(x, memes, forFaction, parms.forNewFluidIdeo)
+                                && (
+                                    parms.disallowedMemes == null
+                                    || !parms.disallowedMemes.Contains(x)
+                                )
+                        )
+                        .TryRandomElementByWeight(
+                            (MemeDef x) => x.randomizationSelectionWeightFactor,
+                            out result6
+                        )
+                )
                 {
                     memes.Add(result6);
                 }

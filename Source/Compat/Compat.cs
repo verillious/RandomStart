@@ -156,20 +156,7 @@ namespace RandomStartMod.Compat
                 Planets_Code.Core.Planets_GameComponent.subcount = 10;
             }
 
-            if (settings.realisticPlanetsUseWordType && Rand.Range(0f, 1f) < settings.realisticPlanetsUseWordTypeChance)
-            {
-                Planets_Code.Presets.WorldPreset[] array = Planets_Code.Presets.WorldPresetUtility.WorldPresets.Where((Planets_Code.Presets.WorldPreset p) => p.Name != "Planets.Custom").ToArray();
-                Planets_Code.Presets.WorldPreset worldPreset = array[Rand.Range(0, array.Length)];
-                Util.LogMessage($"[RealisticPlanetsCompat] Using WorldPreset: {worldPreset.Name}");
-                Planets_Code.Core.Planets_GameComponent.worldPreset = worldPreset.Name;
-                Planets_Code.Core.Planets_GameComponent.worldType = worldPreset.WorldType;
-                Planets_Code.Core.Planets_GameComponent.axialTilt = worldPreset.AxialTilt;
-                planet.RainfallMod = worldPreset.RainfallModifier;
-                planet.temperature = worldPreset.Temperature;
-                planet.population = worldPreset.Population;
-                planet.pollution = pollution;
-            }
-            else if (randomiseWorld)
+            if (randomiseWorld)
             {
                 planet.Randomize();
             }
@@ -252,10 +239,186 @@ namespace RandomStartMod.Compat
 
     public static class PrepareModeratelyCompat
     {
+        private static Type pawnFilterType;
+        private static Type pawnFilterListerType;
+        private static Assembly prepareModeratelyAssembly;
+
+        static PrepareModeratelyCompat()
+        {
+            try
+            {
+                prepareModeratelyAssembly = AppDomain.CurrentDomain.GetAssemblies()
+                    .FirstOrDefault(a => a.GetName().Name == "PrepareModerately");
+                
+                if (prepareModeratelyAssembly != null)
+                {
+                    pawnFilterType = prepareModeratelyAssembly.GetType("Lakuna.PrepareModerately.Filter.PawnFilter");
+                    pawnFilterListerType = prepareModeratelyAssembly.GetType("Lakuna.PrepareModerately.Filter.PawnFilterLister");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"[RandomStart] Failed to initialize PrepareModerately compatibility: {ex.Message}");
+            }
+        }
+
+        public static bool IsAvailable => prepareModeratelyAssembly != null && pawnFilterType != null;
+
         public static void SetMod()
         {
-            Lakuna.PrepareModerately.Patches.PagePatch.Instance = new Page_ConfigureStartingPawns();
-            Lakuna.PrepareModerately.Patches.RandomizePatch.IsActivelyRolling = true;
+            try
+            {
+                Lakuna.PrepareModerately.Patches.PagePatch.Instance = new Page_ConfigureStartingPawns();
+                Lakuna.PrepareModerately.Patches.RandomizePatch.IsActivelyRolling = true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"[RandomStart] Failed to set PrepareModerately mod state: {ex.Message}");
+            }
+        }
+
+        public static List<string> GetAvailableFilterNames()
+        {
+            if (!IsAvailable || pawnFilterListerType == null)
+                return new List<string>();
+
+            try
+            {
+                var allMethod = pawnFilterListerType.GetMethod("All", BindingFlags.Public | BindingFlags.Static);
+                if (allMethod == null) return new List<string>();
+
+                var filters = allMethod.Invoke(null, null) as IEnumerable;
+                var filterNames = new List<string>();
+
+                if (filters != null)
+                {
+                    foreach (var filter in filters)
+                    {
+                        var nameProperty = pawnFilterType.GetProperty("Name");
+                        if (nameProperty?.GetValue(filter) is string name && !string.IsNullOrEmpty(name))
+                        {
+                            filterNames.Add(name);
+                        }
+                    }
+                }
+
+                return filterNames;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"[RandomStart] Failed to get available filter names: {ex.Message}");
+                return new List<string>();
+            }
+        }
+
+        public static object GetFilterByName(string filterName)
+        {
+            if (!IsAvailable || string.IsNullOrEmpty(filterName))
+                return null;
+
+            try
+            {
+                var allMethod = pawnFilterListerType.GetMethod("All", BindingFlags.Public | BindingFlags.Static);
+                if (allMethod == null) return null;
+
+                var filters = allMethod.Invoke(null, null) as IEnumerable;
+                if (filters == null) return null;
+
+                foreach (var filter in filters)
+                {
+                    var nameProperty = pawnFilterType.GetProperty("Name");
+                    if (nameProperty?.GetValue(filter) is string name && name == filterName)
+                    {
+                        return filter;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"[RandomStart] Failed to get filter by name '{filterName}': {ex.Message}");
+            }
+
+            return null;
+        }
+
+        public static string GetFilterDescription(string filterName)
+        {
+            if (!IsAvailable || string.IsNullOrEmpty(filterName))
+                return "";
+
+            try
+            {
+                var filter = GetFilterByName(filterName);
+                if (filter != null)
+                {
+                    // Try to get Description property first
+                    var descriptionProperty = pawnFilterType.GetProperty("Description");
+                    if (descriptionProperty?.GetValue(filter) is string description && !string.IsNullOrEmpty(description))
+                    {
+                        return description;
+                    }
+
+                    // Fallback to Summary property if Description is empty
+                    var summaryProperty = pawnFilterType.GetProperty("Summary");
+                    if (summaryProperty?.GetValue(filter) is string summary && !string.IsNullOrEmpty(summary))
+                    {
+                        return summary;
+                    }
+
+                    // If both are empty, return a default message
+                    return "No description available";
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"[RandomStart] Failed to get filter description for '{filterName}': {ex.Message}");
+            }
+
+            return "";
+        }
+
+        public static void SetCurrentFilter(string filterName)
+        {
+            if (!IsAvailable || string.IsNullOrEmpty(filterName))
+                return;
+
+            try
+            {
+                var filter = GetFilterByName(filterName);
+                if (filter != null)
+                {
+                    var currentProperty = pawnFilterType.GetProperty("Current", BindingFlags.Public | BindingFlags.Static);
+                    currentProperty?.SetValue(null, filter);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"[RandomStart] Failed to set current filter to '{filterName}': {ex.Message}");
+            }
+        }
+
+        public static string GetCurrentFilterName()
+        {
+            if (!IsAvailable)
+                return "";
+
+            try
+            {
+                var currentProperty = pawnFilterType.GetProperty("Current", BindingFlags.Public | BindingFlags.Static);
+                var currentFilter = currentProperty?.GetValue(null);
+                
+                if (currentFilter != null)
+                {
+                    var nameProperty = pawnFilterType.GetProperty("Name");
+                    return nameProperty?.GetValue(currentFilter) as string ?? "";
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"[RandomStart] Failed to get current filter name: {ex.Message}");
+            }
+
+            return "";
         }
     }
 }
