@@ -64,6 +64,7 @@
 	<RandomStartMod.Planet.RandomizeRainfallTooltip>Randomly set the planet's overall rainfall level, which affects biome distribution and how common wet vs dry areas are across the world.</RandomStartMod.Planet.RandomizeRainfallTooltip>
 	<RandomStartMod.Planet.RandomizeTemperatureTooltip>Randomly set the planet's overall temperature level, which determines how common hot vs cold biomes are and affects the global climate patterns.</RandomStartMod.Planet.RandomizeTemperatureTooltip>
 	<RandomStartMod.Planet.RandomizePopulationTooltip>Randomly set the planet's faction site density, which affects how many settlements, outposts, and faction bases are scattered across the world.</RandomStartMod.Planet.RandomizePopulationTooltip>
+	<RandomStartMod.Planet.RandomizeLandmarkDensityTooltip>Randomly set how many world features and landmarks appear on the planet. Higher densities create more interesting exploration opportunities with ancient ruins, geysers, and other special sites.</RandomStartMod.Planet.RandomizeLandmarkDensityTooltip>
 	<RandomStartMod.Planet.RandomizePollutionTooltip>Randomly set the starting pollution level across the planet. Higher pollution creates more wasteland areas and affects plant growth and animal health.</RandomStartMod.Planet.RandomizePollutionTooltip>
 	<RandomStartMod.Planet.RandomizeStartingSeasonTooltip>Randomly choose which season your colony begins in. Different seasons affect temperature, plant growth, and available resources at game start.</RandomStartMod.Planet.RandomizeStartingSeasonTooltip>
 	<RandomStartMod.Planet.RandomizeRealisticPlanetsTooltip>Enable randomization of Realistic Planets Continued mod settings, which affects planetary terrain generation and geographical features.</RandomStartMod.Planet.RandomizeRealisticPlanetsTooltip>
@@ -137,6 +138,7 @@
 	<RandomStartMod.TooltipTitles.RandomizeRainfall>Randomize Rainfall</RandomStartMod.TooltipTitles.RandomizeRainfall>
 	<RandomStartMod.TooltipTitles.RandomizeTemperature>Randomize Temperature</RandomStartMod.TooltipTitles.RandomizeTemperature>
 	<RandomStartMod.TooltipTitles.RandomizePopulation>Randomize Population</RandomStartMod.TooltipTitles.RandomizePopulation>
+	<RandomStartMod.TooltipTitles.RandomizeLandmarkDensity>Randomize Landmark Density</RandomStartMod.TooltipTitles.RandomizeLandmarkDensity>
 	<RandomStartMod.TooltipTitles.RandomizePollution>Randomize Pollution</RandomStartMod.TooltipTitles.RandomizePollution>
 	<RandomStartMod.TooltipTitles.RandomizeStartingSeason>Randomize Starting Season</RandomStartMod.TooltipTitles.RandomizeStartingSeason>
 	<RandomStartMod.TooltipTitles.RandomizeRealisticPlanets>Randomize Realistic Planets</RandomStartMod.TooltipTitles.RandomizeRealisticPlanets>

@@ -1088,7 +1088,7 @@ namespace RandomStartMod
             }
 
             listingStandard.Gap();
-            DoSettingToggle(listingStandard.GetRect(24f), "PlanetLandmarkDensity".Translate(), null, ref settings.randomiseLandmarkDensity);
+            DoSettingToggle(listingStandard.GetRect(24f), "PlanetLandmarkDensity".Translate(), "RandomStartMod.TooltipTitles.RandomizeLandmarkDensity".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Planet.RandomizeLandmarkDensityTooltip".Translate(), ref settings.randomiseLandmarkDensity);
             planetListingHeight += 12f + 24f;
 
             if (!settings.randomiseLandmarkDensity)
@@ -1825,26 +1825,21 @@ namespace RandomStartMod
 
             listingStandard.GapLine();
             planetListingHeight += 24f + Text.LineHeight;
-            optionalFeaturesListingHeight += 24f + Text.LineHeight;
             Text.Font = GameFont.Tiny;
             Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Misc.StartingColonistsDescription".Translate());
-            optionalFeaturesListingHeight += Text.LineHeight;
+            planetListingHeight += Text.LineHeight;
             Text.Font = GameFont.Small;
-            DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.TooltipTitles.StartingPawnsMustBeCapableOfViolence".Translate(), "RandomStartMod.TooltipTitles.StartingPawnsMustBeCapableOfViolence".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Misc.StartingPawnsMustBeCapableOfViolenceTooltip".Translate(), ref settings.startingPawnForceViolence);
-            optionalFeaturesListingHeight += 24f;
-            DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.PawnNotDisabledWorkTags".Translate(), "RandomStartMod.PawnNotDisabledWorkTags".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.PawnNotDisabledWorkTagsTooltip".Translate(), ref settings.PawnNotDisabledWorkTags);
-            planetListingHeight += 32f;
 
             // PrepareModerately Integration
             if (PrepareModeratelyCompat.IsAvailable)
             {
-                DoSettingToggle(listingStandard.GetRect(24f), "PrepareModerately Integration", "Enable integration with PrepareModerately mod for advanced pawn filtering during random start generation.", ref settings.enablePrepareModeratelyIntegration);
-                optionalFeaturesListingHeight += 24f;
+                DoSettingToggle(listingStandard.GetRect(24f), "PrepareModerately Integration", "Enable integration with PrepareModerately mod for advanced pawn filtering during random start generation. When enabled, this will hide and disable the manual age, gender, name, and violence filtering options below in favor of using PrepareModerately's filter system.", ref settings.enablePrepareModeratelyIntegration);
+                planetListingHeight += 24f;
 
                 if (settings.enablePrepareModeratelyIntegration)
                 {
                     listingStandard.Gap();
-                    optionalFeaturesListingHeight += 12f;
+                    planetListingHeight += 12f;
 
                     // Filter selection dropdown
                     var filterNames = PrepareModeratelyCompat.GetAvailableFilterNames();
@@ -1883,116 +1878,128 @@ namespace RandomStartMod
                             }
                             Find.WindowStack.Add(new FloatMenu(options));
                         }
-                        optionalFeaturesListingHeight += 24f;
+                        planetListingHeight += 24f;
                     }
                     else
                     {
                         Widgets.Label(listingStandard.GetRect(24f), "No PrepareModerately filters found.");
-                        optionalFeaturesListingHeight += 24f;
+                        planetListingHeight += 24f;
                     }
                 }
             }
 
-            listingStandard.Gap();
-
-            bool overrideName = !settings.randomisePawnName;
-            DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.Characters.OverrideName".Translate(), "RandomStartMod.Characters.OverrideNameTooltip".Translate(), ref overrideName);
-            settings.randomisePawnName = !overrideName;
-            planetListingHeight += 36f;
-            if (overrideName)
+            // Only show manual filters if PrepareModerately integration is not enabled
+            if (!settings.enablePrepareModeratelyIntegration)
             {
-                // Ensure pawnNames list is initialized
-                if (settings.pawnNames == null)
-                    settings.pawnNames = new List<PawnNameData>();
+                DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.TooltipTitles.StartingPawnsMustBeCapableOfViolence".Translate(), "RandomStartMod.TooltipTitles.StartingPawnsMustBeCapableOfViolence".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Misc.StartingPawnsMustBeCapableOfViolenceTooltip".Translate(), ref settings.startingPawnForceViolence);
+                planetListingHeight += 24f;
+                DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.PawnNotDisabledWorkTags".Translate(), "RandomStartMod.PawnNotDisabledWorkTags".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.PawnNotDisabledWorkTagsTooltip".Translate(), ref settings.PawnNotDisabledWorkTags);
+                planetListingHeight += 24f;
+            }
 
-                // Add space for column headers
-                if (settings.pawnNames.Count > 0)
-                {
-                    listingStandard.Gap(14f); // Extra gap before headers (increased from 8f)
-                    planetListingHeight += 32f; // Increased space for headers (increased from 26f)
-                }
-
-                // Display existing pawn name rows
-                for (int i = 0; i < settings.pawnNames.Count; i++)
-                {
-                    if (i == 0)
-                    {
-                        listingStandard.Gap(2f); // Small gap for first row
-                    }
-                    else
-                    {
-                        listingStandard.Gap(4f); // Normal gap for subsequent rows
-                    }
-                    if (DoPawnNameRow(listingStandard.GetRect(32f), settings.pawnNames[i], i))
-                    {
-                        settings.pawnNames.RemoveAt(i);
-                        i--; // Adjust index after removal
-                    }
-                    listingStandard.Gap(4f);
-                    planetListingHeight += 40f;
-                }
-
-                // Add new pawn name row button
+            // Only show the manual filters if PrepareModerately integration is not enabled
+            if (!settings.enablePrepareModeratelyIntegration)
+            {
                 listingStandard.Gap();
-                if (listingStandard.ButtonText("RandomStartMod.Characters.AddPawnName".Translate()))
-                {
-                    settings.pawnNames.Add(new PawnNameData());
-                }
-                planetListingHeight += 44f;
-            }
 
-            listingStandard.Gap();
-            planetListingHeight += 36f;
-            bool overrideAge = !settings.randomisePawnAge;
-            DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.Characters.OverrideAge".Translate(), "RandomStartMod.Characters.OverrideAgeTooltip".Translate(), ref overrideAge);
-            settings.randomisePawnAge = !overrideAge;
-            planetListingHeight += 36f + Text.LineHeight;
-            if (overrideAge)
-            {
-                Rect rect9 = listingStandard.GetRect(32f);
-                Widgets.IntRange(rect9, 1623498651, ref settings.randomisePawnAgeRange, 0, 100, Util.GetAgeRangeLabelPercent(settings.randomisePawnAgeRange));
-                planetListingHeight += 32f;
-            }
+                bool overrideName = !settings.randomisePawnName;
+                DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.Characters.OverrideName".Translate(), "RandomStartMod.Characters.OverrideNameTooltip".Translate(), ref overrideName);
+                settings.randomisePawnName = !overrideName;
+                planetListingHeight += 36f;
+                if (overrideName)
+                {
+                    // Ensure pawnNames list is initialized
+                    if (settings.pawnNames == null)
+                        settings.pawnNames = new List<PawnNameData>();
 
-            listingStandard.Gap();
-            planetListingHeight += 36f + Text.LineHeight;
-            bool overrideSex = !settings.randomisePawnSex;
-            DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.Characters.OverrideSex".Translate(), "RandomStartMod.Characters.OverrideSexTooltip".Translate(), ref overrideSex);
-            settings.randomisePawnSex = !overrideSex;
-            planetListingHeight += 44f;
-            if (overrideSex)
-            {
-                List<string> list = Enum.GetNames(typeof(Gender)).Where(name => name != "None").ToList();
-                List<Gender> genderValues = Enum.GetValues(typeof(Gender)).Cast<Gender>().Where(g => g != Gender.None).ToList();
-                int num = settings.PawnSex;
-                
-                // Find the index in the filtered list
-                int displayIndex = genderValues.FindIndex(g => (int)g == num);
-                if (displayIndex == -1)
-                {
-                    displayIndex = 0;
-                    settings.PawnSex = (int)genderValues[0];
-                }
-                
-                if (listingStandard.ButtonText(list[displayIndex]))
-                {
-                    List<FloatMenuOption> list2 = new List<FloatMenuOption>();
-                    for (int i = 0; i < list.Count; i++)
+                    // Add space for column headers
+                    if (settings.pawnNames.Count > 0)
                     {
-                        int index = i;
-                        FloatMenuOption item = new FloatMenuOption(list[i], delegate
-                        {
-                            settings.PawnSex = (int)genderValues[index];
-                        });
-                        list2.Add(item);
+                        listingStandard.Gap(14f); // Extra gap before headers (increased from 8f)
+                        planetListingHeight += 32f; // Increased space for headers (increased from 26f)
                     }
-                    Find.WindowStack.Add(new FloatMenu(list2));
+
+                    // Display existing pawn name rows
+                    for (int i = 0; i < settings.pawnNames.Count; i++)
+                    {
+                        if (i == 0)
+                        {
+                            listingStandard.Gap(2f); // Small gap for first row
+                        }
+                        else
+                        {
+                            listingStandard.Gap(4f); // Normal gap for subsequent rows
+                        }
+                        if (DoPawnNameRow(listingStandard.GetRect(32f), settings.pawnNames[i], i))
+                        {
+                            settings.pawnNames.RemoveAt(i);
+                            i--; // Adjust index after removal
+                        }
+                        listingStandard.Gap(4f);
+                        planetListingHeight += 40f;
+                    }
+
+                    // Add new pawn name row button
+                    listingStandard.Gap();
+                    if (listingStandard.ButtonText("RandomStartMod.Characters.AddPawnName".Translate()))
+                    {
+                        settings.pawnNames.Add(new PawnNameData());
+                    }
+                    planetListingHeight += 44f;
                 }
-                planetListingHeight += 32f;
+
+                listingStandard.Gap();
+                planetListingHeight += 36f;
+                bool overrideAge = !settings.randomisePawnAge;
+                DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.Characters.OverrideAge".Translate(), "RandomStartMod.Characters.OverrideAgeTooltip".Translate(), ref overrideAge);
+                settings.randomisePawnAge = !overrideAge;
+                planetListingHeight += 36f + Text.LineHeight;
+                if (overrideAge)
+                {
+                    Rect rect9 = listingStandard.GetRect(32f);
+                    Widgets.IntRange(rect9, 1623498651, ref settings.randomisePawnAgeRange, 0, 100, Util.GetAgeRangeLabelPercent(settings.randomisePawnAgeRange));
+                    planetListingHeight += 32f;
+                }
+
+                listingStandard.Gap();
+                planetListingHeight += 36f + Text.LineHeight;
+                bool overrideSex = !settings.randomisePawnSex;
+                DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.Characters.OverrideSex".Translate(), "RandomStartMod.Characters.OverrideSexTooltip".Translate(), ref overrideSex);
+                settings.randomisePawnSex = !overrideSex;
+                planetListingHeight += 44f;
+                if (overrideSex)
+                {
+                    List<string> list = Enum.GetNames(typeof(Gender)).Where(name => name != "None").ToList();
+                    List<Gender> genderValues = Enum.GetValues(typeof(Gender)).Cast<Gender>().Where(g => g != Gender.None).ToList();
+                    int num = settings.PawnSex;
+                    
+                    // Find the index in the filtered list
+                    int displayIndex = genderValues.FindIndex(g => (int)g == num);
+                    if (displayIndex == -1)
+                    {
+                        displayIndex = 0;
+                        settings.PawnSex = (int)genderValues[0];
+                    }
+                    
+                    if (listingStandard.ButtonText(list[displayIndex]))
+                    {
+                        List<FloatMenuOption> list2 = new List<FloatMenuOption>();
+                        for (int i = 0; i < list.Count; i++)
+                        {
+                            int index = i;
+                            FloatMenuOption item = new FloatMenuOption(list[i], delegate
+                            {
+                                settings.PawnSex = (int)genderValues[index];
+                            });
+                            list2.Add(item);
+                        }
+                        Find.WindowStack.Add(new FloatMenu(list2));
+                    }
+                    planetListingHeight += 32f;
+                }
+
+                planetListingHeight += 36f + Text.LineHeight;
             }
-
-            planetListingHeight += 36f + Text.LineHeight;
-
 
             listingStandard.Gap();
             planetListingHeight += 12f;

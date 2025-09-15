@@ -73,6 +73,7 @@
 	<RandomStartMod.Planet.RandomizeRainfallTooltip>随机设置行星的总体降雨水平，影响生物群落分布以及湿润与干燥地区的普遍程度。</RandomStartMod.Planet.RandomizeRainfallTooltip>
 	<RandomStartMod.Planet.RandomizeTemperatureTooltip>随机设置行星的总体温度水平，决定热带与寒带生物群落的比例并影响全球气候模式。</RandomStartMod.Planet.RandomizeTemperatureTooltip>
 	<RandomStartMod.Planet.RandomizePopulationTooltip>随机设置行星的派系点密度，影响殖民地、前哨与派系基地在世界上的分布数量。</RandomStartMod.Planet.RandomizePopulationTooltip>
+	<RandomStartMod.Planet.RandomizeLandmarkDensityTooltip>随机设置行星上的世界特征和地标数量。更高密度创造更多古代废墟、间歇泉等特殊地点的探索机会。</RandomStartMod.Planet.RandomizeLandmarkDensityTooltip>
 	<RandomStartMod.Planet.RandomizePollutionTooltip>随机设置行星的初始污染水平。更高污染产生更多废土区域并影响植物生长与动物健康。</RandomStartMod.Planet.RandomizePollutionTooltip>
 	<RandomStartMod.Planet.RandomizeStartingSeasonTooltip>随机选择殖民地开始时的季节。不同季节影响温度、植物生长与起始可用资源。</RandomStartMod.Planet.RandomizeStartingSeasonTooltip>
 	<RandomStartMod.Planet.RandomizeRealisticPlanetsTooltip>启用对 真是星球 模组设置的随机化，这会影响行星地形生成与地理特征。</RandomStartMod.Planet.RandomizeRealisticPlanetsTooltip>
@@ -143,6 +144,7 @@
 	<RandomStartMod.TooltipTitles.RandomizeRainfall>随机化降雨</RandomStartMod.TooltipTitles.RandomizeRainfall>
 	<RandomStartMod.TooltipTitles.RandomizeTemperature>随机化温度</RandomStartMod.TooltipTitles.RandomizeTemperature>
 	<RandomStartMod.TooltipTitles.RandomizePopulation>随机化人口</RandomStartMod.TooltipTitles.RandomizePopulation>
+	<RandomStartMod.TooltipTitles.RandomizeLandmarkDensity>随机化地标密度</RandomStartMod.TooltipTitles.RandomizeLandmarkDensity>
 	<RandomStartMod.TooltipTitles.RandomizePollution>随机化污染</RandomStartMod.TooltipTitles.RandomizePollution>
 	<RandomStartMod.TooltipTitles.RandomizeStartingSeason>随机化起始季节</RandomStartMod.TooltipTitles.RandomizeStartingSeason>
 	<RandomStartMod.TooltipTitles.RandomizeRealisticPlanets>随机化真实星球</RandomStartMod.TooltipTitles.RandomizeRealisticPlanets>

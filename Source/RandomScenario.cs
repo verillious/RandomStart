@@ -185,8 +185,32 @@ namespace RandomStartMod
             }
 
             if (
+                settings.enablePrepareModeratelyIntegration
+                && (
+                    ModsConfig.IsActive("Lakuna.PrepareModerately")
+                    || ModsConfig.IsActive("Lakuna.PrepareModerately_Steam")
+                )
+            )
+            {
+                Util.LogMessage("Using PrepareModerately integration for starting pawn generation");
+                // Apply selected filter if integration is enabled
+                if (
+                    !string.IsNullOrEmpty(settings.selectedPrepareModeratelyFilter)
+                    && (
+                        ModsConfig.IsActive("Lakuna.PrepareModerately")
+                        || ModsConfig.IsActive("Lakuna.PrepareModerately_Steam")
+                    )
+                )
+                {
+                    PrepareModeratelyCompat.SetCurrentFilter(
+                        settings.selectedPrepareModeratelyFilter
+                    );
+                }
+
+                PrepareModeratelyCompat.RandomiseStartingPawns();
+            }
+            else if (
                 settings.startingPawnForceViolence
-                || settings.enablePrepareModeratelyIntegration
                 || !settings.randomisePawnAge
                 || !settings.randomisePawnSex
                 || !settings.randomisePawnName
@@ -194,24 +218,6 @@ namespace RandomStartMod
                 || (settings.pawnNames != null && settings.pawnNames.Count > 0)
             )
             {
-                if (
-                    ModsConfig.IsActive("Lakuna.PrepareModerately")
-                    || ModsConfig.IsActive("Lakuna.PrepareModerately_Steam")
-                )
-                {
-                    PrepareModeratelyCompat.SetMod();
-
-                    // Apply selected filter if integration is enabled
-                    if (
-                        settings.enablePrepareModeratelyIntegration
-                        && !string.IsNullOrEmpty(settings.selectedPrepareModeratelyFilter)
-                    )
-                    {
-                        PrepareModeratelyCompat.SetCurrentFilter(
-                            settings.selectedPrepareModeratelyFilter
-                        );
-                    }
-                }
                 StartingPawnUtility.ClearAllStartingPawns();
                 for (int i = 0; i < 10; i++)
                 {
@@ -230,6 +236,7 @@ namespace RandomStartMod
                     {
                         request.FixedGender = (Gender)settings.PawnSex;
                     }
+
                     if (settings.PawnNotDisabledWorkTags)
                     {
                         StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.Add(request);
@@ -266,9 +273,10 @@ namespace RandomStartMod
                     }
                 }
 
-                // Handle name assignment for all generated pawns using new pawn names list
+                // Handle name assignment for all generated pawns using new pawn names list (only if PrepareModerately is disabled)
                 if (
-                    !settings.randomisePawnName
+                    !settings.enablePrepareModeratelyIntegration
+                    && !settings.randomisePawnName
                     && settings.pawnNames != null
                     && settings.pawnNames.Count > 0
                 )
