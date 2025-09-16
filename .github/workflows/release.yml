@@ -20,8 +20,8 @@ jobs:
         uses: MathieuSoysal/replace-string-in-file@v1.0.0
         with:
           file: About/About.xml
-          old-string: <packageId>bogknight.RandomStartDev</packageId>
-          new-string: <packageId>bogknight.RandomStart</packageId>
+          old-string: bogknight.RandomStartDev
+          new-string: bogknight.RandomStart
       - name: Package
         id: package
         run: |
