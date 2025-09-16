@@ -2,7 +2,7 @@
 <ModMetaData>
 	<name>Random Start</name>
 	<author>bogknight</author>
-	<packageId>bogknight.RandomStart</packageId>
+	<packageId>bogknight.RandomStartDev</packageId>
 	<modVersion>MODVERSION</modVersion>
 	<description>Adds a completely random start button to the main menu.</description>
 	<supportedVersions>
