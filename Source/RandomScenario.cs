@@ -1,9 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
+using RandomStartMod.Compat;
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
+using VEF;
 using Verse;
 using static RimWorld.PsychicRitualRoleDef;
 
@@ -20,22 +24,152 @@ namespace RandomStartMod
                 .GetSettings<RandomStartSettings>();
 
             Current.ProgramState = ProgramState.Entry;
-            Current.Game = new Game();
-            Current.Game.InitData = new GameInitData();
+            Current.Game = new Game { InitData = new GameInitData() };
             SetupRandomScenario(settings);
             SetupRandomDifficulty(settings);
             SetupRandomPlanet(settings);
 
-            Find.GameInitData.ChooseRandomStartingTile();
+            // Handle starting tile filtering
+            bool hasFilters =
+                (
+                    settings.filterStartingBiome
+                    && settings.allowedBiomes != null
+                    && settings.allowedBiomes.Count > 0
+                )
+                || (
+                    settings.filterStartingHilliness
+                    && settings.allowedHilliness != null
+                    && settings.allowedHilliness.Count > 0
+                );
+
+            if (hasFilters)
+            {
+                bool foundValidTile = false;
+                List<BiomeDef> filterBiomes = new List<BiomeDef>();
+                List<Hilliness> filterHilliness = new List<Hilliness>();
+
+                // Setup biome filtering
+                if (
+                    settings.filterStartingBiome
+                    && settings.allowedBiomes != null
+                    && settings.allowedBiomes.Count > 0
+                )
+                {
+                    Util.LogMessage("Filtering starting tile by allowed biomes");
+                    foreach (string biomeDefName in settings.allowedBiomes)
+                    {
+                        BiomeDef biomeDef = BiomeDef.Named(biomeDefName);
+                        if (biomeDef != null)
+                        {
+                            filterBiomes.Add(biomeDef);
+                        }
+                    }
+                }
+
+                // Setup hilliness filtering
+                if (
+                    settings.filterStartingHilliness
+                    && settings.allowedHilliness != null
+                    && settings.allowedHilliness.Count > 0
+                )
+                {
+                    Util.LogMessage("Filtering starting tile by allowed hilliness");
+                    foreach (int hillinessValue in settings.allowedHilliness)
+                    {
+                        if (hillinessValue >= 1 && hillinessValue <= 4) // Flat, SmallHills, LargeHills, Mountainous
+                        {
+                            filterHilliness.Add((Hilliness)hillinessValue);
+                        }
+                    }
+                }
+
+                // Find tiles that match all enabled filters
+                List<Tile> filteredTiles = Find.WorldGrid.Surface.tiles.FindAll(tile =>
+                {
+                    // Check biome filter (if enabled)
+                    bool biomeMatch =
+                        !settings.filterStartingBiome
+                        || filterBiomes.Count == 0
+                        || filterBiomes.Contains(tile.biome);
+
+                    // Check hilliness filter (if enabled)
+                    bool hillinessMatch =
+                        !settings.filterStartingHilliness
+                        || filterHilliness.Count == 0
+                        || filterHilliness.Contains(tile.hilliness);
+
+                    bool temperatureRangeMatch =
+                        !settings.limitStartingTileTemperature
+                        || (
+                            tile.temperature >= settings.limitStartingTileTemperatureRange.min
+                            && tile.temperature <= settings.limitStartingTileTemperatureRange.max
+                        );
+
+                    return biomeMatch && hillinessMatch && temperatureRangeMatch;
+                });
+
+                foreach (Tile filteredTile in filteredTiles)
+                {
+                    if (
+                        !filteredTile.PrimaryBiome.canBuildBase
+                        || !filteredTile.PrimaryBiome.implemented
+                        || filteredTile.hilliness == Hilliness.Impassable
+                    )
+                    {
+                        continue;
+                    }
+
+                    if (!filteredTile.PrimaryBiome.canAutoChoose)
+                    {
+                        continue;
+                    }
+
+                    PlanetTile filteredPlanetTile = Find.WorldGrid
+                        .Surface[Find.WorldGrid.Surface.tiles.IndexOf(filteredTile)]
+                        .tile;
+
+                    if (TileFinder.IsValidTileForNewSettlement(filteredPlanetTile))
+                    {
+                        Find.GameInitData.startingTile = filteredPlanetTile;
+                        string biomeInfo = filteredPlanetTile.Tile.biome.label.CapitalizeFirst();
+                        string hillinessInfo = filteredTile.hilliness.GetLabelCap();
+                        Util.LogMessage(
+                            $"Found valid tile for random start: {biomeInfo}, {hillinessInfo}"
+                        );
+                        foundValidTile = true;
+                        break;
+                    }
+                }
+
+                if (!foundValidTile)
+                {
+                    Util.LogMessage(
+                        "No valid tile found for applied filters. Choosing random tile."
+                    );
+                    Find.GameInitData.ChooseRandomStartingTile();
+                }
+            }
+            else
+            {
+                // No filters applied, choose random tile
+                Find.GameInitData.ChooseRandomStartingTile();
+            }
+
+            Util.LogMessage(
+                $"Starting in {Find.WorldGrid[Find.GameInitData.startingTile].biome.label.CapitalizeFirst()}"
+            );
 
             Season startingSeason = (Season)settings.startingSeason;
             if (settings.randomiseSeason)
-                startingSeason = (Season)Rand.Range(1, 6);
+                startingSeason = (Season)Rand.Range(1, 4);
 
             Find.GameInitData.startingSeason = startingSeason;
             Find.GameInitData.mapSize = settings.mapSize;
 
-            if (ModsConfig.IsActive("OskarPotocki.VanillaFactionsExpanded.Core"))
+            if (
+                ModsConfig.IsActive("OskarPotocki.VanillaFactionsExpanded.Core")
+                || ModsConfig.IsActive("OskarPotocki.VanillaFactionsExpanded.Core_Steam")
+            )
             {
                 Compat.VECoreCompat.SetupForKCSG();
             }
@@ -50,6 +184,130 @@ namespace RandomStartMod
                 allPart.PostIdeoChosen();
             }
 
+            if (
+                settings.enablePrepareModeratelyIntegration
+                && (
+                    ModsConfig.IsActive("Lakuna.PrepareModerately")
+                    || ModsConfig.IsActive("Lakuna.PrepareModerately_Steam")
+                )
+            )
+            {
+                Util.LogMessage("Using PrepareModerately integration for starting pawn generation");
+                // Apply selected filter if integration is enabled
+                if (
+                    !string.IsNullOrEmpty(settings.selectedPrepareModeratelyFilter)
+                    && (
+                        ModsConfig.IsActive("Lakuna.PrepareModerately")
+                        || ModsConfig.IsActive("Lakuna.PrepareModerately_Steam")
+                    )
+                )
+                {
+                    PrepareModeratelyCompat.SetCurrentFilter(
+                        settings.selectedPrepareModeratelyFilter
+                    );
+                }
+
+                PrepareModeratelyCompat.RandomiseStartingPawns();
+            }
+            else if (
+                settings.startingPawnForceViolence
+                || !settings.randomisePawnAge
+                || !settings.randomisePawnSex
+                || !settings.randomisePawnName
+                || settings.PawnNotDisabledWorkTags
+                || (settings.pawnNames != null && settings.pawnNames.Count > 0)
+            )
+            {
+                StartingPawnUtility.ClearAllStartingPawns();
+                for (int i = 0; i < 10; i++)
+                {
+                    PawnGenerationRequest request = StartingPawnUtility.DefaultStartingPawnRequest;
+                    if (settings.startingPawnForceViolence)
+                    {
+                        request.MustBeCapableOfViolence = true;
+                    }
+                    if (!settings.randomisePawnAge)
+                    {
+                        request.FixedBiologicalAge = settings.randomisePawnAgeRange.RandomInRange;
+                        request.BiologicalAgeRange = null;
+                        request.ExcludeBiologicalAgeRange = null;
+                    }
+                    if (!settings.randomisePawnSex)
+                    {
+                        request.FixedGender = (Gender)settings.PawnSex;
+                    }
+
+                    if (settings.PawnNotDisabledWorkTags)
+                    {
+                        StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.Add(request);
+                        StartingPawnUtility.AddNewPawn(i);
+                        int iterations = 0;
+                        while (
+                            Find.GameInitData.startingAndOptionalPawns[i]
+                                .GetDisabledWorkTypes(true)
+                                .Count > 0
+                        )
+                        {
+                            StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.RemoveAt(
+                                i
+                            );
+                            Find.GameInitData.startingAndOptionalPawns.RemoveAt(i);
+                            StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.Add(
+                                request
+                            );
+                            StartingPawnUtility.AddNewPawn(i);
+                            iterations++;
+                            if (iterations > 99)
+                            {
+                                Log.Warning(
+                                    "[Random Start] Could not generate starting pawn without disabled work tags after 100 tries, accepting disabled work tags"
+                                );
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.Add(request);
+                        StartingPawnUtility.AddNewPawn(i);
+                    }
+                }
+
+                // Handle name assignment for all generated pawns using new pawn names list (only if PrepareModerately is disabled)
+                if (
+                    !settings.enablePrepareModeratelyIntegration
+                    && !settings.randomisePawnName
+                    && settings.pawnNames != null
+                    && settings.pawnNames.Count > 0
+                )
+                {
+                    for (
+                        int pawnIndex = 0;
+                        pawnIndex < Find.GameInitData.startingAndOptionalPawns.Count
+                            && pawnIndex < settings.pawnNames.Count;
+                        pawnIndex++
+                    )
+                    {
+                        Pawn pawn = Find.GameInitData.startingAndOptionalPawns[pawnIndex];
+                        PawnNameData nameData = settings.pawnNames[pawnIndex];
+                        NameTriple originalName =
+                            pawn.Name as NameTriple ?? new NameTriple("", "", "");
+
+                        string firstName = string.IsNullOrWhiteSpace(nameData.firstName)
+                            ? originalName.First
+                            : nameData.firstName;
+                        string nickName = string.IsNullOrWhiteSpace(nameData.nickName)
+                            ? originalName.Nick
+                            : nameData.nickName;
+                        string lastName = string.IsNullOrWhiteSpace(nameData.lastName)
+                            ? originalName.Last
+                            : nameData.lastName;
+
+                        pawn.Name = new NameTriple(firstName, nickName, lastName);
+                    }
+                }
+            }
+
             if (ModsConfig.BiotechActive)
             {
                 SetupRandomGenes(settings);
@@ -57,34 +315,74 @@ namespace RandomStartMod
 
             Find.GameInitData.startedFromEntry = true;
 
-            //Settlement playerSettlement;
-
-            //List<Settlement> settlements = Find.WorldObjects.Settlements;
-            //for (int i = 0; i < settlements.Count; i++)
-            //{
-            //    if (settlements[i].Faction == Faction.OfPlayer)
-            //    {
-            //        playerSettlement = settlements[i];
-            //        playerSettlement.MapGeneratorDef.genSteps.Clear();
-            //        break;
-            //    }
-            //}
-
             if (settings.randomiseFactionGoodwill)
             {
                 Util.LogMessage("Randomising Faction Goodwill");
                 foreach (Faction item in Find.FactionManager.AllFactionsListForReading)
                 {
-                    item.RemoveAllRelations();
+                    // Skip faction if it's excluded from reputation randomization
+                    if (
+                        settings.factionsExcludeFromReputationRandomization != null
+                        && settings.factionsExcludeFromReputationRandomization.Contains(
+                            item.def.defName
+                        )
+                    )
+                    {
+                        continue;
+                    }
+
+                    // Only remove relations for factions that aren't excluded
+                    List<FactionRelation> relationsToRemove = new List<FactionRelation>();
+                    foreach (FactionRelation relation in item.relations)
+                    {
+                        if (
+                            settings.factionsExcludeFromReputationRandomization == null
+                            || !settings.factionsExcludeFromReputationRandomization.Contains(
+                                relation.other.def.defName
+                            )
+                        )
+                        {
+                            relationsToRemove.Add(relation);
+                        }
+                    }
+                    foreach (FactionRelation relation in relationsToRemove)
+                    {
+                        item.relations.Remove(relation);
+                    }
+
                     foreach (Faction item2 in Find.FactionManager.AllFactionsListForReading)
                     {
                         if (item != item2)
                         {
+                            // Skip if either faction is excluded from reputation randomization
+                            if (
+                                settings.factionsExcludeFromReputationRandomization != null
+                                && (
+                                    settings.factionsExcludeFromReputationRandomization.Contains(
+                                        item.def.defName
+                                    )
+                                    || settings.factionsExcludeFromReputationRandomization.Contains(
+                                        item2.def.defName
+                                    )
+                                )
+                            )
+                            {
+                                continue;
+                            }
+
                             if (item.RelationWith(item2, allowNull: true) == null)
                             {
                                 int initialGoodwill = GetInitialGoodwill(item, item2);
 
-                                FactionRelationKind kind = ((initialGoodwill > -10) ? ((initialGoodwill < 75) ? FactionRelationKind.Neutral : FactionRelationKind.Ally) : FactionRelationKind.Hostile);
+                                FactionRelationKind kind = (
+                                    (initialGoodwill > -10)
+                                        ? (
+                                            (initialGoodwill < 75)
+                                                ? FactionRelationKind.Neutral
+                                                : FactionRelationKind.Ally
+                                        )
+                                        : FactionRelationKind.Hostile
+                                );
                                 FactionRelation factionRelation = new FactionRelation();
                                 factionRelation.other = item2;
                                 factionRelation.baseGoodwill = initialGoodwill;
@@ -109,15 +407,24 @@ namespace RandomStartMod
                                 {
                                     return -100;
                                 }
-                                if ((a.def.permanentEnemyToEveryoneExceptPlayer && !b.IsPlayer) || (b.def.permanentEnemyToEveryoneExceptPlayer && !a.IsPlayer))
+                                if (
+                                    (a.def.permanentEnemyToEveryoneExceptPlayer && !b.IsPlayer)
+                                    || (b.def.permanentEnemyToEveryoneExceptPlayer && !a.IsPlayer)
+                                )
                                 {
                                     return -100;
                                 }
-                                if (a.def.permanentEnemyToEveryoneExcept != null && !a.def.permanentEnemyToEveryoneExcept.Contains(b.def))
+                                if (
+                                    a.def.permanentEnemyToEveryoneExcept != null
+                                    && !a.def.permanentEnemyToEveryoneExcept.Contains(b.def)
+                                )
                                 {
                                     return -100;
                                 }
-                                if (b.def.permanentEnemyToEveryoneExcept != null && !b.def.permanentEnemyToEveryoneExcept.Contains(a.def))
+                                if (
+                                    b.def.permanentEnemyToEveryoneExcept != null
+                                    && !b.def.permanentEnemyToEveryoneExcept.Contains(a.def)
+                                )
                                 {
                                     return -100;
                                 }
@@ -129,9 +436,15 @@ namespace RandomStartMod
             }
             PageUtility.InitGameStart();
 
-            if (ModsConfig.IsActive("Woolstrand.RealRuins") && settings.enableAutoRealRuins)
+            if (
+                ModsConfig.IsActive("Woolstrand.RealRuins")
+                || ModsConfig.IsActive("Woolstrand.RealRuins_Steam")
+            )
             {
-                Compat.RealRuinsCompat.CreatePOIs();
+                if (settings.enableAutoRealRuins)
+                {
+                    Compat.RealRuinsCompat.CreatePOIs();
+                }
             }
         }
 
@@ -139,7 +452,9 @@ namespace RandomStartMod
         {
             if (settings.createRandomScenario)
             {
-                Current.Game.Scenario = ScenarioMaker.GenerateNewRandomScenario(GenText.RandomSeedString());
+                Current.Game.Scenario = ScenarioMaker.GenerateNewRandomScenario(
+                    GenText.RandomSeedString()
+                );
             }
             else
             {
@@ -150,7 +465,8 @@ namespace RandomStartMod
                         .AllScenarios()
                         .Where(
                             (Scenario scenario) =>
-                                !settings.disabledScenarios.Contains(scenario.name) && scenario.showInUI
+                                !settings.disabledScenarios.Contains(scenario.name)
+                                && scenario.showInUI
                         )
                 );
                 if (settings.enableCustomScenarios)
@@ -174,8 +490,8 @@ namespace RandomStartMod
                             )
                     );
 
-                Current.Game.Scenario = scenarios.RandomElement();
-                if (Current.Game.Scenario == null)
+                Scenario randomScenario = scenarios.RandomElement();
+                if (randomScenario == null)
                 {
                     string errorString = "[Random Start] Could not find valid Scenario from:";
                     foreach (Scenario s in scenarios)
@@ -183,8 +499,15 @@ namespace RandomStartMod
                         errorString += "\n" + "    - " + s.name;
                     }
                     Log.Error(errorString);
-                    Current.Game.Scenario = ScenarioDefOf.Crashlanded.scenario;
+                    randomScenario = ScenarioDefOf.Crashlanded.scenario;
                 }
+
+                if (settings.removeStartingItems)
+                {
+                    Util.LogMessage("Removing scattered starting items from Scenario");
+                    randomScenario.parts.RemoveAll(x => x is ScenPart_ScatterThings);
+                }
+                Current.Game.Scenario = randomScenario;
             }
             Util.LogMessage($"Starting {Current.Game.Scenario}");
         }
@@ -276,7 +599,10 @@ namespace RandomStartMod
 
             chosenStoryteller.tutorialMode = false;
 
-            if (ModsConfig.IsActive("brrainz.nopausechallenge"))
+            if (
+                ModsConfig.IsActive("brrainz.nopausechallenge")
+                || ModsConfig.IsActive("brrainz.nopausechallenge_steam")
+            )
             {
                 Compat.NoPauseCompat.SetupForNoPause();
             }
@@ -316,7 +642,6 @@ namespace RandomStartMod
 
         private static void SetupRandomPlanet(RandomStartSettings settings)
         {
-
             OverallRainfall rainfall = (OverallRainfall)settings.rainfall;
             if (settings.randomiseRainfall)
                 rainfall = (OverallRainfall)settings.randomiseRainfallRange.RandomInRange;
@@ -329,6 +654,11 @@ namespace RandomStartMod
             if (settings.randomisePopulation)
                 population = (OverallPopulation)settings.randomisePopulationRange.RandomInRange;
 
+            LandmarkDensity landmarkDensity = (LandmarkDensity)settings.landmarkDensity;
+            if (settings.randomiseLandmarkDensity)
+                landmarkDensity = (LandmarkDensity)
+                    settings.randomiseLandmarkDensityRange.RandomInRange;
+
             float pollution = settings.pollution;
             if (settings.randomisePollution)
                 pollution = settings.randomisePollutionRange.RandomInRange;
@@ -338,13 +668,24 @@ namespace RandomStartMod
             IEnumerable<FactionDef> allFactionDefs =
                 DefDatabase<FactionDef>.AllDefsListForReading.Where((FactionDef x) => x.isPlayer);
 
-            foreach (string factionDefName in settings.factionsAlwaysAdd)
+            bool needToWriteSettings = false;
+
+            List<string> factionsAlwaysAdd = new List<string>(settings.factionsAlwaysAdd);
+            foreach (string factionDefName in factionsAlwaysAdd)
             {
                 FactionDef faction = DefDatabase<FactionDef>.GetNamed(factionDefName, false);
                 if (faction == null)
+                {
+                    settings.factionsAlwaysAdd.Remove(factionDefName);
+                    Util.LogMessage(
+                        $"Tried to create invalid Faction {faction}. Removing from list."
+                    );
+                    needToWriteSettings = true;
                     continue;
+                }
                 worldFactions.Add(faction);
             }
+
             if (settings.factionsRandomlyAdd.Count > 0)
             {
                 List<string> randomFactions = new List<string>(settings.factionsRandomlyAdd);
@@ -354,7 +695,17 @@ namespace RandomStartMod
                     FactionDef faction = DefDatabase<FactionDef>.GetNamed(randomFaction, false);
 
                     if (faction == null)
+                    {
+                        settings.factionsRandomlyAdd.Remove(randomFaction);
+                        randomFactions.Remove(randomFaction);
+                        Util.LogMessage(
+                            $"Tried to create invalid Faction {randomFaction}. Removing from list."
+                        );
+                        needToWriteSettings = true;
+                        if (randomFactions.Count == 0)
+                            break;
                         continue;
+                    }
                     worldFactions.Add(faction);
                     if (settings.uniqueFactions)
                     {
@@ -365,45 +716,99 @@ namespace RandomStartMod
                 }
             }
 
-            if (ModsConfig.IsActive("OskarPotocki.VFE.Empire"))
+            if (needToWriteSettings)
+            {
+                settings.Write();
+            }
+
+            if (
+                ModsConfig.IsActive("OskarPotocki.VFE.Empire")
+                || ModsConfig.IsActive("OskarPotocki.VFE.Empire_Steam")
+            )
             {
                 Compat.VFEECompat.EnsureScenarioFactions(worldFactions);
             }
 
-            if (ModsConfig.IsActive("OskarPotocki.VFE.Deserters"))
+            if (
+                ModsConfig.IsActive("OskarPotocki.VFE.Deserters")
+                || ModsConfig.IsActive("OskarPotocki.VFE.Deserters_Steam")
+            )
             {
                 Compat.VFEDCompat.EnsureScenarioFactions(worldFactions);
             }
 
-            if (ModsConfig.IsActive("kentington.saveourship2"))
+            if (
+                ModsConfig.IsActive("kentington.saveourship2")
+                || ModsConfig.IsActive("kentington.saveourship2_steam")
+            )
             {
                 Compat.SOS2Compat.SetupForStartInSpace();
             }
 
-            if (ModsConfig.IsActive("zvq.RealisticPlanetsContinued"))
+            Util.LogMessage($"Created {worldFactions.Count} factions");
+
+            string worldSeed;
+            if (settings.randomiseWorldSeed)
             {
-                int worldType = settings.realisticPlanetsWorldType;
-                if (settings.randomiseRealisticPlanets)
-                    worldType = -1;
-                Compat.RealisticPlanetsCompat.GenerateRealisticPlanetWorld(
+                Util.LogMessage("Randomising world seed");
+                worldSeed = GenText.RandomSeedString();
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(settings.worldSeed))
+                {
+                    Util.LogMessage($"World Seed: '{settings.worldSeed}' is invalid");
+                    worldSeed = GenText.RandomSeedString();
+                    settings.worldSeed = worldSeed;
+                }
+                else
+                {
+                    Util.LogMessage("Using custom world seed");
+                    worldSeed = settings.worldSeed;
+                }
+            }
+
+            Util.LogMessage($"Using world seed: '{worldSeed}'");
+
+            if (
+                ModsConfig.IsActive("koth.RealisticPlanets1.6")
+                || ModsConfig.IsActive("koth.RealisticPlanets1.6_Steam")
+            )
+            {
+                int oceanType = settings.realisticPlanetsOceanType;
+                if (settings.randomiseOceanType)
+                {
+                    oceanType = settings.randomiseOceanTypeRange.RandomInRange;
+                }
+                int axialTilt = settings.realisticPlanetsAxialTilt;
+                if (settings.randomiseAxialTilt)
+                {
+                    axialTilt = settings.randomiseAxialTiltRange.RandomInRange;
+                }
+                RealisticPlanetsCompat.GenerateRealisticPlanetWorld(
                     settings.planetCoverage,
                     GenText.RandomSeedString(),
                     rainfall,
                     temperature,
                     population,
+                    landmarkDensity,
                     worldFactions,
                     pollution,
-                    worldType
+                    oceanType,
+                    axialTilt,
+                    settings.realisticPlanetsWorldType,
+                    settings.randomiseRealisticPlanets
                 );
             }
             else
             {
                 Current.Game.World = WorldGenerator.GenerateWorld(
                     settings.planetCoverage,
-                    GenText.RandomSeedString(),
+                    worldSeed,
                     rainfall,
                     temperature,
                     population,
+                    landmarkDensity,
                     worldFactions,
                     pollution
                 );
@@ -448,10 +853,10 @@ namespace RandomStartMod
             }
             else
             {
+                Ideo newIdeo = null;
                 if (settings.overrideIdeo && File.Exists(settings.customIdeoOverrideFile))
                 {
                     Util.LogMessage("Attempting to load ideo file");
-                    Ideo newIdeo = null;
                     PreLoadUtility.CheckVersionAndLoad(
                         settings.customIdeoOverrideFile,
                         ScribeMetaHeaderUtility.ScribeHeaderMode.Ideo,
@@ -472,11 +877,6 @@ namespace RandomStartMod
                     if (newIdeo != null)
                     {
                         Util.LogMessage("Loaded ideo file");
-                        Find.FactionManager.OfPlayer.ideos.RemoveAll();
-                        Find.FactionManager.OfPlayer.ideos.SetPrimary(newIdeo);
-                        Find.IdeoManager.RemoveUnusedStartingIdeos();
-                        newIdeo.initialPlayerIdeo = true;
-                        Find.IdeoManager.Add(newIdeo);
                     }
                     else
                     {
@@ -485,15 +885,235 @@ namespace RandomStartMod
                         );
                     }
                 }
-                if (settings.fluidIdeo)
+                else
                 {
-                    Ideo playerIdeo =
-                        Find.FactionManager.OfPlayer.ideos.AllIdeos.FirstOrDefault();
-                    playerIdeo.Fluid = true;
+                    // Convert string lists to actual defs
+                    List<PreceptDef> disallowedPreceptDefs = null;
+                    if (settings.disallowedPrecepts?.Count > 0)
+                    {
+                        disallowedPreceptDefs = new List<PreceptDef>();
+                        foreach (string preceptDefName in settings.disallowedPrecepts)
+                        {
+                            PreceptDef preceptDef = DefDatabase<PreceptDef>.GetNamed(
+                                preceptDefName,
+                                false
+                            );
+                            if (preceptDef != null)
+                            {
+                                disallowedPreceptDefs.Add(preceptDef);
+                            }
+                        }
+                    }
+
+                    List<MemeDef> disallowedMemeDefs = null;
+                    if (settings.disallowedMemes?.Count > 0)
+                    {
+                        disallowedMemeDefs = new List<MemeDef>();
+                        foreach (string memeDefName in settings.disallowedMemes)
+                        {
+                            MemeDef memeDef = DefDatabase<MemeDef>.GetNamed(memeDefName, false);
+                            if (memeDef != null)
+                            {
+                                disallowedMemeDefs.Add(memeDef);
+                            }
+                        }
+                    }
+
+                    List<MemeDef> forcedMemeDefs = null;
+                    if (settings.forcedMemes?.Count > 0)
+                    {
+                        forcedMemeDefs = new List<MemeDef>();
+                        foreach (string memeDefName in settings.forcedMemes)
+                        {
+                            MemeDef memeDef = DefDatabase<MemeDef>.GetNamed(memeDefName, false);
+                            if (memeDef != null)
+                            {
+                                forcedMemeDefs.Add(memeDef);
+                            }
+                        }
+                    }
+
+                    IdeoGenerationParms genParms = new IdeoGenerationParms(
+                        Find.FactionManager.OfPlayer.def,
+                        forceNoExpansionIdeo: false,
+                        disallowedPreceptDefs,
+                        disallowedMemeDefs,
+                        forcedMemeDefs, // this overrides memes, rather than adding to them
+                        classicExtra: false,
+                        forceNoWeaponPreference: false,
+                        settings.fluidIdeo
+                    );
+                    newIdeo = IdeoGenerator.GenerateIdeo(genParms);
+                    newIdeo.memes.Clear();
+                    int memeCount = settings.randomMemeRange.RandomInRange;
+                    newIdeo.memes.AddRange(GenerateRandomMemes(memeCount, genParms));
+                    newIdeo.SortMemesInDisplayOrder();
+                    newIdeo.foundation.RandomizePrecepts(true, genParms);
                 }
+
+                Find.FactionManager.OfPlayer.ideos.RemoveAll();
+                Find.FactionManager.OfPlayer.ideos.SetPrimary(newIdeo);
+                Find.IdeoManager.RemoveUnusedStartingIdeos();
+                newIdeo.initialPlayerIdeo = true;
+                Find.IdeoManager.Add(newIdeo);
             }
         }
 
+        private static List<MemeDef> GenerateRandomMemes(int count, IdeoGenerationParms parms)
+        {
+            FactionDef forFaction = parms.forFaction;
+            bool forPlayerFaction = forFaction != null && forFaction.isPlayer;
+            List<MemeDef> memes = new List<MemeDef>();
+            bool flag = false;
+            if (forFaction != null && forFaction.requiredMemes != null)
+            {
+                for (int i = 0; i < forFaction.requiredMemes.Count; i++)
+                {
+                    memes.Add(forFaction.requiredMemes[i]);
+                    if (forFaction.requiredMemes[i].category == MemeCategory.Normal)
+                    {
+                        count--;
+                    }
+                    else if (forFaction.requiredMemes[i].category == MemeCategory.Structure)
+                    {
+                        flag = true;
+                    }
+                }
+            }
+
+            if (parms.forcedMemes != null)
+            {
+                foreach (MemeDef forcedMeme in parms.forcedMemes)
+                {
+                    if (forcedMeme.category == MemeCategory.Structure)
+                    {
+                        flag = true;
+                        break;
+                    }
+                }
+            }
+
+            if (forFaction != null && forFaction.structureMemeWeights != null && !flag)
+            {
+                MemeWeight result2;
+                if (
+                    forFaction
+                        .structureMemeWeights.Where(
+                            (MemeWeight x) =>
+                                IdeoUtility.CanAdd(x.meme, memes, forFaction, parms.forNewFluidIdeo)
+                                && (forPlayerFaction || !IdeoUtility.AnyIdeoHas(x.meme))
+                        )
+                        .TryRandomElementByWeight(
+                            (MemeWeight x) =>
+                                x.selectionWeight * x.meme.randomizationSelectionWeightFactor,
+                            out var result
+                        )
+                )
+                {
+                    memes.Add(result.meme);
+                    flag = true;
+                }
+                else if (
+                    forFaction
+                        .structureMemeWeights.Where(
+                            (MemeWeight x) =>
+                                IdeoUtility.CanAdd(x.meme, memes, forFaction, parms.forNewFluidIdeo)
+                        )
+                        .TryRandomElementByWeight(
+                            (MemeWeight x) =>
+                                x.selectionWeight * x.meme.randomizationSelectionWeightFactor,
+                            out result2
+                        )
+                )
+                {
+                    memes.Add(result2.meme);
+                    flag = true;
+                }
+            }
+
+            if (!flag)
+            {
+                MemeDef result4;
+                if (
+                    DefDatabase<MemeDef>
+                        .AllDefs.Where(
+                            (MemeDef x) =>
+                                x.category == MemeCategory.Structure
+                                && IdeoUtility.CanAdd(x, memes, forFaction, parms.forNewFluidIdeo)
+                                && (forPlayerFaction || !IdeoUtility.AnyIdeoHas(x))
+                        )
+                        .TryRandomElement(out var result3)
+                )
+                {
+                    memes.Add(result3);
+                }
+                else if (
+                    DefDatabase<MemeDef>
+                        .AllDefs.Where(
+                            (MemeDef x) =>
+                                x.category == MemeCategory.Structure
+                                && IdeoUtility.CanAdd(x, memes, forFaction, parms.forNewFluidIdeo)
+                        )
+                        .TryRandomElementByWeight(
+                            (MemeDef x) => x.randomizationSelectionWeightFactor,
+                            out result4
+                        )
+                )
+                {
+                    memes.Add(result4);
+                }
+            }
+
+            if (parms.forcedMemes != null)
+            {
+                memes.AddRange(parms.forcedMemes);
+            }
+
+            for (int num = memes.Count; num <= count; num++)
+            {
+                MemeDef result6;
+                if (
+                    DefDatabase<MemeDef>
+                        .AllDefs.Where(
+                            (MemeDef x) =>
+                                x.category == MemeCategory.Normal
+                                && IdeoUtility.CanAdd(x, memes, forFaction, parms.forNewFluidIdeo)
+                                && (forPlayerFaction || !IdeoUtility.AnyIdeoHas(x))
+                                && (
+                                    parms.disallowedMemes == null
+                                    || !parms.disallowedMemes.Contains(x)
+                                )
+                        )
+                        .TryRandomElementByWeight(
+                            (MemeDef x) => x.randomizationSelectionWeightFactor,
+                            out var result5
+                        )
+                )
+                {
+                    memes.Add(result5);
+                }
+                else if (
+                    DefDatabase<MemeDef>
+                        .AllDefs.Where(
+                            (MemeDef x) =>
+                                x.category == MemeCategory.Normal
+                                && IdeoUtility.CanAdd(x, memes, forFaction, parms.forNewFluidIdeo)
+                                && (
+                                    parms.disallowedMemes == null
+                                    || !parms.disallowedMemes.Contains(x)
+                                )
+                        )
+                        .TryRandomElementByWeight(
+                            (MemeDef x) => x.randomizationSelectionWeightFactor,
+                            out result6
+                        )
+                )
+                {
+                    memes.Add(result6);
+                }
+            }
+            return memes;
+        }
 
         private static void SetupRandomGenes(RandomStartSettings settings)
         {
@@ -527,9 +1147,7 @@ namespace RandomStartMod
                     {
                         selectedGenes.Add(
                             DefDatabase<GeneDef>
-                                .AllDefsListForReading.Where(
-                                    (GeneDef g) => g.canGenerateInGeneSet
-                                )
+                                .AllDefsListForReading.Where((GeneDef g) => g.canGenerateInGeneSet)
                                 .RandomElement()
                         );
                     }
@@ -540,7 +1158,10 @@ namespace RandomStartMod
                         {
                             if (settings.enableMetabolicEfficiencyMinimum)
                             {
-                                if ((metabolismTotal + geneDef.biostatMet) >= settings.minimumMetabolicEfficiency)
+                                if (
+                                    (metabolismTotal + geneDef.biostatMet)
+                                    >= settings.minimumMetabolicEfficiency
+                                )
                                 {
                                     GivePawnGene(p, geneDef, ref metabolismTotal);
                                     metabolismTotal += geneDef.biostatMet;
@@ -566,9 +1187,7 @@ namespace RandomStartMod
                                     }
                                 }
                             }
-
                         }
-
 
                         p.genes.xenotypeName = GeneUtility.GenerateXenotypeNameFromGenes(
                             selectedGenes
@@ -617,7 +1236,6 @@ namespace RandomStartMod
                         );
                     }
                 }
-
             }
         }
     }

@@ -21,7 +21,7 @@
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>../1.5/Assemblies/</OutputPath>
+    <OutputPath>../1.6/Assemblies/</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -30,50 +30,56 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>../1.5/Assemblies/</OutputPath>
+    <OutputPath>../1.6/Assemblies/</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony, Version=2.3.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Lib.Harmony.2.3.3\lib\net472\0Harmony.dll</HintPath>
+    <Reference Include="0Harmony, Version=2.3.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Lib.Harmony.2.3.6\lib\net472\0Harmony.dll</HintPath>
+      <CopyLocal>False</CopyLocal>
       <Private>False</Private>
     </Reference>
     <Reference Include="KCSG">
-      <HintPath>..\..\..\..\..\workshop\content\294100\2023507013\1.5\Assemblies\KCSG.dll</HintPath>
-      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\2023507013\1.5\Assemblies\KCSG.dll</HintPath>
+      <HintPath>..\..\..\..\..\workshop\content\294100\2023507013\1.6\Assemblies\KCSG.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\2023507013\1.6\Assemblies\KCSG.dll</HintPath>
       <CopyLocal>False</CopyLocal>
       <Private>False</Private>
     </Reference>
     <Reference Include="MyLittlePlanet">
-      <HintPath>..\..\..\..\..\workshop\content\294100\1117406550\1.4\Assemblies\MyLittlePlanet.dll</HintPath>
+      <HintPath>..\..\..\..\..\workshop\content\294100\1117406550\1.6\Assemblies\MyLittlePlanet.dll</HintPath>
       <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1117406550\1.4\Assemblies\MyLittlePlanet.dll</HintPath>
+      <CopyLocal>False</CopyLocal>
       <Private>False</Private>
     </Reference>
     <Reference Include="NoPauseChallenge">
-      <HintPath>..\..\..\..\..\workshop\content\294100\1517419925\1.5\Assemblies\NoPauseChallenge.dll</HintPath>
-      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1517419925\1.5\Assemblies\NoPauseChallenge.dll</HintPath>
+      <HintPath>..\..\..\..\..\workshop\content\294100\1517419925\1.6\Assemblies\NoPauseChallenge.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1517419925\1.6\Assemblies\NoPauseChallenge.dll</HintPath>
+      <CopyLocal>False</CopyLocal>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Realistic_Planets_Continued">
-      <HintPath>..\..\..\..\..\workshop\content\294100\3225521979\1.5\Assemblies\Realistic_Planets_Continued.dll</HintPath>
-      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\3225521979\1.5\Assemblies\Realistic_Planets_Continued.dll</HintPath>
+    <Reference Include="PrepareModerately">
+      <HintPath>..\..\..\..\..\workshop\content\294100\2057362949\1.6\Assemblies\PrepareModerately.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\2057362949\1.6\Assemblies\PrepareModerately.dll</HintPath>
+      <CopyLocal>False</CopyLocal>
       <Private>False</Private>
     </Reference>
     <Reference Include="RealRuins">
-      <HintPath>..\..\..\..\..\workshop\content\294100\1552146295\1.5\Assemblies\RealRuins.dll</HintPath>
-      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1552146295\1.5\Assemblies\RealRuins.dll</HintPath>
+      <HintPath>..\..\..\..\..\workshop\content\294100\1552146295\1.6\Assemblies\RealRuins.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1552146295\1.6\Assemblies\RealRuins.dll</HintPath>
+      <CopyLocal>False</CopyLocal>
       <Private>False</Private>
     </Reference>
     <Reference Include="ShipsHaveInsides">
-      <HintPath>..\..\..\..\..\workshop\content\294100\1909914131\1.5\Assemblies\ShipsHaveInsides.dll</HintPath>
-      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1909914131\1.5\Assemblies\ShipsHaveInsides.dll</HintPath>
+      <HintPath>..\..\..\..\..\workshop\content\294100\1909914131\1.6\Assemblies\ShipsHaveInsides.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1909914131\1.6\Assemblies\ShipsHaveInsides.dll</HintPath>
+      <CopyLocal>False</CopyLocal>
       <Private>False</Private>
     </Reference>
-    <Reference Include="VFECore">
-      <HintPath>..\..\..\..\..\workshop\content\294100\2023507013\1.5\Assemblies\VFECore.dll</HintPath>
-      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\2023507013\1.5\Assemblies\VFECore.dll</HintPath>
+    <Reference Include="VEF">
+      <HintPath>..\..\..\..\..\workshop\content\294100\2023507013\1.6\Assemblies\VEF.dll</HintPath>
+      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\2023507013\1.6\Assemblies\VEF.dll</HintPath>
       <CopyLocal>False</CopyLocal>
       <Private>False</Private>
     </Reference>
@@ -87,6 +93,7 @@
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath Condition="Exists('..\..\..\..\..\common\RimWorld\RimWorldWin64_Data')">..\..\..\..\..\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
       <HintPath Condition="Exists('/Users/williamchristian/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app')">/Users/williamchristian/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Contents/Resources/Data/Managed/UnityEngine.InputLegacyModule.dll</HintPath>
+      <CopyLocal>False</CopyLocal>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">

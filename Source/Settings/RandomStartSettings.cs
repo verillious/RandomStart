@@ -1,8 +1,41 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using RimWorld;
 using Verse;
 
 namespace RandomStartMod
 {
+    public class PawnNameData : IExposable
+    {
+        public string firstName = "";
+        public string nickName = "";
+        public string lastName = "";
+
+        public PawnNameData() { }
+
+        public PawnNameData(string first, string nick, string last)
+        {
+            firstName = first ?? "";
+            nickName = nick ?? "";
+            lastName = last ?? "";
+        }
+
+        public void ExposeData()
+        {
+            Scribe_Values.Look(ref firstName, "firstName", "");
+            Scribe_Values.Look(ref nickName, "nickName", "");
+            Scribe_Values.Look(ref lastName, "lastName", "");
+        }
+
+        public bool IsEmpty()
+        {
+            return string.IsNullOrEmpty(firstName)
+                && string.IsNullOrEmpty(nickName)
+                && string.IsNullOrEmpty(lastName);
+        }
+    }
+
     public class RandomStartSettings : ModSettings
     {
         public bool openedSettings = false;
@@ -13,31 +46,52 @@ namespace RandomStartMod
 
         public bool permadeath = false;
 
-        public IntRange randomiseRainfallRange = new IntRange(2, 4);
+        public bool randomiseWorldSeed = true;
+        public string worldSeed = "village";
+
+        public IntRange randomiseRainfallRange = new IntRange(1, 3);
         public IntRange randomiseTemperatureRange = new IntRange(2, 4);
         public IntRange randomisePopulationRange = new IntRange(2, 4);
+        public IntRange randomiseLandmarkDensityRange = new IntRange(2, 4);
         public FloatRange randomisePollutionRange = new FloatRange(0.05f, 0.25f);
 
         public bool randomiseRainfall = true;
         public bool randomiseTemperature = true;
         public bool randomisePopulation = true;
+        public bool randomiseLandmarkDensity = true;
         public bool randomisePollution = true;
-        public bool randomiseSeason = false;
+        public bool randomiseSeason = true;
         public bool disableIdeo = false;
         public bool overrideIdeo = false;
         public string customIdeoOverrideFile = null;
 
-        public int rainfall = 3;
+        public int rainfall = 2;
         public int temperature = 3;
         public int population = 3;
+        public int landmarkDensity = 3;
         public float pollution = 0.05f;
         public int startingSeason = 2;
+
+        // Starting Tile Settings
+        public bool filterStartingBiome = false;
+        public List<string> allowedBiomes = new List<string>();
+
+        public bool filterStartingHilliness = false;
+        public List<int> allowedHilliness = new List<int>();
+
+        // Starting Colonist Settings
+        public bool startingPawnForceViolence = true;
+
+        // PrepareModerately Integration Settings
+        public bool enablePrepareModeratelyIntegration = false;
+        public string selectedPrepareModeratelyFilter = "";
 
         public IntRange randomFactionRange = new IntRange(5, 15);
         public int minimumFactions = 5;
         public int maximumFactions = 15;
         public bool uniqueFactions = false;
         public bool randomiseFactionGoodwill = false;
+        public List<string> factionsExcludeFromReputationRandomization = new List<string>();
 
         public bool createRandomScenario = false;
         public bool enableCustomScenarios = true;
@@ -54,6 +108,8 @@ namespace RandomStartMod
             "Empire",
             "HoraxCult",
             "Entities",
+            "Salvagers",
+            "TradersGuild",
             "VFEE_Deserters",
         };
         public List<string> factionsRandomlyAdd = new List<string>()
@@ -128,7 +184,6 @@ namespace RandomStartMod
         public float allowInstantKillChance = 0f;
         public float fixedWealthTimeFactor = 1f;
 
-
         //Feature Flags
         public bool enableRandomXenotypes = false;
         public bool enableRandomCustomXenotypes = false;
@@ -137,6 +192,10 @@ namespace RandomStartMod
         public int minimumMetabolicEfficiency = 0;
         public bool respectFactionXenotypes = true;
         public bool fluidIdeo = false;
+        public IntRange randomMemeRange = new IntRange(1, 4);
+        public List<string> forcedMemes = new List<string>();
+        public List<string> disallowedMemes = new List<string>();
+        public List<string> disallowedPrecepts = new List<string>();
         public bool removeStartingResearch = false;
         public bool addRandomResearch = false;
         public IntRange randomResearchRange = new IntRange(5, 15);
@@ -151,30 +210,71 @@ namespace RandomStartMod
 
         //Compat
         public int myLittlePlanetSubcount = 10;
-        public int realisticPlanetsWorldType = 3;
-        public bool randomiseRealisticPlanets = true;
+
+        public string realisticPlanetsWorldType = "Planets.Vanilla";
+        public bool randomiseRealisticPlanets = false;
+
+        public int realisticPlanetsOceanType = 3;
+        public bool randomiseOceanType = true;
+        public IntRange randomiseOceanTypeRange = new IntRange(2, 4);
+
+        public int realisticPlanetsAxialTilt = 2;
+        public bool randomiseAxialTilt = true;
+        public IntRange randomiseAxialTiltRange = new IntRange(1, 3);
         public bool enableAutoRealRuins = true;
         public bool realRuinsBiomeFilter = false;
         public bool noPauseEnabled = true;
         public bool noPauseHalfSpeedEnabled = false;
 
+        public bool randomisePawnName = true;
+        public List<PawnNameData> pawnNames = new List<PawnNameData>();
+        public bool randomisePawnAge = true;
+        public IntRange randomisePawnAgeRange = new IntRange(20, 40);
+        public bool randomisePawnSex = true;
+        public int PawnSex = 0;
+        public bool PawnNotDisabledWorkTags = false;
+
+        public bool limitStartingTileTemperature = false;
+        public FloatRange limitStartingTileTemperatureRange = new FloatRange(-10f, 30f);
+
         public override void ExposeData()
         {
+            // Ensure lists are properly initialized before serialization
+            if (factionsExcludeFromReputationRandomization == null)
+                factionsExcludeFromReputationRandomization = new List<string>();
+
             Scribe_Values.Look(ref openedSettings, "openedSettings", false);
             Scribe_Values.Look(ref difficulty, "difficulty", "Rough");
             Scribe_Values.Look(ref mapSize, "mapSize", 250);
             Scribe_Values.Look(ref planetCoverage, "planetCoverage", 0.3f);
             Scribe_Values.Look(ref permadeath, "permadeath", false);
-            Scribe_Values.Look(ref randomiseRainfallRange, "randomiseRainfallRange", new IntRange(2, 4));
-            Scribe_Values.Look(ref randomiseTemperatureRange, "randomiseTemperatureRange", new IntRange(2, 4));
-            Scribe_Values.Look(ref randomisePopulationRange, "randomisePopulationRange", new IntRange(2, 4));
-            Scribe_Values.Look(ref randomisePollutionRange, "randomisePollutionRange", new FloatRange(0.05f, 0.25f));
+            Scribe_Values.Look(
+                ref randomiseRainfallRange,
+                "randomiseRainfallRange",
+                new IntRange(2, 4)
+            );
+            Scribe_Values.Look(
+                ref randomiseTemperatureRange,
+                "randomiseTemperatureRange",
+                new IntRange(2, 4)
+            );
+            Scribe_Values.Look(
+                ref randomisePopulationRange,
+                "randomisePopulationRange",
+                new IntRange(2, 4)
+            );
+            Scribe_Values.Look(
+                ref randomisePollutionRange,
+                "randomisePollutionRange",
+                new FloatRange(0.05f, 0.25f)
+            );
             Scribe_Values.Look(ref randomiseRainfall, "randomiseRainfall", true);
             Scribe_Values.Look(ref randomiseTemperature, "randomiseTemperature", true);
             Scribe_Values.Look(ref randomisePopulation, "randomisePopulation", true);
             Scribe_Values.Look(ref randomisePollution, "randomisePollution", true);
             Scribe_Values.Look(ref randomiseSeason, "randomiseSeason", false);
-
+            Scribe_Values.Look(ref randomiseWorldSeed, "randomiseWorldSeed", true);
+            Scribe_Values.Look(ref worldSeed, "worldSeed", "village");
             Scribe_Values.Look(ref createRandomScenario, "createRandomScenario", false);
             Scribe_Values.Look(ref enableCustomScenarios, "enableCustomScenarios", true);
             Scribe_Values.Look(
@@ -183,11 +283,43 @@ namespace RandomStartMod
                 true
             );
 
-            Scribe_Values.Look(ref rainfall, "rainfall", 3);
+            Scribe_Values.Look(ref rainfall, "rainfall", 2);
             Scribe_Values.Look(ref temperature, "temperature", 3);
             Scribe_Values.Look(ref population, "population", 3);
+            Scribe_Values.Look(ref landmarkDensity, "landmarkDensity", 3);
             Scribe_Values.Look(ref pollution, "pollution", 0.05f);
             Scribe_Values.Look(ref startingSeason, "startingSeason", 2);
+
+            // Starting Tile Settings
+            Scribe_Values.Look(ref filterStartingBiome, "filterStartingBiome", false);
+            Scribe_Collections.Look(
+                ref allowedBiomes,
+                "allowedBiomes",
+                LookMode.Value,
+                new List<string>()
+            );
+            Scribe_Values.Look(ref filterStartingHilliness, "filterStartingHilliness", false);
+            Scribe_Collections.Look(
+                ref allowedHilliness,
+                "allowedHilliness",
+                LookMode.Value,
+                new List<int>()
+            );
+
+            // Starting Colonist Settings
+            Scribe_Values.Look(ref startingPawnForceViolence, "startingPawnForceViolence", false);
+
+            // PrepareModerately Integration Settings
+            Scribe_Values.Look(
+                ref enablePrepareModeratelyIntegration,
+                "enablePrepareModeratelyIntegration",
+                false
+            );
+            Scribe_Values.Look(
+                ref selectedPrepareModeratelyFilter,
+                "selectedPrepareModeratelyFilter",
+                ""
+            );
 
             Scribe_Collections.Look(
                 ref disabledStorytellers,
@@ -241,7 +373,12 @@ namespace RandomStartMod
                 }
             );
             Scribe_Values.Look(ref randomiseFactionGoodwill, "randomiseFactionGoodwill", false);
-
+            Scribe_Collections.Look(
+                ref factionsExcludeFromReputationRandomization,
+                "factionsExcludeFromReputationRandomization",
+                LookMode.Value,
+                new List<string>()
+            );
 
             Scribe_Values.Look(ref randomFactionRange, "randomFactionRange", new IntRange(5, 15));
             Scribe_Values.Look(ref uniqueFactions, "uniqueFactions", false);
@@ -276,7 +413,11 @@ namespace RandomStartMod
             Scribe_Values.Look(ref allowTurrets, "allowTurrets", true);
             Scribe_Values.Look(ref allowMortars, "allowMortars", true);
             Scribe_Values.Look(ref classicMortars, "classicMortars", false);
-            Scribe_Values.Look(ref allowExtremeWeatherIncidents, "allowExtremeWeatherIncidents", true);
+            Scribe_Values.Look(
+                ref allowExtremeWeatherIncidents,
+                "allowExtremeWeatherIncidents",
+                true
+            );
             Scribe_Values.Look(ref fixedWealthMode, "fixedWealthMode", false);
             Scribe_Values.Look(ref unwaveringPrisoners, "unwaveringPrisoners", true);
             Scribe_Values.Look(ref childRaidersAllowed, "childRaidersAllowed", false);
@@ -291,14 +432,38 @@ namespace RandomStartMod
             Scribe_Values.Look(ref researchSpeedFactor, "researchSpeedFactor", 1f);
             Scribe_Values.Look(ref diseaseIntervalFactor, "diseaseIntervalFactor", 1f);
             Scribe_Values.Look(ref enemyReproductionRateFactor, "enemyReproductionRateFactor", 1f);
-            Scribe_Values.Look(ref playerPawnInfectionChanceFactor, "playerPawnInfectionChanceFactor", 1f);
-            Scribe_Values.Look(ref manhunterChanceOnDamageFactor, "manhunterChanceOnDamageFactor", 1f);
-            Scribe_Values.Look(ref deepDrillInfestationChanceFactor, "deepDrillInfestationChanceFactor", 1f);
-            Scribe_Values.Look(ref wastepackInfestationChanceFactor, "wastepackInfestationChanceFactor", 1f);
+            Scribe_Values.Look(
+                ref playerPawnInfectionChanceFactor,
+                "playerPawnInfectionChanceFactor",
+                1f
+            );
+            Scribe_Values.Look(
+                ref manhunterChanceOnDamageFactor,
+                "manhunterChanceOnDamageFactor",
+                1f
+            );
+            Scribe_Values.Look(
+                ref deepDrillInfestationChanceFactor,
+                "deepDrillInfestationChanceFactor",
+                1f
+            );
+            Scribe_Values.Look(
+                ref wastepackInfestationChanceFactor,
+                "wastepackInfestationChanceFactor",
+                1f
+            );
             Scribe_Values.Look(ref foodPoisonChanceFactor, "foodPoisonChanceFactor", 1f);
             Scribe_Values.Look(ref maintenanceCostFactor, "maintenanceCostFactor", 1f);
-            Scribe_Values.Look(ref enemyDeathOnDownedChanceFactor, "enemyDeathOnDownedChanceFactor", 1f);
-            Scribe_Values.Look(ref adaptationGrowthRateFactorOverZero, "adaptationGrowthRateFactorOverZero", 1f);
+            Scribe_Values.Look(
+                ref enemyDeathOnDownedChanceFactor,
+                "enemyDeathOnDownedChanceFactor",
+                1f
+            );
+            Scribe_Values.Look(
+                ref adaptationGrowthRateFactorOverZero,
+                "adaptationGrowthRateFactorOverZero",
+                1f
+            );
             Scribe_Values.Look(ref adaptationEffectFactor, "adaptationEffectFactor", 1f);
             Scribe_Values.Look(ref questRewardValueFactor, "questRewardValueFactor", 1f);
             Scribe_Values.Look(ref raidLootPointsFactor, "raidLootPointsFactor", 1f);
@@ -306,18 +471,53 @@ namespace RandomStartMod
             Scribe_Values.Look(ref minThreatPointsRangeCeiling, "minThreatPointsRangeCeiling", 70f);
             Scribe_Values.Look(ref childAgingRate, "childAgingRate", 4f);
             Scribe_Values.Look(ref adultAgingRate, "adultAgingRate", 1f);
-            Scribe_Values.Look(ref anomalyThreatsInactiveFraction, "anomalyThreatsInactiveFraction", 0.08f);
-            Scribe_Values.Look(ref anomalyThreatsActiveFraction, "anomalyThreatsActiveFraction", 0.3f);
+            Scribe_Values.Look(
+                ref anomalyThreatsInactiveFraction,
+                "anomalyThreatsInactiveFraction",
+                0.08f
+            );
+            Scribe_Values.Look(
+                ref anomalyThreatsActiveFraction,
+                "anomalyThreatsActiveFraction",
+                0.3f
+            );
             Scribe_Values.Look(ref studyEfficiencyFactor, "studyEfficiencyFactor", 1f);
 
             Scribe_Values.Look(ref enableRandomXenotypes, "enableRandomXenotypes", false);
-            Scribe_Values.Look(ref enableRandomCustomXenotypes, "enableRandomCustomXenotypes", false);
+            Scribe_Values.Look(
+                ref enableRandomCustomXenotypes,
+                "enableRandomCustomXenotypes",
+                false
+            );
             Scribe_Values.Look(ref randomGeneRange, "randomGeneRange", new IntRange(5, 15));
-            Scribe_Values.Look(ref enableMetabolicEfficiencyMinimum, "enableMetabolicEfficiencyMinimum", false);
+            Scribe_Values.Look(
+                ref enableMetabolicEfficiencyMinimum,
+                "enableMetabolicEfficiencyMinimum",
+                false
+            );
             Scribe_Values.Look(ref minimumMetabolicEfficiency, "minimumMetabolicEfficiency", 0);
             Scribe_Values.Look(ref respectFactionXenotypes, "respectFactionXenotypes", true);
             Scribe_Values.Look(ref disableIdeo, "disableIdeo", false);
             Scribe_Values.Look(ref fluidIdeo, "fluidIdeo", false);
+            Scribe_Values.Look(ref randomMemeRange, "randomMemeRange", new IntRange(1, 4));
+            Scribe_Collections.Look(
+                ref forcedMemes,
+                "forcedMemes",
+                LookMode.Value,
+                new List<string>()
+            );
+            Scribe_Collections.Look(
+                ref disallowedMemes,
+                "disallowedMemes",
+                LookMode.Value,
+                new List<string>()
+            );
+            Scribe_Collections.Look(
+                ref disallowedPrecepts,
+                "disallowedPrecepts",
+                LookMode.Value,
+                new List<string>()
+            );
             Scribe_Values.Look(ref overrideIdeo, "overrideIdeo", false);
             Scribe_Values.Look(ref customIdeoOverrideFile, "customIdeoOverrideFile", null);
 
@@ -325,27 +525,92 @@ namespace RandomStartMod
             Scribe_Values.Look(ref addRandomResearch, "addRandomResearch", false);
             Scribe_Values.Look(ref randomResearchRange, "randomResearchRange", new IntRange(5, 15));
             Scribe_Values.Look(ref randomResearchTechLevelLimit, "randomResearchTechLevelLimit", 4);
-            Scribe_Values.Look(ref doRandomResearchPrerequisites, "doRandomResearchPrerequisites", true);
+            Scribe_Values.Look(
+                ref doRandomResearchPrerequisites,
+                "doRandomResearchPrerequisites",
+                true
+            );
 
             Scribe_Values.Look(ref removeStartingItems, "removeStartingItems", false);
             Scribe_Values.Look(ref addRandomItems, "addRandomItems", false);
             Scribe_Values.Look(ref randomItemRange, "randomItemRange", new IntRange(5, 15));
             Scribe_Values.Look(ref randomItemTechLevelLimit, "randomItemTechLevelLimit", 4);
             Scribe_Values.Look(ref enableMarketValueLimit, "enableMarketValueLimit", false);
-            Scribe_Values.Look(ref randomItemTotalMarketValueLimit, "randomItemTotalMarketValueLimit", 10000);
+            Scribe_Values.Look(
+                ref randomItemTotalMarketValueLimit,
+                "randomItemTotalMarketValueLimit",
+                10000
+            );
 
             Scribe_Values.Look(ref myLittlePlanetSubcount, "myLittlePlanetSubcount", 10);
-            Scribe_Values.Look(ref realisticPlanetsWorldType, "realisticPlanetsWorldType", 3);
-            Scribe_Values.Look(ref randomiseRealisticPlanets, "randomiseRealisticPlanets", true);
 
+            Scribe_Values.Look(
+                ref realisticPlanetsWorldType,
+                "realisticPlanetsWorldType",
+                "Planets.Vanilla"
+            );
+            Scribe_Values.Look(
+                ref randomiseRealisticPlanets,
+                "randomiseRealisticPlanets",
+                defaultValue: false
+            );
 
-            Scribe_Values.Look(ref enableAutoRealRuins, "enableAutoRealRuins", true);
-            Scribe_Values.Look(ref realRuinsBiomeFilter, "realRuinsBiomeFilter", false);
+            Scribe_Values.Look(
+                ref randomiseOceanTypeRange,
+                "randomiseOceanTypeRange",
+                new IntRange(2, 4)
+            );
+            Scribe_Values.Look(ref realisticPlanetsOceanType, "realisticPlanetsOceanType", 3);
+            Scribe_Values.Look(ref randomiseOceanType, "randomiseOceanType", defaultValue: true);
 
-            Scribe_Values.Look(ref noPauseEnabled, "noPauseEnabled", true);
-            Scribe_Values.Look(ref noPauseHalfSpeedEnabled, "noPauseHalfSpeedEnabled", false);
+            Scribe_Values.Look(
+                ref randomiseAxialTiltRange,
+                "randomiseAxialTiltRange",
+                new IntRange(1, 3)
+            );
+            Scribe_Values.Look(ref randomiseAxialTilt, "randomiseAxialTilt", defaultValue: true);
+            Scribe_Values.Look(ref realisticPlanetsAxialTilt, "realisticPlanetsAxialTilt", 2);
 
+            Scribe_Values.Look(ref enableAutoRealRuins, "enableAutoRealRuins", defaultValue: true);
+            Scribe_Values.Look(
+                ref realRuinsBiomeFilter,
+                "realRuinsBiomeFilter",
+                defaultValue: false
+            );
+            Scribe_Values.Look(ref noPauseEnabled, "noPauseEnabled", defaultValue: true);
+            Scribe_Values.Look(
+                ref noPauseHalfSpeedEnabled,
+                "noPauseHalfSpeedEnabled",
+                defaultValue: false
+            );
 
+            Scribe_Values.Look(ref randomisePawnName, "randomisePawnName", defaultValue: true);
+            Scribe_Collections.Look(ref pawnNames, "pawnNames", LookMode.Deep);
+
+            Scribe_Values.Look(ref randomisePawnAge, "randomisePawnAge", defaultValue: true);
+            Scribe_Values.Look(
+                ref randomisePawnAgeRange,
+                "randomisePawnAgeRange",
+                new IntRange(20, 40)
+            );
+            Scribe_Values.Look(ref randomisePawnSex, "randomisePawnSex", defaultValue: true);
+            Scribe_Values.Look(ref PawnSex, "PawnSex", 0);
+            Scribe_Values.Look(
+                ref PawnNotDisabledWorkTags,
+                "PawnNotDisabledWorkTags",
+                defaultValue: false
+            );
+
+            Scribe_Values.Look(
+                ref limitStartingTileTemperature,
+                "limitStartingTileTemperature",
+                defaultValue: false
+            );
+            Scribe_Values.Look(
+                ref limitStartingTileTemperatureRange,
+                "limitStartingTileTemperatureRange",
+                new FloatRange(-10f, 30f)
+            );
 
             base.ExposeData();
         }
@@ -406,67 +671,86 @@ namespace RandomStartMod
             noPauseEnabled = true;
             noPauseHalfSpeedEnabled = false;
         }
+
         public void ResetPlanet()
         {
             mapSize = 250;
             planetCoverage = 0.3f;
             permadeath = false;
+            randomiseWorldSeed = true;
+            worldSeed = "village";
             randomiseRainfall = true;
             randomiseTemperature = true;
             randomisePopulation = true;
+            randomiseLandmarkDensity = true;
             randomisePollution = true;
-            randomiseRainfallRange = new IntRange(2, 4);
+            randomiseRainfallRange = new IntRange(1, 3);
             randomiseTemperatureRange = new IntRange(2, 4);
             randomisePopulationRange = new IntRange(2, 4);
+            randomiseLandmarkDensityRange = new IntRange(2, 4);
             randomisePollutionRange = new FloatRange(0.05f, 0.25f);
-            randomiseSeason = false;
-            rainfall = 3;
+            randomiseSeason = true;
+            rainfall = 2;
             temperature = 3;
             population = 3;
+            landmarkDensity = 3;
             pollution = 0.05f;
             startingSeason = 2;
+
+            // Starting Tile Settings
+            filterStartingBiome = false;
+            allowedBiomes = new List<string>();
+
             myLittlePlanetSubcount = 10;
-            randomiseRealisticPlanets = true;
-            realisticPlanetsWorldType = 3;
+
+            randomiseRealisticPlanets = false;
+            realisticPlanetsWorldType = "Planets.Vanilla";
+            realisticPlanetsOceanType = 3;
+            randomiseOceanType = true;
+            randomiseOceanTypeRange = new IntRange(2, 4);
+            realisticPlanetsAxialTilt = 2;
+            randomiseAxialTilt = true;
+            randomiseAxialTiltRange = new IntRange(1, 3);
+
             enableAutoRealRuins = true;
             realRuinsBiomeFilter = false;
         }
+
         public void ResetFactions()
         {
-            factionsAlwaysAdd = new List<string>()
+            var allFactions = FactionGenerator.ConfigurableFactions.Where(faction =>
+                faction.startingCountAtWorldCreation > 0
+            );
+            factionsAlwaysAdd = allFactions
+                .Where(faction => faction.maxConfigurableAtWorldCreation == 1)
+                .Select(faction => faction.defName)
+                .ToList();
+
+            var randomFactions = allFactions
+                .Where(faction => faction.maxConfigurableAtWorldCreation != 1)
+                .ToList();
+            using (
+                IEnumerator<FactionDef> enumerator =
+                    FactionGenerator.ConfigurableFactions.GetEnumerator()
+            )
             {
-                "Ancients",
-                "AncientsHostile",
-                "Mechanoid",
-                "Insect",
-                "Empire",
-                "HoraxCult",
-                "Entities",
-                "VFEE_Deserters",
-            };
-            factionsRandomlyAdd = new List<string>()
-            {
-                "OutlanderCivil",
-                "OutlanderRough",
-                "TribeCivil",
-                "TribeRough",
-                "TribeSavage",
-                "Pirate",
-                "Empire",
-                "CannibalPirate",
-                "NudistTribe",
-                "TribeCannibal",
-                "TribeRoughNeanderthal",
-                "PirateYttakin",
-                "TribeSavageImpid",
-                "OutlanderRoughPig",
-                "PirateWaster",
-            };
+                while (enumerator.MoveNext())
+                {
+                    FactionDef faction = enumerator.Current;
+                    if (faction.replacesFaction != null)
+                    {
+                        randomFactions.RemoveAll((FactionDef x) => x == faction.replacesFaction);
+                    }
+                }
+            }
+            factionsRandomlyAdd = randomFactions.Select(faction => faction.defName).ToList();
 
             randomFactionRange = new IntRange(5, 15);
             uniqueFactions = false;
             randomiseFactionGoodwill = false;
+            factionsExcludeFromReputationRandomization = new List<string>();
         }
+
         public void ResetScenarios()
         {
             createRandomScenario = false;
@@ -476,6 +760,7 @@ namespace RandomStartMod
             ResetResearch();
             ResetItems();
         }
+
         public void ResetStorytellers()
         {
             disabledStorytellers = new List<string>() { "tutorial" };
@@ -501,6 +786,10 @@ namespace RandomStartMod
         {
             disableIdeo = false;
             fluidIdeo = false;
+            randomMemeRange = new IntRange(1, 4);
+            forcedMemes = new List<string>();
+            disallowedMemes = new List<string>();
+            disallowedPrecepts = new List<string>();
             overrideIdeo = false;
             customIdeoOverrideFile = null;
         }
@@ -522,6 +811,33 @@ namespace RandomStartMod
             randomItemTechLevelLimit = 4;
             randomItemTotalMarketValueLimit = 10000;
             enableMarketValueLimit = false;
+        }
+
+        public void ResetStartingTile()
+        {
+            filterStartingBiome = false;
+            allowedBiomes = new List<string>();
+            filterStartingHilliness = false;
+            allowedHilliness = new List<int>();
+            limitStartingTileTemperature = false;
+            limitStartingTileTemperatureRange = new FloatRange(-10f, 30f);
+        }
+
+        public void ResetStartingColonists()
+        {
+            startingPawnForceViolence = false;
+
+            // PrepareModerately Integration Settings
+            enablePrepareModeratelyIntegration = false;
+            selectedPrepareModeratelyFilter = "";
+
+            randomisePawnName = true;
+            pawnNames = new List<PawnNameData>();
+            randomisePawnAge = true;
+            randomisePawnAgeRange = new IntRange(20, 40);
+            randomisePawnSex = true;
+            PawnSex = 0;
+            PawnNotDisabledWorkTags = false;
         }
     }
 }

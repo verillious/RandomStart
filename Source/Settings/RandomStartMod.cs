@@ -1,4 +1,5 @@
 using Mono.Cecil;
+using RandomStartMod.Compat;
 using RimWorld;
 using RimWorld.Planet;
 using System;
@@ -24,6 +25,7 @@ namespace RandomStartMod
         private static Vector2 factionScrollPosition;
         private static Vector2 planetScrollPosition;
         private static Vector2 scenariosScrollPosition;
+        private static Vector2 startingTileScrollPosition;
 
         private static float mainListingHeight;
         private static float factionListingHeight;
@@ -31,7 +33,7 @@ namespace RandomStartMod
         private static float storytellerListingHeight;
         private static float scenarioListingHeight;
         private static float optionalFeaturesListingHeight;
-
+        private static float startingTileListingHeight;
         private static float sectionHeightThreats = 0f;
         private static float sectionHeightGeneral = 0f;
         private static float sectionHeightPlayerTools = 0f;
@@ -84,11 +86,21 @@ namespace RandomStartMod
                     currentTab = 2;
                     WriteSettings();
                 }, currentTab == 2),
+                new TabRecord("RandomStartMod.Tabs.StartingTile".Translate(), () =>
+                {
+                    currentTab = 6;
+                    WriteSettings();
+                }, currentTab == 6),
                 new TabRecord("Factions".Translate(), () =>
                 {
                     currentTab = 1;
                     WriteSettings();
                 }, currentTab == 1),
+                new TabRecord("RandomStartMod.Characters".Translate(),  () =>
+                {
+                    currentTab = 7;
+                    WriteSettings();
+                }, currentTab == 7)
         };
             if (ModsConfig.BiotechActive || ModsConfig.IdeologyActive)
             {
@@ -126,7 +138,14 @@ namespace RandomStartMod
             {
                 DoOptionalFeaturesTabContents(mainRect.ContractedBy(15f));
             }
-
+            else if (currentTab == 6)
+            {
+                DoStartingTileSettingsTabContents(mainRect.ContractedBy(15f));
+            }
+            else if (currentTab == 7)
+            {
+                DoCharactersSettingsTabContents(mainRect.ContractedBy(15f));
+            }
         }
 
         public void DoDifficultySettingsTabContents(Rect inRect)
@@ -145,6 +164,10 @@ namespace RandomStartMod
             listingStandard.Label("Difficulty".Translate());
             listingStandard.GapLine();
             mainListingHeight += Text.LineHeight + 12;
+            Text.Font = GameFont.Small;
+            Text.Font = GameFont.Tiny;
+            Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Difficulty.Description".Translate());
+            mainListingHeight += Text.LineHeight;
             Text.Font = GameFont.Small;
 
             foreach (DifficultyDef allDef in DefDatabase<DifficultyDef>.AllDefs)
@@ -172,11 +195,11 @@ namespace RandomStartMod
             {
                 settings.permadeath = true;
             }
-            if (ModsConfig.IsActive("brrainz.nopausechallenge"))
+            if (ModsConfig.IsActive("brrainz.nopausechallenge") || ModsConfig.IsActive("brrainz.nopausechallenge_steam"))
             {
                 listingStandard.Gap(3f);
-                DoSettingToggle(listingStandard.GetRect(24f), "No Pause Challenge", null, ref settings.noPauseEnabled);
-                DoSettingToggle(listingStandard.GetRect(24f), "Half Speed enabled", null, ref settings.noPauseHalfSpeedEnabled);
+                DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.Difficulty.NoPauseChallenge".Translate(), "RandomStartMod.TooltipTitles.NoPauseChallenge".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Difficulty.NoPauseChallengeTooltip".Translate(), ref settings.noPauseEnabled);
+                DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.Difficulty.HalfSpeedEnabled".Translate(), "RandomStartMod.TooltipTitles.HalfSpeedEnabled".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Difficulty.HalfSpeedEnabledTooltip".Translate(), ref settings.noPauseHalfSpeedEnabled);
                 mainListingHeight += 3f + 32f + 32f;
             }
 
@@ -192,6 +215,10 @@ namespace RandomStartMod
                 listingStandard.Label("DifficultyAnomalySection".Translate());
                 listingStandard.GapLine();
                 mainListingHeight += 12f + Text.LineHeight;
+                Text.Font = GameFont.Small;
+                Text.Font = GameFont.Tiny;
+                Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Difficulty.AnomalyDescription".Translate());
+                mainListingHeight += Text.LineHeight;
                 Text.Font = GameFont.Small;
                 AnomalyPlaystyleDef selectedPlaystyle = DefDatabase<AnomalyPlaystyleDef>.GetNamed(settings.anomalyPlaystyle);
                 listingStandard.Label("ChooseAnomalyPlaystyle".Translate());
@@ -251,6 +278,10 @@ namespace RandomStartMod
                 listingStandard.GapLine();
                 mainListingHeight += 12f + Text.LineHeight;
                 Text.Font = GameFont.Small;
+                Text.Font = GameFont.Tiny;
+                Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Difficulty.CustomDescription".Translate());
+                mainListingHeight += Text.LineHeight;
+                Text.Font = GameFont.Small;
                 if (listingStandard.ButtonText("DifficultyReset".Translate()))
                 {
                     MakeResetDifficultyFloatMenu();
@@ -297,7 +328,7 @@ namespace RandomStartMod
             listingStandard.Begin(rect);
 
             // Scenarios
-            DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate(), null, ref settings.createRandomScenario);
+            DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate(), "RandomStartMod.TooltipTitles.RandomizeScenario".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Scenarios.RandomizeScenarioTooltip".Translate(), ref settings.createRandomScenario);
             scenarioListingHeight += 24f;
             if (!settings.createRandomScenario)
             {
@@ -306,6 +337,10 @@ namespace RandomStartMod
                 listingStandard.Label("ScenPart_StartWithPawns_OutOf".Translate().CapitalizeFirst());
                 listingStandard.GapLine();
                 scenarioListingHeight += 24f + Text.LineHeight;
+                Text.Font = GameFont.Small;
+                Text.Font = GameFont.Tiny;
+                Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Scenarios.Description".Translate());
+                scenarioListingHeight += Text.LineHeight;
                 Text.Font = GameFont.Small;
 
                 List<ScenarioDef> enabledScenarioDefs = DefDatabase<ScenarioDef>.AllDefsListForReading.Where((ScenarioDef item) => !settings.disabledScenarios.Contains(item.scenario.name) && item.scenario.showInUI).ToList();
@@ -399,10 +434,14 @@ namespace RandomStartMod
             listingStandard.GapLine();
             scenarioListingHeight += 24f + Text.LineHeight;
             Text.Font = GameFont.Small;
+            Text.Font = GameFont.Tiny;
+            Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Scenarios.ResearchDescription".Translate());
+            scenarioListingHeight += Text.LineHeight;
+            Text.Font = GameFont.Small;
 
-            DoSettingToggle(listingStandard.GetRect(24f), $"{"Remove".Translate()}: {"MedGroupDefaults".Translate()}", null, ref settings.removeStartingResearch);
+            DoSettingToggle(listingStandard.GetRect(24f), $"{"Remove".Translate()}: {"MedGroupDefaults".Translate()}", "RandomStartMod.TooltipTitles.RemoveDefaultResearch".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Scenarios.RemoveDefaultResearchTooltip".Translate(), ref settings.removeStartingResearch);
             scenarioListingHeight += 24f;
-            DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate(), null, ref settings.addRandomResearch);
+            DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate(), "RandomStartMod.TooltipTitles.RandomizeResearch".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Scenarios.RandomizeResearchTooltip".Translate(), ref settings.addRandomResearch);
             scenarioListingHeight += 24f;
             if (settings.addRandomResearch)
             {
@@ -421,7 +460,7 @@ namespace RandomStartMod
                 scenarioListingHeight += Text.LineHeight + 12f;
                 settings.randomResearchTechLevelLimit = Mathf.RoundToInt(Widgets.HorizontalSlider(listingStandard.GetRect(32f), settings.randomResearchTechLevelLimit, 2, 6, middleAlignment: true, $"TechLevel_{(TechLevel)settings.randomResearchTechLevelLimit}".Translate().CapitalizeFirst(), null, null, 1f));
                 scenarioListingHeight += 32f;
-                DoSettingToggle(listingStandard.GetRect(24f), $"{"ResearchUnlocks".Translate()}: {"Prerequisites".Translate()}", null, ref settings.doRandomResearchPrerequisites);
+                DoSettingToggle(listingStandard.GetRect(24f), $"{"ResearchUnlocks".Translate()}: {"Prerequisites".Translate()}", "RandomStartMod.TooltipTitles.UnlockPrerequisiteResearch".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Scenarios.UnlockPrerequisiteResearchTooltip".Translate(), ref settings.doRandomResearchPrerequisites);
                 scenarioListingHeight += 24f;
             }
 
@@ -433,10 +472,14 @@ namespace RandomStartMod
             listingStandard.GapLine();
             scenarioListingHeight += 24f + Text.LineHeight;
             Text.Font = GameFont.Small;
+            Text.Font = GameFont.Tiny;
+            Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Scenarios.ItemsDescription".Translate());
+            scenarioListingHeight += Text.LineHeight;
+            Text.Font = GameFont.Small;
 
-            DoSettingToggle(listingStandard.GetRect(24f), $"{"Remove".Translate()}: {"MedGroupDefaults".Translate()}", null, ref settings.removeStartingItems);
+            DoSettingToggle(listingStandard.GetRect(24f), $"{"Remove".Translate()}: {"MedGroupDefaults".Translate()}", "RandomStartMod.TooltipTitles.RemoveDefaultItems".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Scenarios.RemoveDefaultItemsTooltip".Translate(), ref settings.removeStartingItems);
             scenarioListingHeight += 24f;
-            DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate(), null, ref settings.addRandomItems);
+            DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate(), "RandomStartMod.TooltipTitles.RandomizeItems".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Scenarios.RandomizeItemsTooltip".Translate(), ref settings.addRandomItems);
             scenarioListingHeight += 24f;
 
 
@@ -454,7 +497,7 @@ namespace RandomStartMod
                 settings.randomItemTechLevelLimit = Mathf.RoundToInt(Widgets.HorizontalSlider(listingStandard.GetRect(32f), settings.randomItemTechLevelLimit, 2, 6, middleAlignment: true, $"TechLevel_{(TechLevel)settings.randomItemTechLevelLimit}".Translate().CapitalizeFirst(), null, null, 1f));
                 scenarioListingHeight += 32f;
 
-                DoSettingToggle(listingStandard.GetRect(24f), $"{"StatsReport_MaxValue".Translate()} ({"Total".Translate().CapitalizeFirst()})", null, ref settings.enableMarketValueLimit);
+                DoSettingToggle(listingStandard.GetRect(24f), $"{"StatsReport_MaxValue".Translate()} ({"Total".Translate().CapitalizeFirst()})", "RandomStartMod.TooltipTitles.MarketValueLimit".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Scenarios.MarketValueLimitTooltip".Translate(), ref settings.enableMarketValueLimit);
                 scenarioListingHeight += 24f;
                 if (settings.enableMarketValueLimit)
                 {
@@ -488,9 +531,13 @@ namespace RandomStartMod
             // Storytellers
             listingStandard.Gap();
             Text.Font = GameFont.Medium;
-            listingStandard.Label("ScenPart_StartWithPawns_OutOf".Translate().CapitalizeFirst());
+            listingStandard.Label("RandomStartMod.Storyteller.Title".Translate());
             listingStandard.GapLine();
             storytellerListingHeight += 24f + Text.LineHeight;
+            Text.Font = GameFont.Small;
+            Text.Font = GameFont.Tiny;
+            Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Storyteller.Description".Translate());
+            storytellerListingHeight += Text.LineHeight;
             Text.Font = GameFont.Small;
 
             List<StorytellerDef> enabledStorytellers = DefDatabase<StorytellerDef>.AllDefsListForReading.Where((StorytellerDef item) => item.listVisible && !settings.disabledStorytellers.Contains(item.defName)).ToList();
@@ -552,9 +599,13 @@ namespace RandomStartMod
 
             listingStandard.Gap();
             Text.Font = GameFont.Medium;
-            listingStandard.Label("Required".Translate());
+            listingStandard.Label("RandomStartMod.Factions.RequiredTitle".Translate());
             listingStandard.GapLine();
             factionListingHeight += 24f + Text.LineHeight;
+            Text.Font = GameFont.Small;
+            Text.Font = GameFont.Tiny;
+            Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Factions.RequiredDescription".Translate());
+            factionListingHeight += Text.LineHeight;
             Text.Font = GameFont.Small;
 
             List<FactionDef> factionsAlwaysAdd = new List<FactionDef>();
@@ -622,17 +673,21 @@ namespace RandomStartMod
 
             listingStandard.Gap();
             Text.Font = GameFont.Medium;
-            listingStandard.Label("Random".Translate());
+            listingStandard.Label("RandomStartMod.Factions.RandomTitle".Translate());
             listingStandard.GapLine();
             factionListingHeight += 24f + Text.LineHeight;
+            Text.Font = GameFont.Small;
+            Text.Font = GameFont.Tiny;
+            Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Factions.RandomDescription".Translate());
+            factionListingHeight += Text.LineHeight;
             Text.Font = GameFont.Small;
 
             listingStandard.Gap();
             listingStandard.Indent(8);
-            listingStandard.Label("PenFoodTab_Count".Translate() + ":");
+            listingStandard.Label("RandomStartMod.Factions.CountLabel".Translate());
             listingStandard.Outdent(8);
             factionListingHeight += Text.LineHeight + 12f;
-            Widgets.IntRange(listingStandard.GetRect(32f), 1823998654, ref settings.randomFactionRange, 0, 20);
+            Widgets.IntRange(listingStandard.GetRect(32f), 1823998654, ref settings.randomFactionRange, 0, 100);
             factionListingHeight += 32f;
             listingStandard.Gap();
             factionListingHeight += 12f;
@@ -753,14 +808,80 @@ namespace RandomStartMod
 
             listingStandard.Gap();
             factionListingHeight += 12f;
-            DoSettingToggle(listingStandard.GetRect(24f), "Unique".Translate().CapitalizeFirst(), null, ref settings.uniqueFactions);
+            DoSettingToggle(listingStandard.GetRect(24f), "Unique".Translate().CapitalizeFirst(), "RandomStartMod.TooltipTitles.UniqueFactions".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Factions.UniqueFactionsTooltip".Translate(), ref settings.uniqueFactions);
             factionListingHeight += 24f;
-            DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate() + ": " + "Goodwill".Translate(), null, ref settings.randomiseFactionGoodwill);
+            DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate() + ": " + "Goodwill".Translate(), "RandomStartMod.TooltipTitles.RandomizeFactionGoodwill".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Factions.RandomizeFactionGoodwillTooltip".Translate(), ref settings.randomiseFactionGoodwill);
             factionListingHeight += 24f;
+
+            // Reputation exclusion section
+            if (settings.randomiseFactionGoodwill)
+            {
+                listingStandard.Gap();
+                factionListingHeight += 12f;
+                Text.Font = GameFont.Medium;
+                Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Factions.ReputationExclusionsTitle".Translate());
+                factionListingHeight += Text.LineHeight;
+                Text.Font = GameFont.Small;
+                Text.Font = GameFont.Tiny;
+                Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Factions.ReputationExclusionsDescription".Translate());
+                factionListingHeight += Text.LineHeight;
+                Text.Font = GameFont.Small;
+
+                // Show excluded factions as rows
+                List<FactionDef> factionsExcludeFromReputation = new List<FactionDef>();
+                if (settings.factionsExcludeFromReputationRandomization != null)
+                {
+                    foreach (string factionDefName in settings.factionsExcludeFromReputationRandomization)
+                    {
+                        FactionDef faction = DefDatabase<FactionDef>.GetNamed(factionDefName, false);
+                        if (faction != null)
+                            factionsExcludeFromReputation.Add(faction);
+                    }
+                }
+
+                for (int i = 0; i < factionsExcludeFromReputation.Count; i++)
+                {
+                    listingStandard.Gap(4f);
+                    if (settings.factionsExcludeFromReputationRandomization != null && DoFactionRow(listingStandard.GetRect(24f), factionsExcludeFromReputation[i], settings.factionsExcludeFromReputationRandomization, i))
+                    {
+                        break;
+                    }
+                    listingStandard.Gap(4f);
+                    factionListingHeight += 32f;
+                }
+
+                // Add button for selecting factions to exclude
+                if (listingStandard.ButtonText("Add".Translate().CapitalizeFirst() + "..."))
+                {
+                    // Initialize the list if it's null
+                    if (settings.factionsExcludeFromReputationRandomization == null)
+                    {
+                        settings.factionsExcludeFromReputationRandomization = new List<string>();
+                    }
+
+                    List<FloatMenuOption> excludeList = new List<FloatMenuOption>();
+                    foreach (FactionDef localDef in FactionGenerator.ConfigurableFactions.Where(def => !settings.factionsExcludeFromReputationRandomization.Contains(def.defName)))
+                    {
+                        FactionDef localDef2 = localDef;
+                        string text = localDef.LabelCap.ToString();
+                        FloatMenuOption floatMenuOption = new FloatMenuOption(text, delegate
+                        {
+                            settings.factionsExcludeFromReputationRandomization.Add(localDef.defName);
+                        }, localDef.FactionIcon, localDef.DefaultColor, MenuOptionPriority.Default, null, null, 24f, (Rect r) => Widgets.InfoCardButton(r.x, r.y + 3f, localDef), null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true);
+                        floatMenuOption.tooltip = text.AsTipTitle() + "\n" + localDef.Description;
+                        excludeList.Add(floatMenuOption);
+                    }
+                    if (excludeList.Count == 0)
+                    {
+                        excludeList.Add(new FloatMenuOption("No factions available to exclude", null));
+                    }
+                    Find.WindowStack.Add(new FloatMenu(excludeList));
+                }
+                factionListingHeight += 28f;
+            }
+
             listingStandard.Gap();
             factionListingHeight += 12f;
-
-
             if (listingStandard.ButtonText("RestoreToDefaultSettings".Translate()))
             {
                 settings.ResetFactions();
@@ -794,9 +915,13 @@ namespace RandomStartMod
             //Planet Coverage
             listingStandard.Gap();
             Text.Font = GameFont.Medium;
-            listingStandard.Label("PlanetCoverage".Translate());
+            listingStandard.Label("RandomStartMod.Planet.CoverageTitle".Translate());
             listingStandard.GapLine();
             planetListingHeight += 24f + Text.LineHeight;
+            Text.Font = GameFont.Small;
+            Text.Font = GameFont.Tiny;
+            Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Planet.CoverageDescription".Translate());
+            planetListingHeight += Text.LineHeight;
             Text.Font = GameFont.Small;
 
             if (listingStandard.ButtonText(settings.planetCoverage.ToStringPercent()))
@@ -829,9 +954,13 @@ namespace RandomStartMod
             //Map Size
             listingStandard.Gap();
             Text.Font = GameFont.Medium;
-            listingStandard.Label("MapSize".Translate());
+            listingStandard.Label("RandomStartMod.Planet.MapSizeTitle".Translate());
             listingStandard.GapLine();
             planetListingHeight += 24f + Text.LineHeight;
+            Text.Font = GameFont.Small;
+            Text.Font = GameFont.Tiny;
+            Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Planet.MapSizeDescription".Translate());
+            planetListingHeight += Text.LineHeight;
             Text.Font = GameFont.Small;
 
             IEnumerable<int> enumerable = MapSizes.AsEnumerable();
@@ -856,17 +985,40 @@ namespace RandomStartMod
 
             listingStandard.Gap();
             Text.Font = GameFont.Medium;
-            listingStandard.Label("TabPlanet".Translate());
+            listingStandard.Label("RandomStartMod.Planet.GenerationTitle".Translate());
             listingStandard.GapLine();
             planetListingHeight += 24f + Text.LineHeight;
             Text.Font = GameFont.Small;
+            Text.Font = GameFont.Tiny;
+            Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Planet.GenerationDescription".Translate());
+            planetListingHeight += Text.LineHeight;
+            Text.Font = GameFont.Small;
             listingStandard.Gap();
             planetListingHeight += 12f;
-            listingStandard.Label("Randomize".Translate() + ":");
+            listingStandard.Label("RandomStartMod.Planet.RandomizeLabel".Translate());
             listingStandard.Gap();
             planetListingHeight += 12f;
 
-            DoSettingToggle(listingStandard.GetRect(24f), "PlanetRainfall".Translate(), null, ref settings.randomiseRainfall);
+            DoSettingToggle(listingStandard.GetRect(24f), "WorldSeed".Translate(), "RandomStartMod.TooltipTitles.RandomiseWorldSeed".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Planet.RandomiseWorldSeedTooltip".Translate(), ref settings.randomiseWorldSeed);
+            planetListingHeight += 24f + Text.LineHeight;
+
+            if (!settings.randomiseWorldSeed)
+            {
+                listingStandard.Gap(5f);
+                Rect worldSeedRect = listingStandard.GetRect(30f);
+                settings.worldSeed = Widgets.TextField(worldSeedRect, settings.worldSeed);
+                planetListingHeight += 35f;
+                listingStandard.Gap(2f);
+                if (listingStandard.ButtonText("RandomizeSeed".Translate()))
+                {
+                    settings.worldSeed = GenText.RandomSeedString();
+                }
+                planetListingHeight += 34f;
+            }
+
+            listingStandard.Gap();
+
+            DoSettingToggle(listingStandard.GetRect(24f), "PlanetRainfall".Translate(), "RandomStartMod.TooltipTitles.RandomizeRainfall".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Planet.RandomizeRainfallTooltip".Translate(), ref settings.randomiseRainfall);
             planetListingHeight += 24f + Text.LineHeight;
 
 
@@ -874,19 +1026,33 @@ namespace RandomStartMod
             {
                 listingStandard.Gap(2f);
                 Rect rainfallRect = listingStandard.GetRect(30f);
-                settings.rainfall = Mathf.RoundToInt(Widgets.HorizontalSlider(rainfallRect, (float)settings.rainfall, 0f, OverallRainfallUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabel(settings.rainfall), null, null, 1f));
+                if (ModsConfig.IsActive("koth.RealisticPlanets1.6") || ModsConfig.IsActive("koth.RealisticPlanets1.6_Steam"))
+                {
+                    settings.rainfall = Mathf.RoundToInt(Widgets.HorizontalSlider(rainfallRect, settings.rainfall, 0, 4, middleAlignment: true, Util.GetIntLabelShort(settings.rainfall), null, null, 1f));
+                }
+                else
+                {
+                    settings.rainfall = Mathf.RoundToInt(Widgets.HorizontalSlider(rainfallRect, settings.rainfall, 0, OverallRainfallUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabel(settings.rainfall), null, null, 1f));
+                }
                 planetListingHeight += 32f;
             }
             else
             {
                 Rect rainfallRect = listingStandard.GetRect(32f);
-                Widgets.IntRange(rainfallRect, 1623498654, ref settings.randomiseRainfallRange, 0, 6, Util.GetIntRangeLabel(settings.randomiseRainfallRange));
+                if (ModsConfig.IsActive("koth.RealisticPlanets1.6") || ModsConfig.IsActive("koth.RealisticPlanets1.6_Steam"))
+                {
+                    Widgets.IntRange(rainfallRect, 1623498654, ref settings.randomiseRainfallRange, 0, 4, Util.GetIntRangeLabelShort(settings.randomiseRainfallRange));
+                }
+                else
+                {
+                    Widgets.IntRange(rainfallRect, 1623498654, ref settings.randomiseRainfallRange, 0, OverallRainfallUtility.EnumValuesCount - 1, Util.GetIntRangeLabel(settings.randomiseRainfallRange));
+                }
                 planetListingHeight += 32f;
             }
 
             listingStandard.Gap();
 
-            DoSettingToggle(listingStandard.GetRect(24f), "PlanetTemperature".Translate(), null, ref settings.randomiseTemperature);
+            DoSettingToggle(listingStandard.GetRect(24f), "PlanetTemperature".Translate(), "RandomStartMod.TooltipTitles.RandomizeTemperature".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Planet.RandomizeTemperatureTooltip".Translate(), ref settings.randomiseTemperature);
             planetListingHeight += 12f + 24;
 
             if (!settings.randomiseTemperature)
@@ -904,7 +1070,7 @@ namespace RandomStartMod
             }
 
             listingStandard.Gap();
-            DoSettingToggle(listingStandard.GetRect(24f), "PlanetPopulation".Translate(), null, ref settings.randomisePopulation);
+            DoSettingToggle(listingStandard.GetRect(24f), "PlanetPopulation".Translate(), "RandomStartMod.TooltipTitles.RandomizePopulation".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Planet.RandomizePopulationTooltip".Translate(), ref settings.randomisePopulation);
             planetListingHeight += 12f + 24f;
 
             if (!settings.randomisePopulation)
@@ -922,7 +1088,25 @@ namespace RandomStartMod
             }
 
             listingStandard.Gap();
-            DoSettingToggle(listingStandard.GetRect(24f), "Pollution_Label".Translate(), null, ref settings.randomisePollution);
+            DoSettingToggle(listingStandard.GetRect(24f), "PlanetLandmarkDensity".Translate(), "RandomStartMod.TooltipTitles.RandomizeLandmarkDensity".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Planet.RandomizeLandmarkDensityTooltip".Translate(), ref settings.randomiseLandmarkDensity);
+            planetListingHeight += 12f + 24f;
+
+            if (!settings.randomiseLandmarkDensity)
+            {
+                listingStandard.Gap(2f);
+                Rect landmarkRect = listingStandard.GetRect(30f);
+                settings.landmarkDensity = Mathf.RoundToInt(Widgets.HorizontalSlider(landmarkRect, (float)settings.landmarkDensity, 0f, LandmarkDensityUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabel(settings.landmarkDensity), null, null, 1f));
+                planetListingHeight += 32f;
+            }
+            else
+            {
+                Rect landmarkRect = listingStandard.GetRect(32f);
+                Widgets.IntRange(landmarkRect, 1623498668, ref settings.randomiseLandmarkDensityRange, 0, LandmarkDensityUtility.EnumValuesCount - 1, Util.GetIntRangeLabel(settings.randomiseLandmarkDensityRange));
+                planetListingHeight += 32f;
+            }
+
+            listingStandard.Gap();
+            DoSettingToggle(listingStandard.GetRect(24f), "Pollution_Label".Translate(), "RandomStartMod.TooltipTitles.RandomizePollution".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Planet.RandomizePollutionTooltip".Translate(), ref settings.randomisePollution);
             planetListingHeight += 12f + 24f;
 
             if (!settings.randomisePollution)
@@ -941,7 +1125,7 @@ namespace RandomStartMod
 
             listingStandard.Gap();
 
-            DoSettingToggle(listingStandard.GetRect(24f), "MapStartSeason".Translate(), null, ref settings.randomiseSeason);
+            DoSettingToggle(listingStandard.GetRect(24f), "MapStartSeason".Translate(), "RandomStartMod.TooltipTitles.RandomizeStartingSeason".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Planet.RandomizeStartingSeasonTooltip".Translate(), ref settings.randomiseSeason);
             planetListingHeight += 12f + 32f;
 
             if (!settings.randomiseSeason)
@@ -970,7 +1154,7 @@ namespace RandomStartMod
                 planetListingHeight += 32f;
             }
 
-            if (ModsConfig.IsActive("Oblitus.MyLittlePlanet"))
+            if (ModsConfig.IsActive("Oblitus.MyLittlePlanet") || ModsConfig.IsActive("Oblitus.MyLittlePlanet_Steam"))
             {
                 listingStandard.Gap();
                 Text.Font = GameFont.Medium;
@@ -985,25 +1169,60 @@ namespace RandomStartMod
                 planetListingHeight += 30f;
             }
 
-            if (ModsConfig.IsActive("zvq.RealisticPlanetsContinued"))
+            if (ModsConfig.IsActive("koth.RealisticPlanets1.6") || ModsConfig.IsActive("koth.RealisticPlanets1.6_Steam"))
             {
                 listingStandard.Gap();
                 Text.Font = GameFont.Medium;
-                listingStandard.Label("Realistic Planets Continued");
+                listingStandard.Label("Realistic Planets");
                 listingStandard.GapLine();
-                planetListingHeight += 12f + 24f + Text.LineHeight;
+                planetListingHeight += 36f + Text.LineHeight;
                 Text.Font = GameFont.Small;
-                DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate(), null, ref settings.randomiseRealisticPlanets);
-                planetListingHeight += 24f;
+                listingStandard.Label("RandomStartMod.Planet.RandomizeLabel".Translate());
+                listingStandard.Gap();
+                planetListingHeight += 12f;
+                DoSettingToggle(listingStandard.GetRect(24f), "Planets.WorldPresets".Translate(), null, ref settings.randomiseRealisticPlanets);
+                TooltipHandler.TipRegion(new Rect(0f, planetListingHeight - 18, inRect.width, 30), "RandomStartMod.RandomiseWorldPresetsTip".Translate());
+                planetListingHeight += 44f;
                 if (!settings.randomiseRealisticPlanets)
                 {
-                    Compat.RealisticPlanetsCompat.DoWorldTypeSelectionButton(listingStandard);
+                    RealisticPlanetsCompat.DoWorldTypeSelectionButton(listingStandard);
                     planetListingHeight += 32f;
                 }
-
+                listingStandard.Gap();
+                DoSettingToggle(listingStandard.GetRect(24f), "Planets.OceanType".Translate(), null, ref settings.randomiseOceanType);
+                planetListingHeight += 36f;
+                if (!settings.randomiseOceanType)
+                {
+                    listingStandard.Gap(2f);
+                    Rect rect4 = listingStandard.GetRect(30f);
+                    settings.realisticPlanetsOceanType = Mathf.RoundToInt(Widgets.HorizontalSlider(rect4, settings.realisticPlanetsOceanType, 0, RealisticPlanetsCompat.GetWorldTypeEnumCount() - 1, middleAlignment: true, Util.GetIntLabel(settings.realisticPlanetsOceanType), null, null, 1f));
+                    planetListingHeight += 32f;
+                }
+                else
+                {
+                    Rect rect5 = listingStandard.GetRect(32f);
+                    Widgets.IntRange(rect5, 1623498657, ref settings.randomiseOceanTypeRange, 0, RealisticPlanetsCompat.GetWorldTypeEnumCount() - 1, Util.GetIntRangeLabel(settings.randomiseOceanTypeRange));
+                    planetListingHeight += 32f;
+                }
+                DoSettingToggle(listingStandard.GetRect(24f), "Planets.AxialTilt".Translate(), null, ref settings.randomiseAxialTilt);
+                planetListingHeight += 36f;
+                if (!settings.randomiseAxialTilt)
+                {
+                    listingStandard.Gap(2f);
+                    Rect rect4 = listingStandard.GetRect(30f);
+                    settings.realisticPlanetsAxialTilt = Mathf.RoundToInt(Widgets.HorizontalSlider(rect4, settings.realisticPlanetsAxialTilt, 0, RealisticPlanetsCompat.GetAxialTiltEnumCount() - 1, middleAlignment: true, Util.GetIntLabelShort(settings.realisticPlanetsAxialTilt), null, null, 1f));
+                    planetListingHeight += 32f;
+                }
+                else
+                {
+                    Rect rect5 = listingStandard.GetRect(32f);
+                    Widgets.IntRange(rect5, 1623498659, ref settings.randomiseAxialTiltRange, 0, RealisticPlanetsCompat.GetAxialTiltEnumCount() - 1, Util.GetIntRangeLabelShort(settings.randomiseAxialTiltRange));
+                    planetListingHeight += 32f;
+                }
+                listingStandard.Gap();
             }
 
-            if (ModsConfig.IsActive("Woolstrand.RealRuins"))
+            if (ModsConfig.IsActive("Woolstrand.RealRuins") || ModsConfig.IsActive("Woolstrand.RealRuins_Steam"))
             {
                 listingStandard.Gap();
                 Text.Font = GameFont.Medium;
@@ -1011,9 +1230,9 @@ namespace RandomStartMod
                 listingStandard.GapLine();
                 planetListingHeight += 12f + 24f + Text.LineHeight;
                 Text.Font = GameFont.Small;
-                DoSettingToggle(listingStandard.GetRect(24f), "RunInBackground".Translate(), null, ref settings.enableAutoRealRuins);
+                DoSettingToggle(listingStandard.GetRect(24f), "RunInBackground".Translate(), "Auto Real Ruins".AsTipTitle() + "\n\n" + "Automatically enable Real Ruins generation to populate the world with ruins from other players' colonies, adding variety and exploration opportunities.", ref settings.enableAutoRealRuins);
                 planetListingHeight += 24f;
-                DoSettingToggle(listingStandard.GetRect(24f), "RealRuins.BiomeFiltering".Translate(), null, ref settings.realRuinsBiomeFilter);
+                DoSettingToggle(listingStandard.GetRect(24f), "RealRuins.BiomeFiltering".Translate(), "Real Ruins Biome Filtering".AsTipTitle() + "\n\n" + "Filter Real Ruins based on biome compatibility, ensuring ruins appear in appropriate environments that match their original settings.", ref settings.realRuinsBiomeFilter);
                 planetListingHeight += 24f;
             }
 
@@ -1031,6 +1250,12 @@ namespace RandomStartMod
 
         private void DoOptionalFeaturesTabContents(Rect inRect)
         {
+            if (settings == null)
+            {
+                Util.LogMessage("Settings is null in DoOptionalFeaturesTabContents");
+                return;
+            }
+
             Rect rect = new Rect(0f, 60f, inRect.width, optionalFeaturesListingHeight);
             optionalFeaturesListingHeight = 0f;
             Widgets.BeginScrollView(inRect, ref mainScrollPosition, rect, false);
@@ -1040,28 +1265,32 @@ namespace RandomStartMod
             if (ModsConfig.BiotechActive)
             {
                 Text.Font = GameFont.Medium;
-                listingStandard.Label("Genes".Translate().CapitalizeFirst());
+                listingStandard.Label("RandomStartMod.Misc.GenesTitle".Translate());
                 listingStandard.GapLine();
                 optionalFeaturesListingHeight += 24f + Text.LineHeight;
                 Text.Font = GameFont.Small;
-                DoSettingToggle(listingStandard.GetRect(24f), $"{"Randomize".Translate()}: {"Xenotype".Translate()}", null, ref settings.enableRandomXenotypes);
+                Text.Font = GameFont.Tiny;
+                Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Misc.GenesDescription".Translate());
+                optionalFeaturesListingHeight += Text.LineHeight;
+                Text.Font = GameFont.Small;
+                DoSettingToggle(listingStandard.GetRect(24f), $"{"Randomize".Translate()}: {"Xenotype".Translate()}", "RandomStartMod.TooltipTitles.RandomizeXenotype".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Misc.RandomizeXenotypeTooltip".Translate(), ref settings.enableRandomXenotypes);
                 optionalFeaturesListingHeight += 24f;
-                DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.RespectMemberXenotypes".Translate(), null, ref settings.respectFactionXenotypes);
+                DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.RespectMemberXenotypes".Translate(), "RandomStartMod.TooltipTitles.RespectFactionXenotypes".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Misc.RespectFactionXenotypesTooltip".Translate(), ref settings.respectFactionXenotypes);
                 optionalFeaturesListingHeight += 24f;
-                DoSettingToggle(listingStandard.GetRect(24f), $"{"Randomize".Translate()}: {"Genes".Translate().CapitalizeFirst()}", null, ref settings.enableRandomCustomXenotypes);
+                DoSettingToggle(listingStandard.GetRect(24f), $"{"Randomize".Translate()}: {"Genes".Translate().CapitalizeFirst()}", "RandomStartMod.TooltipTitles.RandomizeCustomGenes".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Misc.RandomizeCustomGenesTooltip".Translate(), ref settings.enableRandomCustomXenotypes);
                 optionalFeaturesListingHeight += 24f;
                 if (settings.enableRandomCustomXenotypes)
                 {
                     listingStandard.Gap();
                     listingStandard.Indent(8);
-                    listingStandard.Label("PenFoodTab_Count".Translate() + ":");
+                    listingStandard.Label("RandomStartMod.Misc.CountLabel".Translate());
                     listingStandard.Outdent(8);
                     optionalFeaturesListingHeight += Text.LineHeight + 12f;
                     Widgets.IntRange(listingStandard.GetRect(32f), 382399865, ref settings.randomGeneRange, 0, 20);
                     optionalFeaturesListingHeight += 32f;
                     listingStandard.Gap(2f);
-                    DoSettingToggle(listingStandard.GetRect(24f), $"{"minimum".Translate().CapitalizeFirst()}: {"MetabolismTotal".Translate()}", null, ref settings.enableMetabolicEfficiencyMinimum);
-                    optionalFeaturesListingHeight += 2f+24f;
+                    DoSettingToggle(listingStandard.GetRect(24f), $"{"minimum".Translate().CapitalizeFirst()}: {"MetabolismTotal".Translate()}", "RandomStartMod.TooltipTitles.MinimumMetabolicEfficiency".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Misc.MinimumMetabolicEfficiencyTooltip".Translate(), ref settings.enableMetabolicEfficiencyMinimum);
+                    optionalFeaturesListingHeight += 2f + 24f;
                     if (settings.enableMetabolicEfficiencyMinimum)
                     {
                         listingStandard.Gap(2f);
@@ -1074,19 +1303,216 @@ namespace RandomStartMod
             {
                 listingStandard.Gap();
                 Text.Font = GameFont.Medium;
-                listingStandard.Label("DifficultyIdeologySection".Translate());
+                listingStandard.Label("RandomStartMod.Misc.IdeologyTitle".Translate());
                 listingStandard.GapLine();
                 optionalFeaturesListingHeight += 24f + Text.LineHeight;
                 Text.Font = GameFont.Small;
-                DoSettingToggle(listingStandard.GetRect(24f), "PlayClassic".Translate(), null, ref settings.disableIdeo);
+                Text.Font = GameFont.Tiny;
+                Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Misc.IdeologyDescription".Translate());
+                optionalFeaturesListingHeight += Text.LineHeight;
+                Text.Font = GameFont.Small;
+                DoSettingToggle(listingStandard.GetRect(24f), "PlayClassic".Translate(), "RandomStartMod.TooltipTitles.PlayClassicMode".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Misc.PlayClassicModeTooltip".Translate(), ref settings.disableIdeo);
                 optionalFeaturesListingHeight += 24f;
                 if (!settings.disableIdeo)
                 {
                     DoSettingToggle(listingStandard.GetRect(24f), "CreateFluid".Translate(), "FluidIdeoTip".Translate(), ref settings.fluidIdeo);
                     optionalFeaturesListingHeight += 24f;
+
+                    // Random Meme Range
+                    listingStandard.Indent(8);
+                    listingStandard.Label("RandomStartMod.Misc.RandomMemeCountLabel".Translate());
+                    listingStandard.Outdent(8);
+                    optionalFeaturesListingHeight += Text.LineHeight + 12f;
+                    Widgets.IntRange(listingStandard.GetRect(32f), 382399866, ref settings.randomMemeRange, 1, 10);
+                    optionalFeaturesListingHeight += 32f;
+                    listingStandard.Gap(2f);
+                    optionalFeaturesListingHeight += 2f;
+
+                    // Ensure ideology lists are initialized
+                    if (settings.forcedMemes == null) settings.forcedMemes = new List<string>();
+                    if (settings.disallowedMemes == null) settings.disallowedMemes = new List<string>();
+                    if (settings.disallowedPrecepts == null) settings.disallowedPrecepts = new List<string>();
+
+                    // Forced Memes Section
+                    listingStandard.Gap();
+                    Text.Font = GameFont.Medium;
+                    listingStandard.Label("RandomStartMod.Misc.ForcedMemesTitle".Translate());
+                    listingStandard.GapLine();
+                    optionalFeaturesListingHeight += 24f + Text.LineHeight;
+                    Text.Font = GameFont.Small;
+                    Text.Font = GameFont.Tiny;
+                    Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Misc.ForcedMemesDescription".Translate());
+                    optionalFeaturesListingHeight += Text.LineHeight;
+                    Text.Font = GameFont.Small;
+
+                    List<MemeDef> forcedMemes = new List<MemeDef>();
+                    foreach (string memeDefName in settings.forcedMemes)
+                    {
+                        MemeDef meme = DefDatabase<MemeDef>.GetNamed(memeDefName, false);
+                        if (meme != null)
+                            forcedMemes.Add(meme);
+                    }
+                    for (int i = 0; i < forcedMemes.Count; i++)
+                    {
+                        listingStandard.Gap(4f);
+                        if (DoMemeRow(listingStandard.GetRect(24f), forcedMemes[i], settings.forcedMemes, i))
+                        {
+                            i--;
+                        }
+                        listingStandard.Gap(4f);
+                        optionalFeaturesListingHeight += 32f;
+                    }
+
+                    List<FloatMenuOption> forcedMemeOptions = new List<FloatMenuOption>();
+                    foreach (MemeDef memeDef in DefDatabase<MemeDef>.AllDefs.OrderBy(x => x.LabelCap.ToString()))
+                    {
+                        MemeDef localDef = memeDef;
+                        string text = localDef.LabelCap;
+                        Action action = () => settings.forcedMemes.Add(localDef.defName);
+
+                        AcceptanceReport acceptanceReport = CanAddForcedMeme(localDef);
+                        if (!acceptanceReport)
+                        {
+                            action = null;
+                            if (!acceptanceReport.Reason.NullOrEmpty())
+                            {
+                                text = text + " (" + acceptanceReport.Reason + ")";
+                            }
+                        }
+
+                        Texture2D icon = localDef.Icon ?? GetSourceIcon(localDef);
+                        FloatMenuOption floatMenuOption = new FloatMenuOption(text, action, icon, Color.white, MenuOptionPriority.Default, null, null, 24f, (Rect r) => Widgets.InfoCardButton(r.x, r.y + 3f, localDef), null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true);
+                        floatMenuOption.tooltip = text.AsTipTitle() + "\n" + localDef.description;
+                        forcedMemeOptions.Add(floatMenuOption);
+                    }
+                    if (forcedMemeOptions.Count > 0)
+                    {
+                        if (listingStandard.ButtonText("Add".Translate().CapitalizeFirst() + "..."))
+                        {
+                            Find.WindowStack.Add(new FloatMenu(forcedMemeOptions));
+                        }
+                        optionalFeaturesListingHeight += 28f;
+                    }
+
+                    // Disallowed Memes Section
+                    listingStandard.Gap();
+                    Text.Font = GameFont.Medium;
+                    listingStandard.Label("RandomStartMod.Misc.DisallowedMemesTitle".Translate());
+                    listingStandard.GapLine();
+                    optionalFeaturesListingHeight += 24f + Text.LineHeight;
+                    Text.Font = GameFont.Small;
+                    Text.Font = GameFont.Tiny;
+                    Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Misc.DisallowedMemesDescription".Translate());
+                    optionalFeaturesListingHeight += Text.LineHeight;
+                    Text.Font = GameFont.Small;
+
+                    List<MemeDef> disallowedMemes = new List<MemeDef>();
+                    foreach (string memeDefName in settings.disallowedMemes)
+                    {
+                        MemeDef meme = DefDatabase<MemeDef>.GetNamed(memeDefName, false);
+                        if (meme != null)
+                            disallowedMemes.Add(meme);
+                    }
+                    for (int i = 0; i < disallowedMemes.Count; i++)
+                    {
+                        listingStandard.Gap(4f);
+                        if (DoMemeRow(listingStandard.GetRect(24f), disallowedMemes[i], settings.disallowedMemes, i))
+                        {
+                            i--;
+                        }
+                        listingStandard.Gap(4f);
+                        optionalFeaturesListingHeight += 32f;
+                    }
+
+                    List<FloatMenuOption> disallowedMemeOptions = new List<FloatMenuOption>();
+                    foreach (MemeDef memeDef in DefDatabase<MemeDef>.AllDefs.OrderBy(x => x.LabelCap.ToString()))
+                    {
+                        if (!settings.disallowedMemes.Contains(memeDef.defName))
+                        {
+                            MemeDef localDef = memeDef;
+                            string text = localDef.LabelCap;
+                            Action action = () => settings.disallowedMemes.Add(localDef.defName);
+                            Texture2D icon = localDef.Icon ?? GetSourceIcon(localDef);
+                            FloatMenuOption floatMenuOption = new FloatMenuOption(text, action, icon, Color.white, MenuOptionPriority.Default, null, null, 24f, (Rect r) => Widgets.InfoCardButton(r.x, r.y + 3f, localDef), null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true);
+                            floatMenuOption.tooltip = text.AsTipTitle() + "\n" + localDef.description;
+                            disallowedMemeOptions.Add(floatMenuOption);
+                        }
+                    }
+                    if (disallowedMemeOptions.Count > 0)
+                    {
+                        if (listingStandard.ButtonText("Add".Translate().CapitalizeFirst() + "..."))
+                        {
+                            Find.WindowStack.Add(new FloatMenu(disallowedMemeOptions));
+                        }
+                        optionalFeaturesListingHeight += 28f;
+                    }
+
+                    // Disallowed Precepts Section
+                    listingStandard.Gap();
+                    Text.Font = GameFont.Medium;
+                    listingStandard.Label("RandomStartMod.Misc.DisallowedPrecepts".Translate());
+                    listingStandard.GapLine();
+                    optionalFeaturesListingHeight += 24f + Text.LineHeight;
+                    Text.Font = GameFont.Small;
+                    Text.Font = GameFont.Tiny;
+                    Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Misc.DisallowedPreceptsDescription".Translate());
+                    optionalFeaturesListingHeight += Text.LineHeight;
+                    Text.Font = GameFont.Small;
+                    Text.Font = GameFont.Small;
+
+                    List<PreceptDef> disallowedPrecepts = new List<PreceptDef>();
+                    foreach (string preceptDefName in settings.disallowedPrecepts)
+                    {
+                        PreceptDef precept = DefDatabase<PreceptDef>.GetNamed(preceptDefName, false);
+                        if (precept != null)
+                            disallowedPrecepts.Add(precept);
+                    }
+                    for (int i = 0; i < disallowedPrecepts.Count; i++)
+                    {
+                        listingStandard.Gap(4f);
+                        if (DoPreceptRow(listingStandard.GetRect(24f), disallowedPrecepts[i], settings.disallowedPrecepts, i))
+                        {
+                            i--;
+                        }
+                        listingStandard.Gap(4f);
+                        optionalFeaturesListingHeight += 32f;
+                    }
+
+                    List<FloatMenuOption> disallowedPreceptOptions = new List<FloatMenuOption>();
+                    foreach (PreceptDef preceptDef in DefDatabase<PreceptDef>.AllDefs.OrderBy(x => x.issue?.LabelCap.ToString() ?? x.LabelCap.ToString()))
+                    {
+                        if (!settings.disallowedPrecepts.Contains(preceptDef.defName) && preceptDef.visibleOnAddFloatMenu)
+                        {
+                            PreceptDef localDef = preceptDef;
+                            string text = IdeoUIUtility.GetPreceptLabel(localDef, localDef.ritualPatternBase);
+                            bool flag = IdeoUIUtility.IsBasicPrecept(localDef);
+                            if (flag)
+                            {
+                                text = localDef.issue.LabelCap + ": " + text;
+                                if (localDef.issue == null || text == "")
+                                {
+                                    continue; // Skip if something is empty
+                                }
+                            }
+                            Action action = () => settings.disallowedPrecepts.Add(localDef.defName);
+                            Texture2D icon = localDef.Icon ?? GetSourceIcon(localDef);
+                            FloatMenuOption floatMenuOption = new FloatMenuOption(text, action, icon, Color.white, MenuOptionPriority.Default, null, null, 24f, (Rect r) => Widgets.InfoCardButton(r.x, r.y + 3f, localDef), null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true);
+                            floatMenuOption.tooltip = text.AsTipTitle() + "\n" + localDef.description;
+                            disallowedPreceptOptions.Add(floatMenuOption);
+                        }
+                    }
+                    if (disallowedPreceptOptions.Count > 0)
+                    {
+                        if (listingStandard.ButtonText("Add".Translate().CapitalizeFirst() + "..."))
+                        {
+                            Find.WindowStack.Add(new FloatMenu(disallowedPreceptOptions));
+                        }
+                        optionalFeaturesListingHeight += 28f;
+                    }
+
                     if (GenFilePaths.AllCustomIdeoFiles.Any())
                     {
-                        DoSettingToggle(listingStandard.GetRect(24f), "LoadExistingIdeoligion".Translate(), null, ref settings.overrideIdeo);
+                        DoSettingToggle(listingStandard.GetRect(24f), "LoadExistingIdeoligion".Translate(), "RandomStartMod.TooltipTitles.LoadExistingIdeology".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Misc.LoadExistingIdeologyTooltip".Translate(), ref settings.overrideIdeo);
                         optionalFeaturesListingHeight += 24f;
                         if (settings.overrideIdeo)
                         {
@@ -1134,6 +1560,458 @@ namespace RandomStartMod
             Widgets.EndScrollView();
         }
 
+        private void DoStartingTileSettingsTabContents(Rect inRect)
+        {
+            if (settings == null)
+            {
+                Util.LogMessage("Settings is null in DoStartingTileSettingsTabContents");
+                return;
+            }
+
+            // Clean up any excluded biomes from the settings
+            CleanUpExcludedBiomes();
+            CleanUpInvalidHilliness();
+
+            Rect rect = new Rect(0f, 60f, inRect.width, startingTileListingHeight);
+            startingTileListingHeight = 0f;
+            Widgets.BeginScrollView(inRect, ref startingTileScrollPosition, rect, false);
+
+            Listing_Standard listingStandard = new Listing_Standard();
+            listingStandard.Begin(rect);
+
+            listingStandard.Gap();
+            Text.Font = GameFont.Medium;
+            listingStandard.Label("RandomStartMod.StartingTile.Title".Translate());
+            listingStandard.GapLine();
+            startingTileListingHeight += 24f + Text.LineHeight;
+            Text.Font = GameFont.Small;
+            listingStandard.Gap();
+            startingTileListingHeight += 12f;
+
+            // Filter Starting Biome toggle
+            DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.StartingTile.FilterStartingBiome".Translate(), "RandomStartMod.TooltipTitles.FilterStartingBiome".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.StartingTile.FilterStartingBiomeTooltip".Translate(), ref settings.filterStartingBiome);
+            startingTileListingHeight += 24f;
+
+            if (settings.filterStartingBiome)
+            {
+                listingStandard.Gap();
+                listingStandard.Label("RandomStartMod.StartingTile.AllowedBiomes".Translate());
+                startingTileListingHeight += 12f + Text.LineHeight;
+
+                // Ensure allowedBiomes list is not null
+                if (settings.allowedBiomes == null)
+                {
+                    settings.allowedBiomes = new List<string>();
+                }
+
+                // Display current allowed biomes (only those with canBuildBase=true)
+                List<BiomeDef> biomesAllowed = new List<BiomeDef>();
+                foreach (string biomeDefName in settings.allowedBiomes)
+                {
+                    BiomeDef biome = DefDatabase<BiomeDef>.GetNamed(biomeDefName, false);
+                    if (biome == null || !biome.canBuildBase || !biome.canAutoChoose)
+                        continue;
+                    biomesAllowed.Add(biome);
+                }
+                for (int i = 0; i < biomesAllowed.Count; i++)
+                {
+                    listingStandard.Gap(4f);
+                    if (DoBiomeRow(listingStandard.GetRect(24f), biomesAllowed[i], settings.allowedBiomes, i))
+                    {
+                        i--;
+                    }
+                    listingStandard.Gap(4f);
+                    startingTileListingHeight += 32f;
+                }
+
+                if (biomesAllowed.Count == 0)
+                {
+                    listingStandard.Label("RandomStartMod.StartingTile.NoBiomesSelected".Translate());
+                    startingTileListingHeight += Text.LineHeight;
+                }
+
+                listingStandard.Gap();
+                startingTileListingHeight += 12f;
+
+                // Add biome button
+                if (listingStandard.ButtonText("RandomStartMod.StartingTile.AddBiome".Translate()))
+                {
+                    List<FloatMenuOption> list = new List<FloatMenuOption>();
+                    // Manually filter out underground biomes that don't appear on planet surface
+                    string[] excludedBiomes = { "Underground", "Labyrinth", "MetalHell", "Undercave" };
+                    IEnumerable<BiomeDef> availableBiomes = DefDatabase<BiomeDef>.AllDefs.Where(b => b != null && b.canBuildBase && b.implemented && b.canAutoChoose && !excludedBiomes.Contains(b.defName));
+
+                    foreach (BiomeDef biomeDef in availableBiomes)
+                    {
+                        BiomeDef localDef = biomeDef;
+                        string text = localDef.LabelCap;
+                        Action action = delegate
+                        {
+                            settings.allowedBiomes.Add(localDef.defName);
+                        };
+                        AcceptanceReport acceptanceReport = CanAddBiome(localDef);
+                        if (!acceptanceReport)
+                        {
+                            action = null;
+                            if (!acceptanceReport.Reason.NullOrEmpty())
+                            {
+                                text = text + " (" + acceptanceReport.Reason + ")";
+                            }
+                        }
+                        else
+                        {
+                            int num = biomesAllowed.Count((BiomeDef x) => x == localDef);
+                            if (num > 0)
+                            {
+                                text = text + " (" + num + ")";
+                            }
+                        }
+                        Texture2D biomeIcon = BaseContent.BadTex; // Simple fallback for now
+                        if (!biomeDef.texture.NullOrEmpty())
+                        {
+                            biomeIcon = ContentFinder<Texture2D>.Get(biomeDef.texture, false) ?? BaseContent.BadTex;
+                        }
+                        FloatMenuOption floatMenuOption = new FloatMenuOption(text, action, biomeIcon, Color.white, MenuOptionPriority.Default, null, null, 24f, (Rect r) => Widgets.InfoCardButton(r.x, r.y + 3f, localDef), null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true);
+                        floatMenuOption.tooltip = text.AsTipTitle() + "\n" + localDef.description;
+                        list.Add(floatMenuOption);
+                    }
+
+                    if (list.Count > 0)
+                    {
+                        Find.WindowStack.Add(new FloatMenu(list));
+                    }
+                }
+                startingTileListingHeight += 32f + 12f;
+            }
+
+            listingStandard.Gap();
+            startingTileListingHeight += 12f;
+
+            // Filter Starting Hilliness toggle
+            DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.StartingTile.FilterStartingHilliness".Translate(), "RandomStartMod.TooltipTitles.FilterStartingHilliness".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.StartingTile.FilterStartingHillinessTooltip".Translate(), ref settings.filterStartingHilliness);
+            startingTileListingHeight += 24f;
+
+            if (settings.filterStartingHilliness)
+            {
+                listingStandard.Gap();
+                listingStandard.Label("RandomStartMod.StartingTile.AllowedHilliness".Translate());
+                startingTileListingHeight += 12f + Text.LineHeight;
+
+                // Ensure allowedHilliness list is not null
+                if (settings.allowedHilliness == null)
+                {
+                    settings.allowedHilliness = new List<int>();
+                }
+
+                // Display current allowed hilliness types
+                List<int> hillinessTypes = new List<int> { 1, 2, 3, 4 }; // Flat, SmallHills, LargeHills, Mountainous
+                List<int> hillinessAllowed = new List<int>();
+                foreach (int hillinessValue in settings.allowedHilliness)
+                {
+                    if (hillinessTypes.Contains(hillinessValue))
+                    {
+                        hillinessAllowed.Add(hillinessValue);
+                    }
+                }
+
+                for (int i = 0; i < hillinessAllowed.Count; i++)
+                {
+                    listingStandard.Gap(4f);
+                    if (DoHillinessRow(listingStandard.GetRect(24f), hillinessAllowed[i], settings.allowedHilliness, i))
+                    {
+                        i--;
+                    }
+                    listingStandard.Gap(4f);
+                    startingTileListingHeight += 32f;
+                }
+
+                if (hillinessAllowed.Count == 0)
+                {
+                    listingStandard.Label("RandomStartMod.StartingTile.NoHillinessSelected".Translate());
+                    startingTileListingHeight += Text.LineHeight;
+                }
+
+                listingStandard.Gap();
+                startingTileListingHeight += 12f;
+
+                // Add hilliness button
+                if (listingStandard.ButtonText("RandomStartMod.StartingTile.AddHilliness".Translate()))
+                {
+                    List<FloatMenuOption> list = new List<FloatMenuOption>();
+                    List<int> availableHilliness = new List<int> { 1, 2, 3, 4 }; // Flat, SmallHills, LargeHills, Mountainous
+
+                    foreach (int hillinessValue in availableHilliness)
+                    {
+                        int localValue = hillinessValue;
+                        string hillinessKey = "";
+                        switch (hillinessValue)
+                        {
+                            case 1: hillinessKey = "Hilliness_Flat"; break;
+                            case 2: hillinessKey = "Hilliness_SmallHills"; break;
+                            case 3: hillinessKey = "Hilliness_LargeHills"; break;
+                            case 4: hillinessKey = "Hilliness_Mountainous"; break;
+                        }
+
+                        string text = hillinessKey.Translate();
+                        Action action = delegate
+                        {
+                            settings.allowedHilliness.Add(localValue);
+                        };
+
+                        AcceptanceReport acceptanceReport = CanAddHilliness(localValue);
+                        if (!acceptanceReport)
+                        {
+                            action = null;
+                            if (!acceptanceReport.Reason.NullOrEmpty())
+                            {
+                                text = text + " (" + acceptanceReport.Reason + ")";
+                            }
+                        }
+                        else
+                        {
+                            int num = hillinessAllowed.Count((int x) => x == localValue);
+                            if (num > 0)
+                            {
+                                text = text + " (" + num + ")";
+                            }
+                        }
+
+                        FloatMenuOption floatMenuOption = new FloatMenuOption(text, action, BaseContent.BadTex, Color.white);
+                        list.Add(floatMenuOption);
+                    }
+
+                    if (list.Count > 0)
+                    {
+                        Find.WindowStack.Add(new FloatMenu(list));
+                    }
+                }
+                startingTileListingHeight += 32f + 12f;
+            }
+
+            listingStandard.Gap();
+            startingTileListingHeight += 36f + Text.LineHeight;
+            Text.Font = GameFont.Small;
+            DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.StartingTile.FilterStartingTemperature".Translate(), "RandomStartMod.TooltipTitles.FilterStartingTemperature".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.StartingTile.FilterStartingTemperatureTooltip".Translate(), ref settings.limitStartingTileTemperature);
+            startingTileListingHeight += 36f + Text.LineHeight;
+            if (settings.limitStartingTileTemperature)
+            {
+                Widgets.FloatRange(listingStandard.GetRect(32f), 1623498652, ref settings.limitStartingTileTemperatureRange, -50f, 50f);
+                startingTileListingHeight += 32f + 12f;
+            }
+
+            listingStandard.Gap();
+            startingTileListingHeight += 12f;
+
+            if (listingStandard.ButtonText("RestoreToDefaultSettings".Translate()))
+            {
+                settings.ResetStartingTile();
+            }
+            startingTileListingHeight += 32f;
+
+            listingStandard.End();
+            Widgets.EndScrollView();
+        }
+
+        private void DoCharactersSettingsTabContents(Rect inRect)
+        {
+            Rect rect = new Rect(0f, 60f, inRect.width, planetListingHeight);
+            planetListingHeight = 0f;
+            Widgets.BeginScrollView(inRect, ref planetScrollPosition, rect, showScrollbars: false);
+            Listing_Standard listingStandard = new Listing_Standard();
+            listingStandard.Begin(rect);
+            listingStandard.Gap();
+            Text.Font = GameFont.Medium;
+            listingStandard.Label("RandomStartMod.Characters".Translate());
+
+            listingStandard.GapLine();
+            planetListingHeight += 24f + Text.LineHeight;
+            Text.Font = GameFont.Tiny;
+            Widgets.Label(listingStandard.GetRect(Text.LineHeight), "RandomStartMod.Misc.StartingColonistsDescription".Translate());
+            planetListingHeight += Text.LineHeight;
+            Text.Font = GameFont.Small;
+
+            // PrepareModerately Integration
+            if (PrepareModeratelyCompat.IsAvailable)
+            {
+                DoSettingToggle(listingStandard.GetRect(24f), "PrepareModerately Integration", "Enable integration with PrepareModerately mod for advanced pawn filtering during random start generation. When enabled, this will hide and disable the manual age, gender, name, and violence filtering options below in favor of using PrepareModerately's filter system.", ref settings.enablePrepareModeratelyIntegration);
+                planetListingHeight += 24f;
+
+                if (settings.enablePrepareModeratelyIntegration)
+                {
+                    listingStandard.Gap();
+                    planetListingHeight += 12f;
+
+                    // Filter selection dropdown
+                    var filterNames = PrepareModeratelyCompat.GetAvailableFilterNames();
+                    if (filterNames.Count > 0)
+                    {
+                        var currentFilterName = settings.selectedPrepareModeratelyFilter;
+                        if (string.IsNullOrEmpty(currentFilterName) || !filterNames.Contains(currentFilterName))
+                        {
+                            currentFilterName = filterNames.FirstOrDefault() ?? "";
+                            settings.selectedPrepareModeratelyFilter = currentFilterName;
+                        }
+
+                        var labelRect = listingStandard.GetRect(24f);
+                        var dropdownRect = new Rect(labelRect.x + 200f, labelRect.y, labelRect.width - 200f, labelRect.height);
+                        labelRect.width = 200f;
+
+                        Widgets.Label(labelRect, "Selected Filter:");
+                        if (Widgets.ButtonText(dropdownRect, currentFilterName.NullOrEmpty() ? "None" : currentFilterName))
+                        {
+                            var options = new List<FloatMenuOption>();
+                            foreach (var filterName in filterNames)
+                            {
+                                var filterDescription = PrepareModeratelyCompat.GetFilterDescription(filterName);
+                                var option = new FloatMenuOption(filterName, () => {
+                                    settings.selectedPrepareModeratelyFilter = filterName;
+                                    PrepareModeratelyCompat.SetCurrentFilter(filterName);
+                                });
+                                
+                                // Add tooltip if description is available
+                                if (!string.IsNullOrEmpty(filterDescription))
+                                {
+                                    option.tooltip = filterDescription;
+                                }
+                                
+                                options.Add(option);
+                            }
+                            Find.WindowStack.Add(new FloatMenu(options));
+                        }
+                        planetListingHeight += 24f;
+                    }
+                    else
+                    {
+                        Widgets.Label(listingStandard.GetRect(24f), "No PrepareModerately filters found.");
+                        planetListingHeight += 24f;
+                    }
+                }
+            }
+
+            // Only show manual filters if PrepareModerately integration is not enabled
+            if (!settings.enablePrepareModeratelyIntegration)
+            {
+                DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.TooltipTitles.StartingPawnsMustBeCapableOfViolence".Translate(), "RandomStartMod.TooltipTitles.StartingPawnsMustBeCapableOfViolence".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Misc.StartingPawnsMustBeCapableOfViolenceTooltip".Translate(), ref settings.startingPawnForceViolence);
+                planetListingHeight += 24f;
+                DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.PawnNotDisabledWorkTags".Translate(), "RandomStartMod.PawnNotDisabledWorkTags".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.PawnNotDisabledWorkTagsTooltip".Translate(), ref settings.PawnNotDisabledWorkTags);
+                planetListingHeight += 24f;
+            }
+
+            // Only show the manual filters if PrepareModerately integration is not enabled
+            if (!settings.enablePrepareModeratelyIntegration)
+            {
+                listingStandard.Gap();
+
+                bool overrideName = !settings.randomisePawnName;
+                DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.Characters.OverrideName".Translate(), "RandomStartMod.Characters.OverrideNameTooltip".Translate(), ref overrideName);
+                settings.randomisePawnName = !overrideName;
+                planetListingHeight += 36f;
+                if (overrideName)
+                {
+                    // Ensure pawnNames list is initialized
+                    if (settings.pawnNames == null)
+                        settings.pawnNames = new List<PawnNameData>();
+
+                    // Add space for column headers
+                    if (settings.pawnNames.Count > 0)
+                    {
+                        listingStandard.Gap(14f); // Extra gap before headers (increased from 8f)
+                        planetListingHeight += 32f; // Increased space for headers (increased from 26f)
+                    }
+
+                    // Display existing pawn name rows
+                    for (int i = 0; i < settings.pawnNames.Count; i++)
+                    {
+                        if (i == 0)
+                        {
+                            listingStandard.Gap(2f); // Small gap for first row
+                        }
+                        else
+                        {
+                            listingStandard.Gap(4f); // Normal gap for subsequent rows
+                        }
+                        if (DoPawnNameRow(listingStandard.GetRect(32f), settings.pawnNames[i], i))
+                        {
+                            settings.pawnNames.RemoveAt(i);
+                            i--; // Adjust index after removal
+                        }
+                        listingStandard.Gap(4f);
+                        planetListingHeight += 40f;
+                    }
+
+                    // Add new pawn name row button
+                    listingStandard.Gap();
+                    if (listingStandard.ButtonText("RandomStartMod.Characters.AddPawnName".Translate()))
+                    {
+                        settings.pawnNames.Add(new PawnNameData());
+                    }
+                    planetListingHeight += 44f;
+                }
+
+                listingStandard.Gap();
+                planetListingHeight += 36f;
+                bool overrideAge = !settings.randomisePawnAge;
+                DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.Characters.OverrideAge".Translate(), "RandomStartMod.Characters.OverrideAgeTooltip".Translate(), ref overrideAge);
+                settings.randomisePawnAge = !overrideAge;
+                planetListingHeight += 36f + Text.LineHeight;
+                if (overrideAge)
+                {
+                    Rect rect9 = listingStandard.GetRect(32f);
+                    Widgets.IntRange(rect9, 1623498651, ref settings.randomisePawnAgeRange, 0, 100, Util.GetAgeRangeLabelPercent(settings.randomisePawnAgeRange));
+                    planetListingHeight += 32f;
+                }
+
+                listingStandard.Gap();
+                planetListingHeight += 36f + Text.LineHeight;
+                bool overrideSex = !settings.randomisePawnSex;
+                DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.Characters.OverrideSex".Translate(), "RandomStartMod.Characters.OverrideSexTooltip".Translate(), ref overrideSex);
+                settings.randomisePawnSex = !overrideSex;
+                planetListingHeight += 44f;
+                if (overrideSex)
+                {
+                    List<string> list = Enum.GetNames(typeof(Gender)).Where(name => name != "None").ToList();
+                    List<Gender> genderValues = Enum.GetValues(typeof(Gender)).Cast<Gender>().Where(g => g != Gender.None).ToList();
+                    int num = settings.PawnSex;
+                    
+                    // Find the index in the filtered list
+                    int displayIndex = genderValues.FindIndex(g => (int)g == num);
+                    if (displayIndex == -1)
+                    {
+                        displayIndex = 0;
+                        settings.PawnSex = (int)genderValues[0];
+                    }
+                    
+                    if (listingStandard.ButtonText(list[displayIndex]))
+                    {
+                        List<FloatMenuOption> list2 = new List<FloatMenuOption>();
+                        for (int i = 0; i < list.Count; i++)
+                        {
+                            int index = i;
+                            FloatMenuOption item = new FloatMenuOption(list[i], delegate
+                            {
+                                settings.PawnSex = (int)genderValues[index];
+                            });
+                            list2.Add(item);
+                        }
+                        Find.WindowStack.Add(new FloatMenu(list2));
+                    }
+                    planetListingHeight += 32f;
+                }
+
+                planetListingHeight += 36f + Text.LineHeight;
+            }
+
+            listingStandard.Gap();
+            planetListingHeight += 12f;
+            if (listingStandard.ButtonText("RestoreToDefaultSettings".Translate()))
+            {
+                settings.ResetStartingColonists();
+            }
+            planetListingHeight += 32f;
+            listingStandard.End();
+            Widgets.EndScrollView();
+        }
+
         private void DrawCustomLeft(Listing_Standard listing)
         {
             Listing_Standard listing_Standard = DrawCustomSectionStart(listing, sectionHeightThreats, "DifficultyThreatSection".Translate());
@@ -1172,6 +2050,7 @@ namespace RandomStartMod
             }
             listing_Standard = DrawCustomSectionStart(listing, sectionHeightChildren, "DifficultyChildrenSection".Translate());
             DrawCustomDifficultySetting(listing_Standard, "noBabiesOrChildren", ref settings.noBabiesOrChildren);
+
             DrawCustomDifficultySetting(listing_Standard, "babiesAreHealthy", ref settings.babiesAreHealthy);
             if (!settings.noBabiesOrChildren)
             {
@@ -1231,7 +2110,9 @@ namespace RandomStartMod
         private static Listing_Standard DrawCustomSectionStart(Listing_Standard listing, float height, string label, string tooltip = null)
         {
             listing.Gap();
-            listing.Label(label, -1f, tooltip);
+            TaggedString transLabel = label.Translate();
+            TaggedString transTooltip = tooltip.Translate();
+            listing.Label(transLabel, -1f, transTooltip);
             Listing_Standard listing_Standard = listing.BeginSection(height, 8f, 6f);
             listing_Standard.maxOneColumn = true;
             return listing_Standard;
@@ -1240,6 +2121,7 @@ namespace RandomStartMod
         private static void DrawCustomSectionEnd(Listing_Standard listing, Listing_Standard section, out float height)
         {
             listing.EndSection(section);
+
             height = section.CurHeight;
         }
 
@@ -1458,6 +2340,99 @@ namespace RandomStartMod
             return result;
         }
 
+        public bool DoBiomeRow(Rect rect, BiomeDef biomeDef, List<string> biomeDefNames, int index)
+        {
+            bool result = false;
+            Rect rect2 = new Rect(rect.x, rect.y - 4f, rect.width, rect.height + 8f);
+            if (index % 2 == 1)
+            {
+                Widgets.DrawLightHighlight(rect2);
+            }
+            Widgets.BeginGroup(rect);
+            WidgetRow widgetRow = new WidgetRow(6f, 0f);
+
+            // Draw biome icon if available, otherwise use a default texture
+            Texture2D biomeIcon = BaseContent.BadTex; // Simple fallback for now
+            if (!biomeDef.texture.NullOrEmpty())
+            {
+                biomeIcon = ContentFinder<Texture2D>.Get(biomeDef.texture, false) ?? BaseContent.BadTex;
+            }
+            GUI.color = Color.white;
+            widgetRow.Icon(biomeIcon);
+            widgetRow.Gap(4f);
+
+            Text.Anchor = TextAnchor.MiddleCenter;
+            widgetRow.Label(biomeDef.LabelCap);
+            Text.Anchor = TextAnchor.UpperLeft;
+
+            if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
+            {
+                SoundDefOf.Click.PlayOneShotOnCamera();
+                biomeDefNames.RemoveAt(index);
+                result = true;
+            }
+            Widgets.EndGroup();
+
+            if (Mouse.IsOver(rect2))
+            {
+                string tooltip = biomeDef.LabelCap.AsTipTitle() + "\n" + biomeDef.description;
+                if (biomeDef.modContentPack != null)
+                {
+                    tooltip += "\n\n" + GetSourceModMetaData(biomeDef).Name.AsTipTitle();
+                }
+                TooltipHandler.TipRegion(rect2, tooltip);
+                Widgets.DrawHighlight(rect2);
+            }
+            return result;
+        }
+
+        public bool DoHillinessRow(Rect rect, int hillinessValue, List<int> hillinessValues, int index)
+        {
+            bool result = false;
+            Rect rect2 = new Rect(rect.x, rect.y - 4f, rect.width, rect.height + 8f);
+            if (index % 2 == 1)
+            {
+                Widgets.DrawLightHighlight(rect2);
+            }
+            Widgets.BeginGroup(rect);
+            WidgetRow widgetRow = new WidgetRow(6f, 0f);
+
+            GUI.color = Color.white;
+            widgetRow.Icon(BaseContent.BadTex); // Simple icon for hilliness
+            widgetRow.Gap(4f);
+
+            // Get the translated hilliness name
+            string hillinessName = "";
+            switch (hillinessValue)
+            {
+                case 1: hillinessName = "Hilliness_Flat".Translate(); break;
+                case 2: hillinessName = "Hilliness_SmallHills".Translate(); break;
+                case 3: hillinessName = "Hilliness_LargeHills".Translate(); break;
+                case 4: hillinessName = "Hilliness_Mountainous".Translate(); break;
+                default: hillinessName = "Unknown"; break;
+            }
+
+            Text.Anchor = TextAnchor.MiddleCenter;
+            widgetRow.Label(hillinessName);
+            Text.Anchor = TextAnchor.UpperLeft;
+
+            if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
+            {
+                SoundDefOf.Click.PlayOneShotOnCamera();
+                hillinessValues.RemoveAt(index);
+                result = true;
+            }
+            Widgets.EndGroup();
+
+            if (Mouse.IsOver(rect2))
+            {
+                string tooltip = hillinessName.AsTipTitle();
+                TooltipHandler.TipRegion(rect2, tooltip);
+                Widgets.DrawHighlight(rect2);
+            }
+            return result;
+        }
+
         public void DoSettingToggle(Rect rect, string label, string description, ref bool checkOn)
         {
 
@@ -1498,6 +2473,10 @@ namespace RandomStartMod
         public Texture2D GetSourceIcon(Def def)
         {
             ModContentPack modContentPack = def.modContentPack;
+            if (modContentPack == null)
+            {
+                return ContentFinder<Texture2D>.Get("UI/Buttons/Dev/Save");
+            }
             ModMetaData modMetaData = modContentPack.ModMetaData;
             if (modContentPack.IsOfficialMod)
             {
@@ -1555,6 +2534,243 @@ namespace RandomStartMod
                 return false;
             }
             return true;
+        }
+
+        private void CleanUpExcludedBiomes()
+        {
+            if (settings.allowedBiomes == null)
+                return;
+
+            // Remove any excluded biomes from the settings
+            string[] excludedBiomes = { "Underground", "Labyrinth", "MetalHell", "Undercave" };
+
+            List<string> biomesToRemove = new List<string>();
+            foreach (string biomeName in settings.allowedBiomes)
+            {
+                if (excludedBiomes.Contains(biomeName))
+                {
+                    biomesToRemove.Add(biomeName);
+                }
+            }
+
+            foreach (string biomeToRemove in biomesToRemove)
+            {
+                settings.allowedBiomes.Remove(biomeToRemove);
+            }
+        }
+
+        private void CleanUpInvalidHilliness()
+        {
+            if (settings.allowedHilliness == null)
+                return;
+
+            // Remove any invalid hilliness values (only allow 1-4: Flat, SmallHills, LargeHills, Mountainous)
+            List<int> validHilliness = new List<int> { 1, 2, 3, 4 };
+
+            List<int> hillinessToRemove = new List<int>();
+            foreach (int hillinessValue in settings.allowedHilliness)
+            {
+                if (!validHilliness.Contains(hillinessValue))
+                {
+                    hillinessToRemove.Add(hillinessValue);
+                }
+            }
+
+            foreach (int hillinessToRemove_item in hillinessToRemove)
+            {
+                settings.allowedHilliness.Remove(hillinessToRemove_item);
+            }
+        }
+
+        AcceptanceReport CanAddBiome(BiomeDef b)
+        {
+            if (settings.allowedBiomes.Contains(b.defName))
+            {
+                return "Already added";
+            }
+
+            // Manually filter out underground biomes that don't appear on planet surface
+            string[] excludedBiomes = { "Underground", "Labyrinth", "MetalHell", "Undercave" };
+            if (excludedBiomes.Contains(b.defName))
+            {
+                return "Not available on planet surface";
+            }
+
+            return AcceptanceReport.WasAccepted;
+        }
+
+        AcceptanceReport CanAddHilliness(int hillinessValue)
+        {
+            if (settings.allowedHilliness.Contains(hillinessValue))
+            {
+                return "Already added";
+            }
+
+            return AcceptanceReport.WasAccepted;
+        }
+
+        AcceptanceReport CanAddForcedMeme(MemeDef memeDef)
+        {
+            if (settings.forcedMemes.Contains(memeDef.defName))
+            {
+                return "Already added";
+            }
+
+            // Check if this is a Structure meme and if there's already one in the list
+            if (memeDef.category == MemeCategory.Structure)
+            {
+                foreach (string existingMemeDefName in settings.forcedMemes)
+                {
+                    MemeDef existingMeme = DefDatabase<MemeDef>.GetNamed(existingMemeDefName, false);
+                    if (existingMeme != null && existingMeme.category == MemeCategory.Structure)
+                    {
+                        return "Only one structure meme allowed";
+                    }
+                }
+            }
+
+            return AcceptanceReport.WasAccepted;
+        }
+
+
+
+        public bool DoMemeRow(Rect rect, MemeDef memeDef, List<string> memeDefNames, int index)
+        {
+            bool result = false;
+            Rect rect2 = new Rect(rect.x, rect.y - 4f, rect.width, rect.height + 8f);
+            if (index % 2 == 1)
+            {
+                Widgets.DrawLightHighlight(rect2);
+            }
+            Widgets.BeginGroup(rect);
+            WidgetRow widgetRow = new WidgetRow(6f, 0f);
+
+            // Get icon from meme itself or source mod
+            Texture2D icon = memeDef.Icon ?? GetSourceIcon(memeDef);
+            GUI.color = Color.white;
+            widgetRow.Icon(icon);
+            GUI.color = Color.white;
+            widgetRow.Gap(4f);
+            Text.Anchor = TextAnchor.MiddleCenter;
+            widgetRow.Label(memeDef.LabelCap);
+            Text.Anchor = TextAnchor.UpperLeft;
+
+            if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
+            {
+                SoundDefOf.Click.PlayOneShotOnCamera();
+                memeDefNames.RemoveAt(index);
+                result = true;
+            }
+            Widgets.EndGroup();
+
+            if (Mouse.IsOver(rect2))
+            {
+                string tooltip = memeDef.LabelCap.AsTipTitle() + "\n" + memeDef.description;
+                if (memeDef.modContentPack != null)
+                {
+                    tooltip += "\n\n" + GetSourceModMetaData(memeDef).Name.AsTipTitle();
+                }
+                TooltipHandler.TipRegion(rect2, tooltip);
+                Widgets.DrawHighlight(rect2);
+            }
+            return result;
+        }
+
+        public bool DoPreceptRow(Rect rect, PreceptDef preceptDef, List<string> preceptDefNames, int index)
+        {
+            bool result = false;
+            string text = IdeoUIUtility.GetPreceptLabel(preceptDef, preceptDef.ritualPatternBase);
+            bool flag = IdeoUIUtility.IsBasicPrecept(preceptDef);
+            if (flag)
+            {
+                text = preceptDef.issue.LabelCap + ": " + text;
+                if (preceptDef.issue == null || text == "")
+                {
+                    return false;
+                }
+            }
+            Rect rect2 = new Rect(rect.x, rect.y - 4f, rect.width, rect.height + 8f);
+            if (index % 2 == 1)
+            {
+                Widgets.DrawLightHighlight(rect2);
+            }
+            Widgets.BeginGroup(rect);
+            WidgetRow widgetRow = new WidgetRow(6f, 0f);
+
+            // Get icon from precept itself or source mod
+            Texture2D icon = preceptDef.Icon ?? GetSourceIcon(preceptDef);
+            GUI.color = Color.white;
+            widgetRow.Icon(icon);
+            GUI.color = Color.white;
+            widgetRow.Gap(4f);
+
+            Text.Anchor = TextAnchor.MiddleCenter;
+
+            widgetRow.Label(text);
+            Text.Anchor = TextAnchor.UpperLeft;
+
+            if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
+            {
+                SoundDefOf.Click.PlayOneShotOnCamera();
+                preceptDefNames.RemoveAt(index);
+                result = true;
+            }
+            Widgets.EndGroup();
+
+            if (Mouse.IsOver(rect2))
+            {
+                string tooltip = text.AsTipTitle() + "\n" + preceptDef.description;
+                if (preceptDef.modContentPack != null)
+                {
+                    tooltip += "\n\n" + GetSourceModMetaData(preceptDef).Name.AsTipTitle();
+                }
+                TooltipHandler.TipRegion(rect2, tooltip);
+                Widgets.DrawHighlight(rect2);
+            }
+            return result;
+        }
+
+        private bool DoPawnNameRow(Rect rect, PawnNameData pawnNameData, int index)
+        {
+            bool remove = false;
+            
+            // Create segments for the three text fields and remove button
+            float buttonWidth = 24f;
+            float spacing = 4f;
+            float fieldWidth = (rect.width - buttonWidth - (3 * spacing)) / 3f;
+            
+            Rect firstRect = new Rect(rect.x, rect.y, fieldWidth, rect.height);
+            Rect nickRect = new Rect(rect.x + fieldWidth + spacing, rect.y, fieldWidth, rect.height);
+            Rect lastRect = new Rect(rect.x + (fieldWidth + spacing) * 2, rect.y, fieldWidth, rect.height);
+            Rect removeRect = new Rect(rect.x + rect.width - buttonWidth, rect.y, buttonWidth, rect.height);
+
+            // Draw labels above the text fields (only for the first row)
+            if (index == 0)
+            {
+                Rect labelRect = new Rect(rect.x, rect.y - 18f, rect.width, 16f);
+                GUI.color = Color.gray;
+                Text.Font = GameFont.Tiny;
+                
+                Widgets.Label(new Rect(firstRect.x, labelRect.y, fieldWidth, 16f), "First");
+                Widgets.Label(new Rect(nickRect.x, labelRect.y, fieldWidth, 16f), "Nick");
+                Widgets.Label(new Rect(lastRect.x, labelRect.y, fieldWidth, 16f), "Last");
+                
+                Text.Font = GameFont.Small;
+                GUI.color = Color.white;
+            }
+
+            // Draw text fields
+            pawnNameData.firstName = Widgets.TextField(firstRect, pawnNameData.firstName ?? "");
+            pawnNameData.nickName = Widgets.TextField(nickRect, pawnNameData.nickName ?? "");
+            pawnNameData.lastName = Widgets.TextField(lastRect, pawnNameData.lastName ?? "");
+
+            // Remove button
+            if (Widgets.ButtonText(removeRect, "X"))
+            {
+                remove = true;
+            }
+
+            return remove;
         }
     }
 }

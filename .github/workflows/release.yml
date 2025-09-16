@@ -8,9 +8,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Update Package ID
+        id: update-package-id
+        uses: MathieuSoysal/replace-string-in-file@v1.1.0
+        with:
+          file: About/About.xml
+          old-string: bogknight.RandomStartDev
+          new-string: bogknight.RandomStart
       - name: Update Version
         id: update-version
-        uses: MathieuSoysal/replace-string-in-file@v1.0.0
+        uses: MathieuSoysal/replace-string-in-file@v1.1.0
         with:
           file: About/About.xml
           old-string: MODVERSION
@@ -19,7 +26,7 @@ jobs:
         id: package
         run: |
           mkdir RandomStart
-          cp -r About/ 1.5/ LoadFolders.xml RandomStart
+          cp -r About/ 1.5/ 1.6/ LoadFolders.xml RandomStart
           zip -9 -r RandomStart.zip RandomStart
       - name: Upload Package
         id: upload-package

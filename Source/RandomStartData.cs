@@ -11,4 +11,3 @@ namespace RandomStartMod
         public static bool startedFromRandom = false;
     }
 }
-

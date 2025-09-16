@@ -29,14 +29,14 @@ namespace RandomStartMod
 
             int index = 0;
 
-            if (ModsConfig.IsActive("phoenix.ContinueButton"))
+            if (ModsConfig.IsActive("phoenix.ContinueButton") || ModsConfig.IsActive("phoenix.ContinueButton_Steam"))
             {
                 index = 1;
             }
 
             foreach (ListableOption opt in optList)
             {
-                if (opt.action != null)
+                if (opt.label == "NewColony".Translate())
                 {
                     RandomStartMod randomStartMod = (RandomStartMod)LoadedModManager.ModHandles.First((Mod m) => m.Content.Name == "Random Start");
                     ListableOption newOption = new ListableOption(

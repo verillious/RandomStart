@@ -1,0 +1,16 @@
+Very mild bug/ incompatibility with the Wild Men start with Vanilla Expanded: Tribals (I also have Progression Core but not sure if that affects things).
+Without Random Start after selecting your map in VE:tribals the ideology screen doesn't generate your colony's Ideology and instead says "customise NPC ideologies". During gameplay, After you finish the final "animal tech" research (Culture) you get to create your own ideology.
+Using Random Start it seems to auto generate a starting ideology like any other start, meaning your pawns have an ideology before they are supposed to, then when you research culture you get to make a new one and the old one exists in the world somewhere.
+My current work-around is to create a custom ideology with no rituals or specialists and no minimum clothing preferences, and set that as the default for Random Start. Works for the most part but I still have to deal with certainty mechanics and food/apparel rules being ideology based.
+
+
+So, do caves from Biomes!! Caverns work or not? Never got an answer, just tried another rando start and AGAIN no caves at all. Really disappointing because I LOVE the random start.
+allow changing of biome ratios
+
+
+one of my all time favourites, but i feel like it doesnt randomize the xenotype of colonists properly, like they usually include all the genes to make a hiveling, and then add a random gene instead of randomizing it from the ground up
+I think it would be cool if there was an option set a specific xenotype for all colonists.
+
+
+Can you add posibility to disable randomization of reputation or rep range for selected factions?
+Will there be support for Biomes! mods for world settings and ReGrowth mod for the world settings as well? Also there seems to be no world settings for the Infestations from the new VFE insectoids 2
