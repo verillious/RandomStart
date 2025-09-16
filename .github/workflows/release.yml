@@ -8,20 +8,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Update Version
-        id: update-version
-        uses: MathieuSoysal/replace-string-in-file@v1.0.0
-        with:
-          file: About/About.xml
-          old-string: MODVERSION
-          new-string: ${{ github.event.release.tag_name }}
       - name: Update Package ID
         id: update-package-id
-        uses: MathieuSoysal/replace-string-in-file@v1.0.0
+        uses: MathieuSoysal/replace-string-in-file@v1.1.0
         with:
           file: About/About.xml
           old-string: bogknight.RandomStartDev
           new-string: bogknight.RandomStart
+      - name: Update Version
+        id: update-version
+        uses: MathieuSoysal/replace-string-in-file@v1.1.0
+        with:
+          file: About/About.xml
+          old-string: MODVERSION
+          new-string: ${{ github.event.release.tag_name }}
       - name: Package
         id: package
         run: |
