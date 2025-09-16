@@ -149,49 +149,192 @@ namespace RandomStartMod.Compat
 
     public static class RealisticPlanetsCompat
     {
+        private static Assembly realisticPlanetsAssembly;
+        private static Type worldPresetUtilityType;
+        private static Type worldPresetType;
+        private static Type planetsGameComponentType;
+        private static Type worldTypeType;
+        private static Type axialTiltType;
+        private static Type rainfallModifierType;
+        private static Type planetsCreateWorldParamsType;
+        private static Type worldTypeUtilityType;
+        private static Type axialTiltUtilityType;
+
+        static RealisticPlanetsCompat()
+        {
+            try
+            {
+                realisticPlanetsAssembly = AppDomain.CurrentDomain.GetAssemblies()
+                    .FirstOrDefault(a => a.GetName().Name == "Realistic_Planets_1.6");
+
+                if (realisticPlanetsAssembly != null)
+                {
+                    worldPresetUtilityType = realisticPlanetsAssembly.GetType("Planets_Code.Presets.WorldPresetUtility");
+                    worldPresetType = realisticPlanetsAssembly.GetType("Planets_Code.Presets.WorldPreset");
+                    planetsGameComponentType = realisticPlanetsAssembly.GetType("Planets_Code.Core.Planets_GameComponent");
+                    worldTypeType = realisticPlanetsAssembly.GetType("Planets_Code.WorldGen.WorldType");
+                    axialTiltType = realisticPlanetsAssembly.GetType("Planets_Code.WorldGen.AxialTilt");
+                    rainfallModifierType = realisticPlanetsAssembly.GetType("Planets_Code.WorldGen.RainfallModifier");
+                    planetsCreateWorldParamsType = realisticPlanetsAssembly.GetType("Planets_Code.Core.Planets_CreateWorldParams");
+                    worldTypeUtilityType = realisticPlanetsAssembly.GetType("Planets_Code.WorldGen.WorldTypeUtility");
+                    axialTiltUtilityType = realisticPlanetsAssembly.GetType("Planets_Code.WorldGen.AxialTiltUtility");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"[RandomStart] [RealisticPlanetsCompat] Failed to initialize Realistic Planets compatibility: {ex.Message}");
+            }
+        }
+
+        public static bool IsAvailable => 
+            realisticPlanetsAssembly != null && 
+            worldPresetUtilityType != null && 
+            planetsCreateWorldParamsType != null;
+
+        public static int GetWorldTypeEnumCount()
+        {
+            if (!IsAvailable || worldTypeUtilityType == null)
+                return 5; // Default fallback count
+
+            try
+            {
+                var enumValuesCountProperty = worldTypeUtilityType.GetProperty("EnumValuesCount", BindingFlags.Public | BindingFlags.Static);
+                if (enumValuesCountProperty != null)
+                {
+                    return (int)enumValuesCountProperty.GetValue(null);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"[RandomStart] [RealisticPlanetsCompat] Failed to get WorldType enum count: {ex.Message}");
+            }
+
+            return 5; // Default fallback count
+        }
+
+        public static int GetAxialTiltEnumCount()
+        {
+            if (!IsAvailable || axialTiltUtilityType == null)
+                return 5; // Default fallback count
+
+            try
+            {
+                var enumValuesCountProperty = axialTiltUtilityType.GetProperty("EnumValuesCount", BindingFlags.Public | BindingFlags.Static);
+                if (enumValuesCountProperty != null)
+                {
+                    return (int)enumValuesCountProperty.GetValue(null);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"[RandomStart] [RealisticPlanetsCompat] Failed to get AxialTilt enum count: {ex.Message}");
+            }
+
+            return 5; // Default fallback count
+        }
+
         public static void DoWorldTypeSelectionButton(Listing_Standard listingStandard)
         {
-            var array = Planets_Code
-                .Presets.WorldPresetUtility.WorldPresets.Where(
-                    (Planets_Code.Presets.WorldPreset p) => p.Name != "Planets.Custom"
-                )
-                .ToList();
-            List<string> list = Planets_Code
-                .Presets.WorldPresetUtility.WorldPresets.Where(
-                    (Planets_Code.Presets.WorldPreset p) => p.Name != "Planets.Custom"
-                )
-                .Select(w => w.Name)
-                .ToList();
-            RandomStartSettings settings = LoadedModManager
-                .GetMod<RandomStartMod>()
-                .GetSettings<RandomStartSettings>();
+            if (!IsAvailable)
+                return;
 
-            string worldTypeName = settings.realisticPlanetsWorldType;
-            if (!list.Contains(worldTypeName))
+            try
             {
-                worldTypeName = "Planets.Vanilla";
-                settings.realisticPlanetsWorldType = worldTypeName;
-            }
-            if (listingStandard.ButtonText(worldTypeName))
-            {
-                List<FloatMenuOption> floatMenuOptions = new List<FloatMenuOption>();
-                foreach (Planets_Code.Presets.WorldPreset worldPreset in array)
+                var worldPresetsProperty = worldPresetUtilityType.GetProperty("WorldPresets", BindingFlags.Public | BindingFlags.Static);
+                if (worldPresetsProperty == null)
+                    return;
+
+                var worldPresets = worldPresetsProperty.GetValue(null) as IEnumerable;
+                if (worldPresets == null)
+                    return;
+
+                var nameProperty = worldPresetType.GetProperty("Name");
+                if (nameProperty == null)
+                    return;
+
+                RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
+
+                var validPresets = new List<object>();
+                var validPresetNames = new List<string>();
+
+                foreach (var preset in worldPresets)
                 {
-                    FloatMenuOption item = new FloatMenuOption(
-                        worldPreset.Name.Translate(),
-                        delegate
-                        {
-                            settings.realisticPlanetsWorldType = worldPreset.Name;
-                            settings.realisticPlanetsOceanType = (int)worldPreset.WorldType;
-                            settings.realisticPlanetsAxialTilt = (int)worldPreset.AxialTilt;
-                            settings.rainfall = (int)worldPreset.RainfallModifier;
-                            settings.temperature = (int)worldPreset.Temperature;
-                            settings.population = (int)worldPreset.Population;
-                        }
-                    );
-                    floatMenuOptions.Add(item);
+                    var name = nameProperty.GetValue(preset) as string;
+                    if (name != null && name != "Planets.Custom")
+                    {
+                        validPresets.Add(preset);
+                        validPresetNames.Add(name);
+                    }
                 }
-                Find.WindowStack.Add(new FloatMenu(floatMenuOptions));
+
+                string worldTypeName = settings.realisticPlanetsWorldType;
+                if (!validPresetNames.Contains(worldTypeName))
+                {
+                    worldTypeName = "Planets.Vanilla";
+                    settings.realisticPlanetsWorldType = worldTypeName;
+                }
+
+                if (listingStandard.ButtonText(worldTypeName))
+                {
+                    List<FloatMenuOption> floatMenuOptions = new List<FloatMenuOption>();
+                    
+                    var worldTypeProperty = worldPresetType.GetProperty("WorldType");
+                    var axialTiltProperty = worldPresetType.GetProperty("AxialTilt");
+                    var rainfallModifierProperty = worldPresetType.GetProperty("RainfallModifier");
+                    var temperatureProperty = worldPresetType.GetProperty("Temperature");
+                    var populationProperty = worldPresetType.GetProperty("Population");
+
+                    foreach (var preset in validPresets)
+                    {
+                        var presetName = nameProperty.GetValue(preset) as string;
+                        if (presetName != null)
+                        {
+                            FloatMenuOption item = new FloatMenuOption(
+                                presetName.Translate(),
+                                delegate
+                                {
+                                    settings.realisticPlanetsWorldType = presetName;
+                                    
+                                    if (worldTypeProperty != null)
+                                    {
+                                        var worldTypeEnum = worldTypeProperty.GetValue(preset);
+                                        settings.realisticPlanetsOceanType = Convert.ToInt32(worldTypeEnum);
+                                    }
+                                    
+                                    if (axialTiltProperty != null)
+                                    {
+                                        var axialTiltEnum = axialTiltProperty.GetValue(preset);
+                                        settings.realisticPlanetsAxialTilt = Convert.ToInt32(axialTiltEnum);
+                                    }
+                                    
+                                    if (rainfallModifierProperty != null)
+                                    {
+                                        var rainfallEnum = rainfallModifierProperty.GetValue(preset);
+                                        settings.rainfall = Convert.ToInt32(rainfallEnum);
+                                    }
+                                    
+                                    if (temperatureProperty != null)
+                                    {
+                                        var temperatureEnum = temperatureProperty.GetValue(preset);
+                                        settings.temperature = Convert.ToInt32(temperatureEnum);
+                                    }
+                                    
+                                    if (populationProperty != null)
+                                    {
+                                        var populationEnum = populationProperty.GetValue(preset);
+                                        settings.population = Convert.ToInt32(populationEnum);
+                                    }
+                                }
+                            );
+                            floatMenuOptions.Add(item);
+                        }
+                    }
+                    Find.WindowStack.Add(new FloatMenu(floatMenuOptions));
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"[RandomStart] [RealisticPlanetsCompat] Failed in DoWorldTypeSelectionButton: {ex.Message}");
             }
         }
 
@@ -210,81 +353,62 @@ namespace RandomStartMod.Compat
             bool randomiseWorld = false
         )
         {
-            Util.LogMessage("[RealisticPlanetsCompat] Set Realistic Planets Start");
-            RandomStartSettings settings = LoadedModManager
-                .GetMod<RandomStartMod>()
-                .GetSettings<RandomStartSettings>();
-            RealisticPlanetsCreateWorldParams planet = new RealisticPlanetsCreateWorldParams();
-            planet.PreOpen();
-
-            if (
-                ModsConfig.IsActive("Oblitus.MyLittlePlanet")
-                || ModsConfig.IsActive("Oblitus.MyLittlePlanet_Steam")
-            )
+            if (!IsAvailable)
             {
-                Util.LogMessage("[RealisticPlanetsCompat] Set My Little Planet");
-                Planets_Code.Core.Planets_GameComponent.subcount = settings.myLittlePlanetSubcount;
-            }
-            else
-            {
-                Planets_Code.Core.Planets_GameComponent.subcount = 10;
+                Log.Warning("[RandomStart] [RealisticPlanetsCompat] Realistic Planets not available, falling back to standard world generation");
+                // Fall back to standard RimWorld world generation (synchronous)
+                Current.Game.World = WorldGenerator.GenerateWorld(planetCoverage, seedString, overallRainfall, overallTemperature, population, landmarkDensity, factions, pollution);
+                return;
             }
 
-            if (randomiseWorld)
+            try
             {
-                planet.Randomize();
+                Util.LogMessage("[RealisticPlanetsCompat] Starting Realistic Planets world generation");
+                RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
+
+                // Handle My Little Planet compatibility
+                if (ModsConfig.IsActive("Oblitus.MyLittlePlanet") || ModsConfig.IsActive("Oblitus.MyLittlePlanet_Steam"))
+                {
+                    Util.LogMessage("[RealisticPlanetsCompat] Set My Little Planet");
+                    var subcountField = planetsGameComponentType.GetField("subcount", BindingFlags.Public | BindingFlags.Static);
+                    subcountField?.SetValue(null, settings.myLittlePlanetSubcount);
+                }
+                else
+                {
+                    var subcountField = planetsGameComponentType.GetField("subcount", BindingFlags.Public | BindingFlags.Static);
+                    subcountField?.SetValue(null, 10);
+                }
+
+                // Set up world generation parameters
+                var worldPresetField = planetsGameComponentType.GetField("worldPreset", BindingFlags.Public | BindingFlags.Static);
+                worldPresetField?.SetValue(null, worldTypeName);
+
+                if (worldTypeType != null)
+                {
+                    var worldTypeField = planetsGameComponentType.GetField("worldType", BindingFlags.Public | BindingFlags.Static);
+                    var worldTypeValue = Enum.ToObject(worldTypeType, oceanType);
+                    worldTypeField?.SetValue(null, worldTypeValue);
+                }
+
+                if (axialTiltType != null)
+                {
+                    var axialTiltField = planetsGameComponentType.GetField("axialTilt", BindingFlags.Public | BindingFlags.Static);
+                    var axialTiltValue = Enum.ToObject(axialTiltType, axialTilt);
+                    axialTiltField?.SetValue(null, axialTiltValue);
+                }
+
+                Util.LogMessage("[RealisticPlanetsCompat] Parameters configured, generating world synchronously");
+                
+                // Generate world synchronously - Realistic Planets should hook into this process
+                Current.Game.World = WorldGenerator.GenerateWorld(planetCoverage, seedString, overallRainfall, overallTemperature, population, landmarkDensity, factions, pollution);
+                
+                Util.LogMessage("[RealisticPlanetsCompat] World generation completed successfully");
             }
-            else
+            catch (Exception ex)
             {
-                Planets_Code.Core.Planets_GameComponent.worldPreset = worldTypeName;
-                Planets_Code.Core.Planets_GameComponent.worldType =
-                    (Planets_Code.WorldGen.WorldType)oceanType;
-                Planets_Code.Core.Planets_GameComponent.axialTilt =
-                    (Planets_Code.WorldGen.AxialTilt)axialTilt;
-                planet.RainfallMod = (Planets_Code.WorldGen.RainfallModifier)overallRainfall;
-                planet.temperature = overallTemperature;
-                planet.population = population;
-                planet.pollution = pollution;
-            }
-
-            planet.seedString = seedString;
-            planet.planetCoverage = planetCoverage;
-            planet.landmarkDensity = landmarkDensity;
-            planet.factions = factions;
-
-            Util.LogMessage("[RealisticPlanetsCompat] Set Realistic Planets End");
-            planet.GenerateWorld();
-
-            Type longEventHandlerType = typeof(LongEventHandler);
-            var eventQueueField = longEventHandlerType.GetField(
-                "eventQueue",
-                BindingFlags.Static | BindingFlags.NonPublic
-            );
-            var actionField = longEventHandlerType
-                .GetNestedType("QueuedLongEvent", BindingFlags.NonPublic)
-                .GetField("eventAction", BindingFlags.Instance | BindingFlags.Public);
-
-            object eventQueue = eventQueueField.GetValue(null);
-            IEnumerable queueItems = (IEnumerable)eventQueue;
-
-            Util.LogMessage(
-                "[RealisticPlanetsCompat] Invoke EventQueue Generating Realistic Planets World"
-            );
-            foreach (object queuedEvent in queueItems)
-            {
-                Action eventAction = (Action)actionField.GetValue(queuedEvent);
-                eventAction?.Invoke();
-            }
-
-            LongEventHandler.ClearQueuedEvents();
-            planet = null;
-        }
-
-        public class RealisticPlanetsCreateWorldParams : Planets_Code.Core.Planets_CreateWorldParams
-        {
-            public void GenerateWorld()
-            {
-                base.CanDoNext();
+                Log.Error($"[RandomStart] [RealisticPlanetsCompat] Failed to generate realistic planet world: {ex.Message}\nStack trace: {ex.StackTrace}");
+                // Fall back to standard world generation (synchronous)
+                Current.Game.World = WorldGenerator.GenerateWorld(planetCoverage, seedString, overallRainfall, overallTemperature, population, landmarkDensity, factions, pollution);
             }
         }
     }

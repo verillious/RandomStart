@@ -65,12 +65,6 @@
       <CopyLocal>False</CopyLocal>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Realistic_Planets_1.6">
-      <HintPath>..\..\..\..\..\workshop\content\294100\3533147031\1.6\Assemblies\Realistic_Planets_1.6.dll</HintPath>
-      <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\3533147031\1.6\Assemblies\Realistic_Planets_1.6.dll</HintPath>
-      <CopyLocal>False</CopyLocal>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="RealRuins">
       <HintPath>..\..\..\..\..\workshop\content\294100\1552146295\1.6\Assemblies\RealRuins.dll</HintPath>
       <HintPath Condition="Exists('..\..\..\..\..\..\workshop')">..\..\..\..\..\..\workshop\content\294100\1552146295\1.6\Assemblies\RealRuins.dll</HintPath>

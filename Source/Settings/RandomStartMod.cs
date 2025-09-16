@@ -1195,13 +1195,13 @@ namespace RandomStartMod
                 {
                     listingStandard.Gap(2f);
                     Rect rect4 = listingStandard.GetRect(30f);
-                    settings.realisticPlanetsOceanType = Mathf.RoundToInt(Widgets.HorizontalSlider(rect4, settings.realisticPlanetsOceanType, 0, Planets_Code.WorldGen.WorldTypeUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabel(settings.realisticPlanetsOceanType), null, null, 1f));
+                    settings.realisticPlanetsOceanType = Mathf.RoundToInt(Widgets.HorizontalSlider(rect4, settings.realisticPlanetsOceanType, 0, RealisticPlanetsCompat.GetWorldTypeEnumCount() - 1, middleAlignment: true, Util.GetIntLabel(settings.realisticPlanetsOceanType), null, null, 1f));
                     planetListingHeight += 32f;
                 }
                 else
                 {
                     Rect rect5 = listingStandard.GetRect(32f);
-                    Widgets.IntRange(rect5, 1623498657, ref settings.randomiseOceanTypeRange, 0, Planets_Code.WorldGen.WorldTypeUtility.EnumValuesCount - 1, Util.GetIntRangeLabel(settings.randomiseOceanTypeRange));
+                    Widgets.IntRange(rect5, 1623498657, ref settings.randomiseOceanTypeRange, 0, RealisticPlanetsCompat.GetWorldTypeEnumCount() - 1, Util.GetIntRangeLabel(settings.randomiseOceanTypeRange));
                     planetListingHeight += 32f;
                 }
                 DoSettingToggle(listingStandard.GetRect(24f), "Planets.AxialTilt".Translate(), null, ref settings.randomiseAxialTilt);
@@ -1210,13 +1210,13 @@ namespace RandomStartMod
                 {
                     listingStandard.Gap(2f);
                     Rect rect4 = listingStandard.GetRect(30f);
-                    settings.realisticPlanetsAxialTilt = Mathf.RoundToInt(Widgets.HorizontalSlider(rect4, settings.realisticPlanetsAxialTilt, 0, Planets_Code.WorldGen.AxialTiltUtility.EnumValuesCount - 1, middleAlignment: true, Util.GetIntLabelShort(settings.realisticPlanetsAxialTilt), null, null, 1f));
+                    settings.realisticPlanetsAxialTilt = Mathf.RoundToInt(Widgets.HorizontalSlider(rect4, settings.realisticPlanetsAxialTilt, 0, RealisticPlanetsCompat.GetAxialTiltEnumCount() - 1, middleAlignment: true, Util.GetIntLabelShort(settings.realisticPlanetsAxialTilt), null, null, 1f));
                     planetListingHeight += 32f;
                 }
                 else
                 {
                     Rect rect5 = listingStandard.GetRect(32f);
-                    Widgets.IntRange(rect5, 1623498659, ref settings.randomiseAxialTiltRange, 0, Planets_Code.WorldGen.AxialTiltUtility.EnumValuesCount - 1, Util.GetIntRangeLabelShort(settings.randomiseAxialTiltRange));
+                    Widgets.IntRange(rect5, 1623498659, ref settings.randomiseAxialTiltRange, 0, RealisticPlanetsCompat.GetAxialTiltEnumCount() - 1, Util.GetIntRangeLabelShort(settings.randomiseAxialTiltRange));
                     planetListingHeight += 32f;
                 }
                 listingStandard.Gap();
