@@ -101,8 +101,8 @@ namespace RandomStartMod
                     bool temperatureRangeMatch =
                         !settings.limitStartingTileTemperature
                         || (
-                            tile.MinTemperature <= settings.limitStartingTileTemperatureRange.min
-                            && tile.MaxTemperature <= settings.limitStartingTileTemperatureRange.max
+                            tile.temperature >= settings.limitStartingTileTemperatureRange.min
+                            && tile.temperature <= settings.limitStartingTileTemperatureRange.max
                         );
 
                     return biomeMatch && hillinessMatch && temperatureRangeMatch;
