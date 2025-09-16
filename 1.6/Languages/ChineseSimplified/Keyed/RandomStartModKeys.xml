@@ -2,15 +2,6 @@
 <LanguageData>
 	<!-- Existing translations -->
 	<RandomStartMod.Title>随机开局</RandomStartMod.Title>
-	<RandomStartMod.StartingTile.FilterStartingHilliness>过滤起始地形</RandomStartMod.StartingTile.FilterStartingHilliness>
-	<RandomStartMod.StartingTile.FilterStartingHillinessTooltip>启用以过滤允许用作起始格子的地形起伏类型</RandomStartMod.StartingTile.FilterStartingHillinessTooltip>
-	<RandomStartMod.StartingTile.AllowedHilliness>允许的地形起伏：</RandomStartMod.StartingTile.AllowedHilliness>
-	<RandomStartMod.StartingTile.NoHillinessSelected>未选择地形起伏（将使用默认行为）</RandomStartMod.StartingTile.NoHillinessSelected>
-	<RandomStartMod.StartingTile.AddHilliness>添加地形起伏</RandomStartMod.StartingTile.AddHilliness>
-	<RandomStartMod.StartingTile.FilterStartingTemperature>过滤起始温度</RandomStartMod.StartingTile.FilterStartingTemperature>
-	<RandomStartMod.StartingTile.FilterStartingTemperatureTooltip>启用以根据温度范围过滤起始地点</RandomStartMod.StartingTile.FilterStartingTemperatureTooltip>
-
-	<!-- Character Settings -->局</RandomStartMod.Title>
 	<RandomStartMod.LaunchingWithoutConfiguring>您正在启动{0}，但尚未对其进行配置。</RandomStartMod.LaunchingWithoutConfiguring>
 	<RandomStartMod.SettingsAccess>（您可以通过右键单击<b>Random</b>按钮来访问设置）</RandomStartMod.SettingsAccess>
 	<RandomStartMod.RespectMemberXenotypes>仅选择玩家派系的异种</RandomStartMod.RespectMemberXenotypes>
@@ -106,6 +97,7 @@
 	<!-- Characters Settings -->
 	<RandomStartMod.Characters>角色</RandomStartMod.Characters>
 	<RandomStartMod.PawnNotDisabledWorkTags>没有禁用工作类型</RandomStartMod.PawnNotDisabledWorkTags>
+	<RandomStartMod.PawnNotDisabledWorkTagsTooltip>不生成具有任何禁用工作类型的起始小人。这确保所有起始殖民者都能完全胜任所有工作和任务。</RandomStartMod.PawnNotDisabledWorkTagsTooltip>
 	<RandomStartMod.Misc.StartingColonistsDescription>配置起始殖民者的特殊要求：</RandomStartMod.Misc.StartingColonistsDescription>
 	<RandomStartMod.Misc.StartingPawnsMustBeCapableOfViolenceTooltip>不生成因医疗问题、背景或特质而无法施暴的起始小人。</RandomStartMod.Misc.StartingPawnsMustBeCapableOfViolenceTooltip>
 
@@ -121,6 +113,8 @@
 	<RandomStartMod.StartingTile.AllowedHilliness>允许的地形起伏：</RandomStartMod.StartingTile.AllowedHilliness>
 	<RandomStartMod.StartingTile.NoHillinessSelected>未选择地形起伏（将使用默认行为）</RandomStartMod.StartingTile.NoHillinessSelected>
 	<RandomStartMod.StartingTile.AddHilliness>添加地形起伏</RandomStartMod.StartingTile.AddHilliness>
+	<RandomStartMod.StartingTile.FilterStartingTemperature>过滤起始温度</RandomStartMod.StartingTile.FilterStartingTemperature>
+	<RandomStartMod.StartingTile.FilterStartingTemperatureTooltip>启用以根据温度范围过滤起始格子</RandomStartMod.StartingTile.FilterStartingTemperatureTooltip>
 
 	<!-- Character Settings -->
 	<RandomStartMod.Characters.OverrideName>覆盖姓名</RandomStartMod.Characters.OverrideName>
