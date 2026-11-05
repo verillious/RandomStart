@@ -8,7 +8,6 @@ namespace RandomStartMod
         internal readonly RandomStartSettings Settings;
         internal bool ResearchApplied;
         internal bool ItemsPrepared;
-        internal NativeStartupController NativeStartup;
         internal readonly HashSet<ResearchProjectDef> ProtectedIdeologyResearch = new HashSet<ResearchProjectDef>();
         internal readonly ScopedValue<bool> PreparingPawns = new ScopedValue<bool>();
         internal readonly ScopedValue<bool> GeneratingPawn = new ScopedValue<bool>();

@@ -3,7 +3,8 @@
 The primary product goal is a [configurable one-click start](automatic-compatibility.md).
 Reduce maintenance and improve compatibility within that constraint. An automated
 page journey with routine confirmation dialogs does not meet it. The native page
-prototype is a diagnostic experiment; expansion as the planned default is paused.
+prototype is archived on its experimental branch and removed from the current
+one-click implementation. See the [simplification review](one-click-simplification.md).
 
 See the [general compatibility audit](compatibility.md) for a plan to reduce
 special-case integrations by preserving the normal game startup, scenario

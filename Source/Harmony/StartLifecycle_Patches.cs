@@ -62,8 +62,7 @@ namespace RandomStartMod
                 || __0.Context != PawnGenerationContext.PlayerStarter
                 || __0.KindDef?.race?.race?.Humanlike != true) return;
             var settings = state.Settings;
-            if (state.NativeStartup == null && settings.enablePrepareModeratelyIntegration
-                && Compat.PrepareModeratelyCompat.IsAvailable) return;
+            if (settings.enablePrepareModeratelyIntegration && Compat.PrepareModeratelyCompat.IsAvailable) return;
             bool allowsAdults = (__0.AllowedDevelopmentalStages & DevelopmentalStage.Adult) != 0;
             if (settings.startingPawnForceViolence && allowsAdults) __0.MustBeCapableOfViolence = true;
             // Explicit scenario restrictions take precedence over optional age/sex overrides.

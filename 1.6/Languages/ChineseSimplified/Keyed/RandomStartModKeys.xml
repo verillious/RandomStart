@@ -164,8 +164,5 @@
 	<RandomStartMod.SavedIdeoMissing>找不到所选的意识形态文件。请在随机开局设置中选择现有的已保存文件，或使用常规设置页面。</RandomStartMod.SavedIdeoMissing>
 	<RandomStartMod.SavedIdeoLoadFailed>无法加载所选的意识形态。请检查其游戏版本和所需模组，使用当前模组列表重新保存，或使用常规设置页面。本次随机开局已停止，未替换您的选择。</RandomStartMod.SavedIdeoLoadFailed>
 	<RandomStartMod.FluidMemeCountInfo>流动意识形态使用游戏的初始模因数量。强制模因和派系必需模因仍然适用。</RandomStartMod.FluidMemeCountInfo>
-	<RandomStartMod.NativePrototypeManual>原生开局原型需要从此步骤开始手动完成。已应用的选择会保留。请在常规设置页面中配置意识形态和其余选项；自动意识形态配置仍在开发中。</RandomStartMod.NativePrototypeManual>
-	<RandomStartMod.NativePrototypeFailed>原生开局原型遇到错误。请取消本次设置并返回主菜单。详细信息可在日志中查看。你可以使用常规随机按钮启动现有的开局流程。</RandomStartMod.NativePrototypeFailed>
-	<RandomStartMod.PreparingRandomStart>正在准备随机开局…</RandomStartMod.PreparingRandomStart>
-	<RandomStartMod.ContinueSetupManually>手动继续设置</RandomStartMod.ContinueSetupManually>
+	<RandomStartMod.CustomSetupRequired>所选剧本包含随机开局无法自动完成的自定义设置页面。请在随机开局设置中选择其他剧本，或明确启用常规设置页面以手动配置此剧本。</RandomStartMod.CustomSetupRequired>
 </LanguageData>

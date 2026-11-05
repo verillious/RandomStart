@@ -38,8 +38,6 @@ namespace RandomStartMod
 
     public class RandomStartSettings : ModSettings
     {
-        public bool openedSettings = false;
-
         public string difficulty = "Rough";
         public int mapSize = 250;
         public float planetCoverage = 0.3f;
@@ -262,7 +260,6 @@ namespace RandomStartMod
             if (factionsExcludeFromReputationRandomization == null)
                 factionsExcludeFromReputationRandomization = new List<string>();
 
-            Scribe_Values.Look(ref openedSettings, "openedSettings", false);
             Scribe_Values.Look(ref difficulty, "difficulty", "Rough");
             Scribe_Values.Look(ref mapSize, "mapSize", 250);
             Scribe_Values.Look(ref planetCoverage, "planetCoverage", 0.3f);

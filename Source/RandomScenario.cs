@@ -33,20 +33,18 @@ namespace RandomStartMod
             StartingItems.Prepare(Find.Scenario, settings);
             Find.Scenario.PreConfigure();
             Page firstPage = Find.Scenario.GetFirstConfigPage();
-            bool showPages = settings.useNormalSetupPages;
             var visited = new HashSet<Page>();
             for (Page page = firstPage; page != null; page = page.next)
             {
                 if (!visited.Add(page)) throw new InvalidOperationException("Scenario configuration pages form a cycle.");
-                if (page.GetType().Assembly != typeof(Page).Assembly) showPages = true;
+                if (!settings.useNormalSetupPages && page.GetType().Assembly != typeof(Page).Assembly)
+                    throw new InvalidOperationException("RandomStartMod.CustomSetupRequired".Translate());
             }
-            if (showPages)
+            if (settings.useNormalSetupPages)
             {
                 if (firstPage == null) throw new InvalidOperationException("This scenario has no configuration pages.");
                 // Keep the copied scenario/item plan and use the real page chain.
                 Find.WindowStack.Add(firstPage);
-                if (!settings.useNormalSetupPages)
-                    Find.WindowStack.Add(new Dialog_MessageBox("RandomStartMod.CustomSetupPages".Translate()));
                 return;
             }
             SetupRandomDifficulty(settings);
@@ -157,8 +155,7 @@ namespace RandomStartMod
 
         internal static void FinishStartingPawnSetup(RandomStartSettings settings)
         {
-            bool usePrepareModerately = RandomStartData.State?.NativeStartup == null
-                && settings.enablePrepareModeratelyIntegration && PrepareModeratelyCompat.IsAvailable;
+            bool usePrepareModerately = settings.enablePrepareModeratelyIntegration && PrepareModeratelyCompat.IsAvailable;
             if (usePrepareModerately)
             {
                 if (!string.IsNullOrEmpty(settings.selectedPrepareModeratelyFilter))

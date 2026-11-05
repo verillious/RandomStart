@@ -163,8 +163,5 @@
 	<RandomStartMod.SavedIdeoMissing>The selected ideology file cannot be found. Choose an existing saved ideology in Random Start settings, or use the normal setup screens.</RandomStartMod.SavedIdeoMissing>
 	<RandomStartMod.SavedIdeoLoadFailed>The selected ideology could not be loaded. Check its game version and required mods, re-save it with your current mod list, or use the normal setup screens. The random start has stopped without replacing your selection.</RandomStartMod.SavedIdeoLoadFailed>
 	<RandomStartMod.FluidMemeCountInfo>Fluid starts use the game's initial meme count. Forced and faction-required memes still apply.</RandomStartMod.FluidMemeCountInfo>
-	<RandomStartMod.NativePrototypeManual>The native startup prototype needs manual completion from this step. Choices already applied are retained. Configure ideology and any remaining options on the normal setup pages; automatic ideology configuration is still under development.</RandomStartMod.NativePrototypeManual>
-	<RandomStartMod.NativePrototypeFailed>The native startup prototype encountered an error. Cancel this setup and return to the main menu. Details are available in the log. You can use the normal Random button for the existing startup process.</RandomStartMod.NativePrototypeFailed>
-	<RandomStartMod.PreparingRandomStart>Preparing random start…</RandomStartMod.PreparingRandomStart>
-	<RandomStartMod.ContinueSetupManually>Continue setup manually</RandomStartMod.ContinueSetupManually>
+	<RandomStartMod.CustomSetupRequired>The selected scenario includes a custom setup page that Random Start cannot complete automatically. Choose another scenario in Random Start settings, or explicitly enable normal setup pages to configure this scenario manually.</RandomStartMod.CustomSetupRequired>
 </LanguageData>

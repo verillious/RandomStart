@@ -56,25 +56,24 @@ can also break a start.
 
 Do not expand an automatic panel importer, a third-party integration framework,
 or a dialog-answering system. Retire mod-specific controls where their continuing
-support cost exceeds their value, with explicit release notes. Roughly 600 of the
-current dedicated adapter lines belong to Prepare Moderately and Realistic Planets;
+support cost exceeds their value, with explicit release notes. In the earlier
+audit, roughly 600 adapter lines belonged to Prepare Moderately and Realistic Planets;
 removing those optional integrations is a separate opportunity from replacing the
 startup architecture. Initialization workarounds require verification before
 removal; retiring an optional feature must be described as a feature change.
 
-## Native page experiment: diagnostic only
+## Native page experiment: archived
 
-The [native startup prototype](native-startup-prototype.md) remains accessible
-through a development action, separate from the normal Random button. Its native
-entry/page handling, cover and handover are useful for investigating startup hooks.
-Its ideology/manual-dialog handovers fail the one-click acceptance requirement.
-It has added code while the old adapters remain, so it is not yet a demonstrated
-maintenance reduction.
+The [native startup prototype](native-startup-prototype.md) remains available in
+Git history and on its experimental branch. Its page driver, progress cover and
+dedicated Harmony observers are removed from this one-click branch. Its
+ideology/manual-dialog handovers fail the one-click acceptance requirement.
+See the [first simplification review](one-click-simplification.md) for the code
+removed and retained integration contracts.
 
-Pause expansion of that workflow as the planned default. Preserve the experiment
-for investigation; do not promote it merely because it exercises more native UI
-methods. The [Harmony audit](harmony-audit.md) and its tested execution guards are
-independently useful.
+Do not restore that workflow merely because it exercises more native UI methods.
+The [Harmony audit](harmony-audit.md) and its tested execution guards are
+independently useful and remain in the current implementation.
 
 Any future replacement must demonstrate, in a running licensed 1.6 game:
 
@@ -88,5 +87,7 @@ Any future replacement must demonstrate, in a running licensed 1.6 game:
 
 The cloud's stripped reference assemblies establish signatures, not runtime UI
 timing or compatibility. Portable policy/Harmony tests do not prove these gates.
-The normal Random button continues to use the existing implementation; recording
-this direction does not claim its current interactive fallback cases are fixed.
+The normal Random button uses the direct automatic implementation. Custom setup
+pages are an explicit automatic-start limitation; they now report an unsupported
+scenario instead of opening an unrequested setup wizard. Users can explicitly
+choose manual setup in advance when they want that different workflow.

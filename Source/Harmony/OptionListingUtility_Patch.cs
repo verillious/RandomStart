@@ -25,7 +25,7 @@ namespace RandomStartMod
                     RandomStartMod mod = LoadedModManager.GetMod<RandomStartMod>();
                     if (!Input.GetMouseButtonUp(0))
                         Find.WindowStack.Add(new Dialog_ModSettings(mod));
-                    else if (mod.CheckFirstTimeDialog())
+                    else
                         LongEventHandler.QueueLongEvent(RandomScenario.SetupForRandomPlay,
                             "GeneratingMap", false, GameAndMapInitExceptionHandlers.ErrorWhileGeneratingMap);
                 }));

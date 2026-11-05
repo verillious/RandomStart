@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using RimWorld;
-using RimWorld.Planet;
-using UnityEngine;
 using Verse;
 
 namespace RandomStartMod.Compat
@@ -13,13 +11,13 @@ namespace RandomStartMod.Compat
 
     public static class RealisticPlanetsCompat
     {
+        private static readonly OptionalModApi Api = new OptionalModApi("Realistic Planets", message => Log.Warning(message));
         private static Assembly realisticPlanetsAssembly;
         private static Type worldPresetUtilityType;
         private static Type worldPresetType;
         private static Type planetsGameComponentType;
         private static Type worldTypeType;
         private static Type axialTiltType;
-        private static Type planetsCreateWorldParamsType;
         private static Type worldTypeUtilityType;
         private static Type axialTiltUtilityType;
 
@@ -37,7 +35,6 @@ namespace RandomStartMod.Compat
                     planetsGameComponentType = realisticPlanetsAssembly.GetType("Planets_Code.Core.Planets_GameComponent");
                     worldTypeType = realisticPlanetsAssembly.GetType("Planets_Code.WorldGen.WorldType");
                     axialTiltType = realisticPlanetsAssembly.GetType("Planets_Code.WorldGen.AxialTilt");
-                    planetsCreateWorldParamsType = realisticPlanetsAssembly.GetType("Planets_Code.Core.Planets_CreateWorldParams");
                     worldTypeUtilityType = realisticPlanetsAssembly.GetType("Planets_Code.WorldGen.WorldTypeUtility");
                     axialTiltUtilityType = realisticPlanetsAssembly.GetType("Planets_Code.WorldGen.AxialTiltUtility");
                 }
@@ -51,7 +48,7 @@ namespace RandomStartMod.Compat
         public static bool IsAvailable =>
             realisticPlanetsAssembly != null &&
             worldPresetUtilityType != null &&
-            planetsCreateWorldParamsType != null;
+            worldPresetType != null && planetsGameComponentType != null;
 
         public static int GetWorldTypeEnumCount()
         {
@@ -200,79 +197,26 @@ namespace RandomStartMod.Compat
             }
         }
 
-        public static void GenerateRealisticPlanetWorld(
-            float planetCoverage,
-            string seedString,
-            OverallRainfall overallRainfall,
-            OverallTemperature overallTemperature,
-            OverallPopulation population,
-            LandmarkDensity landmarkDensity,
-            List<FactionDef> factions = null,
-            float pollution = 0f,
-            int oceanType = 3,
-            int axialTilt = 2,
-            string worldTypeName = "Planets.Vanilla",
-            bool randomiseWorld = false
-        )
+        public static void ApplyWorldSettings(int subdivisions, int oceanType, int axialTilt, string worldTypeName)
         {
-            if (!IsAvailable)
+            Api.TryRun(() =>
             {
-                Log.Warning("[RandomStart] [RealisticPlanetsCompat] Realistic Planets not available, falling back to standard world generation");
-                // Fall back to standard RimWorld world generation (synchronous)
-                Current.Game.World = WorldGenerator.GenerateWorld(planetCoverage, seedString, overallRainfall, overallTemperature, population, landmarkDensity, factions, pollution);
-                return;
-            }
+                if (!IsAvailable || planetsGameComponentType == null || worldTypeType == null || axialTiltType == null)
+                    throw new InvalidOperationException("Realistic Planets world settings are unavailable.");
 
-            try
-            {
-                Util.LogMessage("[RealisticPlanetsCompat] Starting Realistic Planets world generation");
-                RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
+                // Resolve the whole contract before changing another mod's state.
+                FieldInfo subcount = OptionalModApi.RequireField(planetsGameComponentType, "subcount", true, typeof(int));
+                FieldInfo preset = OptionalModApi.RequireField(planetsGameComponentType, "worldPreset", true, typeof(string));
+                FieldInfo worldType = OptionalModApi.RequireField(planetsGameComponentType, "worldType", true, worldTypeType);
+                FieldInfo tilt = OptionalModApi.RequireField(planetsGameComponentType, "axialTilt", true, axialTiltType);
+                object oceanValue = Enum.ToObject(worldTypeType, oceanType);
+                object tiltValue = Enum.ToObject(axialTiltType, axialTilt);
 
-                // Handle My Little Planet compatibility
-                if (ModsConfig.IsActive("Oblitus.MyLittlePlanet") || ModsConfig.IsActive("Oblitus.MyLittlePlanet_Steam"))
-                {
-                    Util.LogMessage("[RealisticPlanetsCompat] Set My Little Planet");
-                    var subcountField = planetsGameComponentType.GetField("subcount", BindingFlags.Public | BindingFlags.Static);
-                    subcountField?.SetValue(null, settings.myLittlePlanetSubcount);
-                }
-                else
-                {
-                    var subcountField = planetsGameComponentType.GetField("subcount", BindingFlags.Public | BindingFlags.Static);
-                    subcountField?.SetValue(null, 10);
-                }
-
-                // Set up world generation parameters
-                var worldPresetField = planetsGameComponentType.GetField("worldPreset", BindingFlags.Public | BindingFlags.Static);
-                worldPresetField?.SetValue(null, worldTypeName);
-
-                if (worldTypeType != null)
-                {
-                    var worldTypeField = planetsGameComponentType.GetField("worldType", BindingFlags.Public | BindingFlags.Static);
-                    var worldTypeValue = Enum.ToObject(worldTypeType, oceanType);
-                    worldTypeField?.SetValue(null, worldTypeValue);
-                }
-
-                if (axialTiltType != null)
-                {
-                    var axialTiltField = planetsGameComponentType.GetField("axialTilt", BindingFlags.Public | BindingFlags.Static);
-                    var axialTiltValue = Enum.ToObject(axialTiltType, axialTilt);
-                    axialTiltField?.SetValue(null, axialTiltValue);
-                }
-
-                Util.LogMessage("[RealisticPlanetsCompat] Parameters configured, generating world synchronously");
-
-                // Generate world synchronously - Realistic Planets should hook into this process
-                Current.Game.World = WorldGenerator.GenerateWorld(planetCoverage, seedString, overallRainfall, overallTemperature, population, landmarkDensity, factions, pollution);
-
-                Util.LogMessage("[RealisticPlanetsCompat] World generation completed successfully");
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"[RandomStart] [RealisticPlanetsCompat] Failed to generate realistic planet world: {ex.Message}\nStack trace: {ex.StackTrace}");
-                // Fall back to standard world generation (synchronous)
-                Current.Game.World = WorldGenerator.GenerateWorld(planetCoverage, seedString, overallRainfall, overallTemperature, population, landmarkDensity, factions, pollution);
-            }
+                subcount.SetValue(null, subdivisions);
+                preset.SetValue(null, worldTypeName);
+                worldType.SetValue(null, oceanValue);
+                tilt.SetValue(null, tiltValue);
+            });
         }
     }
-
 }

@@ -195,33 +195,6 @@ namespace RandomStartMod.Compat
             }
         }
 
-        public static string GetCurrentFilterName()
-        {
-            if (!IsAvailable)
-                return "";
-
-            try
-            {
-                var currentProperty = pawnFilterType.GetProperty(
-                    "Current",
-                    BindingFlags.Public | BindingFlags.Static
-                );
-                var currentFilter = currentProperty?.GetValue(null);
-
-                if (currentFilter != null)
-                {
-                    var nameProperty = pawnFilterType.GetProperty("Name");
-                    return nameProperty?.GetValue(currentFilter) as string ?? "";
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Warning($"[RandomStart] Failed to get current filter name: {ex.Message}");
-            }
-
-            return "";
-        }
-
         public static void RandomiseStartingPawns()
         {
             if (!IsAvailable)

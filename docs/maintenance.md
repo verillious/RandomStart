@@ -4,9 +4,10 @@ Follow the [one-click startup direction](automatic-compatibility.md): configure
 beforehand, click once and enter the game. Lower maintenance and compatibility
 improvements must preserve that experience. Routine interactive handover is not
 a successful automatic start.
-The [native startup prototype](native-startup-prototype.md) is retained as a
-diagnostic experiment, with expansion as the planned default paused. Its manual
-fallback does not meet the one-click requirement. The [Harmony audit](harmony-audit.md)
+The [native startup prototype](native-startup-prototype.md) is archived on its
+experimental branch. Its page controller and overlay are removed from this branch;
+the manual fallback did not meet the one-click requirement. See the
+[simplification review](one-click-simplification.md). The [Harmony audit](harmony-audit.md)
 and execution-guard fixes remain independently useful.
 
 ## Code layout

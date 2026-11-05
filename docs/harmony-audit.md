@@ -6,6 +6,11 @@ The objective is the smallest intervention that preserves normal game/mod work,
 not use of every Harmony feature. This audit does not certify every installed
 mod combination or RimWorld's UI lifecycle.
 
+The native page prototype discussed below is now archived on its experimental
+branch; its window/page observer patches are removed from this branch. The
+explicit-assembly patch registration, execution guards and real Harmony tests
+remain. See the [one-click simplification review](one-click-simplification.md).
+
 ## Findings applied in this change
 
 - `PatchAll` now receives the mod assembly explicitly. Harmony's parameterless
@@ -20,9 +25,9 @@ mod combination or RimWorld's UI lifecycle.
   excludes `__state`. A scope can therefore enter even after the original was
   skipped unless the prefix checks `__runOriginal`. The new tests demonstrate
   that behavior using the actual Harmony package, not a homemade dispatcher.
-- Native prototype page observers check `__runOriginal` and actual page opening.
-  They operate only while that prototype owns the current game's startup state.
-  Normal starts do not receive automatic page configuration/advancement.
+- Archived native prototype page observers checked `__runOriginal` and actual
+  page opening. Those observers and automatic page advancement are now removed
+  from this branch.
 - Cleanup finalizers return `void`, retain null-safe/idempotent disposal and
   preserve the original exception. They do not return `null` to suppress errors.
 
@@ -38,7 +43,7 @@ mod combination or RimWorld's UI lifecycle.
 | Research additions | Run normal starting grants, then use the normal completion API. |
 | Research removal / no-prerequisite completion | Two narrow boolean prefixes intentionally suppress selected grants during a scoped operation. These remain behavioral conflict points to test; they are not universal compatibility guarantees. |
 | Session lifetime | Current-game ownership; cleanup after `Game.InitNewGame` success or failure. |
-| Native prototype | Live native entry/page methods, gated observers and a one-attempt controller. No copied transition body. |
+| Archived native prototype | Page/window observers and controller are removed from this branch. The experimental branch preserves the investigation. |
 
 The scopes are not proof that unrelated mod work inside the same call is safe
 to remove. In particular, research overrides retain their existing semantics
@@ -59,8 +64,8 @@ the native method normally preserves participation.
 
 **Private-field injection / AccessTools field references / delegates** avoid some
 reflection boilerplate. They do not make another mod's private fields a stable
-contract. The prototype uses the existing publicized core reference build to
-access a finite set of native page inputs; this still needs version maintenance.
+contract. The archived prototype used the publicized core reference build to
+access a finite set of native page inputs; that approach still needs version maintenance.
 Replacing every old reflection adapter with Harmony accessors would not remove
 the dependency on other mods' internals.
 

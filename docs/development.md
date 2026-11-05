@@ -11,9 +11,10 @@ The pinned RimRef package provides compilation signatures with Ludeon's
 permission. It is not a runnable game. Harmony remains a required installed mod;
 the build does not bundle another copy of it.
 
-This branch includes a development-only [native startup prototype](native-startup-prototype.md).
-Its debug action exercises the real setup pages; the normal Random button keeps
-using the existing path. See the guide for implemented scope and runtime checks.
+This branch uses the direct one-click startup path. The page-driving prototype
+has been [archived on its experimental branch](native-startup-prototype.md), and
+its runtime code is removed here. See the [one-click simplification review](one-click-simplification.md)
+for changes, retained integrations and current limits.
 
 ## Local or cloud checks
 

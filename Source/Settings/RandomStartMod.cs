@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
@@ -50,8 +49,6 @@ namespace RandomStartMod
 
         public override void DoSettingsWindowContents(Rect inRect)
         {
-            settings.openedSettings = true;
-
             Rect tabRect = new Rect(inRect)
             {
                 y = inRect.y + 40f
@@ -152,35 +149,5 @@ namespace RandomStartMod
             return "RandomStartMod.Title".Translate();
         }
 
-        public bool CheckFirstTimeDialog()
-        {
-            if (!settings.openedSettings)
-            {
-                StringBuilder sb = new StringBuilder();
-                sb.Append("RandomStartMod.LaunchingWithoutConfiguring".Translate("<b>" + "RandomStartMod.Title".Translate() + "</b>"));
-                sb.AppendInNewLine(" ");
-                sb.AppendInNewLine("AreYouSure".Translate());
-                sb.AppendInNewLine(" ");
-                sb.AppendInNewLine(" ");
-                sb.AppendInNewLine("RandomStartMod.SettingsAccess".Translate());
-                Find.WindowStack.Add(
-                    new Dialog_MessageBox(
-                        sb.ToString(),
-                        "ModSettings".Translate(),
-                        () => Find.WindowStack.Add(new Dialog_ModSettings(this)),
-                        "Start".Translate(),
-                        () => LongEventHandler.QueueLongEvent(delegate
-                            {
-                                RandomScenario.SetupForRandomPlay();
-                            }, "GeneratingMap", doAsynchronously: false, GameAndMapInitExceptionHandlers.ErrorWhileGeneratingMap),
-                        "RandomStartMod.Title".Translate()
-                        )
-                    );
-                settings.openedSettings = true;
-                WriteSettings();
-                return false;
-            }
-            return true;
-        }
     }
 }
