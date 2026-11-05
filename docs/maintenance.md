@@ -38,6 +38,8 @@ the game, not merely moving text between files.
 
 - Use the SDK-style build, pinned dependencies, lockfiles, CI and existing tests.
   Keep the 1.6 runtime target at net472; .NET 10 belongs to the separate 1.7 port.
+- GitHub Actions use verified Node 24 releases pinned to full commit revisions.
+  Update the pins deliberately and validate their manifests and the hosted run.
 - `.editorconfig` defines formatting for touched files. Correctness analyzers
   catch stack-destroying rethrows (CA2200) and exceptions from finally blocks
   (CA2219). Broader analyzer/nullability adoption should be incremental.
