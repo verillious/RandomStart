@@ -1,103 +1,92 @@
-# Primary goal: automatic compatibility with minimal setup
+# One-click starts with maintainable compatibility
 
-The user's priority is broad out-of-the-box compatibility and minimal user fuss.
-This takes precedence over adding more optional integrations or randomization
-features. Preserve the mod's purpose: press Random, receive a valid randomized
-start, and let the installed game/mods perform their normal initialization.
+The core product requirement is: configure preferences beforehand, click Random
+once, wait for generation, and enter the game. Successful automatic starts must
+not require acknowledging warnings, completing setup pages, or answering another
+mod's startup questions. A progress cover alone does not satisfy this requirement.
 
-Maintenance cost is a primary constraint: shrink responsibility for other mods'
-internals. Do not build an automatic panel importer or a new integration framework.
-Preserve Random Start's own configuration; retiring controls that exist solely
-for another mod may be necessary and must be documented explicitly.
+The priorities are:
 
-The [native startup prototype](native-startup-prototype.md) implements the first
-development-only milestone. The [Harmony audit](harmony-audit.md) records the
-patching decisions and actual pinned-runtime tests.
+1. Preserve the configurable one-click start that defines Random Start.
+2. Reduce the code and third-party behavior its maintainer must own.
+3. Improve compatibility through normal game data/APIs and scoped, additive hooks
+   within those constraints.
 
-## Default behavior to work toward
+This supersedes the earlier plan that accepted manual page/dialog handover as a
+normal fallback and treated a native page controller as the required destination.
+The user explicitly rejected that change to the core experience.
 
-- Run the actual new-game configuration lifecycle, applying a captured random
-  plan to its supported inputs.
-- Preserve scenario-required pawns, xenotypes, factions, arrival methods, and
-  other constraints. Other mods' native settings and validation must participate.
-- Automatically use valid existing defaults where no Random Start override was
-  requested. Avoid asking users to identify which compatibility switches to set.
-- Automatically advance supported steps only after initialization and validation
-  complete. Preserve asynchronous work and genuine mod-required decisions.
-- Cover automated pages with a progress screen while preserving their normal
-  lifecycle and drawing. Reveal pages/dialogs that need input; avoid visible
-  setup-page flicker during ordinary automatic advancement.
-- Pause only for missing required data or a choice that cannot safely be inferred;
-  keep completed random choices when handing control to the user.
-- Prefer a shared solution to a class of startup hooks over another package-ID
-  exception. Retain a small adapter only for a demonstrated missing capability.
+## Startup contract
 
-## The remaining architectural gap
+- Preserve Random Start's core settings for scenarios, worlds, factions, tiles,
+  difficulty, ideology, pawns, items and research.
+- Resolve supported choices from saved configuration and valid game/scenario
+  constraints during planning. Routine confirmations must not become additional
+  clicks in a successful start.
+- Prefer live generation APIs, scenario data and normal callbacks over copied
+  implementations. Keep overrides local to this game and explicit start phase.
+- Do not guess answers to unfamiliar dialogs, click buttons by label, suppress
+  arbitrary windows, or replace required mod input with an invented choice.
+- A workflow that cannot start without new information has a compatibility limit.
+  Treat it as an unsupported automatic workflow, with a clear failure reason,
+  rather than quietly converting Random into an interactive setup wizard.
+- Preserve deliberate manual setup as an explicitly selected mode. It does not
+  count as successful one-click compatibility and must not become the default.
+- Actual generation errors still need reporting; eliminating routine prompts does
+  not mean hiding failures or continuing with a broken game.
 
-Current automatic startup still calls `SetupRandomDifficulty`,
-`SetupRandomPlanet`, and `SetupRandomIdeology` itself. It obtains the normal
-configuration page chain, but only opens it when the manual setting is enabled
-or a non-vanilla page type is detected. Vanilla pages otherwise do not receive
-normal open/draw/transition calls.
+Maximum compatibility with arbitrary mandatory custom UI, no interactions, all
+mod-specific features and no maintenance is not a universal contract we can
+deliver. Keep the one-click product and document limits instead of accumulating
+private-API adapters to promise every combination.
 
-A mod can patch a vanilla page's `PreOpen`, `PostOpen`, drawing or transition
-method without introducing a custom page type. The existing type-based detection
-therefore misses an important class of integrations. Calling scenario callbacks
-and restoring normal item/research APIs helps, but does not close this gap.
+## Implementation direction
 
-Adding more detection rules is not the intended long-term solution. Automatically
-switching every patched page to manual operation would also create unnecessary
-user work: patch presence alone does not establish incompatibility.
+Continue simplifying the existing automatic path using game-owned generation and
+validation wherever possible. The useful refactors already made include scenario
+copying, per-game state, preserved pawn requests, normal item delivery, additive
+research completion and native meme generation. Keep these independently useful
+changes regardless of the page experiment.
 
-## Next implementation milestone
+The startup-hook gap remains real: some mods initialize through vanilla pages'
+open/draw/transition methods that the direct path skips. Fix a missing lifecycle
+boundary when it can be reused correctly and without introducing a setup journey.
+Do not manually call every callback indiscriminately; duplicate initialization
+can also break a start.
 
-Build and validate one native startup path for 1.6 before expanding the named
-adapter list. Keep this work separate from the experimental 1.7 port.
+Do not expand an automatic panel importer, a third-party integration framework,
+or a dialog-answering system. Retire mod-specific controls where their continuing
+support cost exceeds their value, with explicit release notes. Roughly 600 of the
+current dedicated adapter lines belong to Prepare Moderately and Realistic Planets;
+removing those optional integrations is a separate opportunity from replacing the
+startup architecture. Initialization workarounds require verification before
+removal; retiring an optional feature must be described as a feature change.
 
-1. Enter through `Page_SelectScenario.BeginScenarioConfiguration` so normal
-   initialization and mods patching that entry point execute. Bind the pending
-   random plan to the game created by that entry point; ordinary New Colony
-   starts must remain unaffected.
-2. Capture choices once. Apply supported values at the appropriate page/data
-   boundaries without clearing data produced by scenario or mod callbacks.
-3. Preserve real page opening, rendering where required, validation, and normal
-   transitions. The inspected API includes `Page.prev/next/nextAct`,
-   `Window.PreOpen/PostOpen`, `Page.CanDoNext/DoNext`, and the window stack.
-   Their existence does not establish their exact timing or side effects.
-4. Automate the supported vanilla steps and preserve mod hooks attached to them.
-   Do not replace their bodies with copies. Do not call arbitrary methods in an
-   optional assembly to guess how it initializes.
-5. Handle asynchronous transitions and blocking dialogs explicitly. Avoid
-   advancing the same step twice, generating a world twice, blindly accepting an
-   unfamiliar dialog, or assuming a default `CanDoNext == true` proves an unknown
-   page needs no meaningful input.
-6. For mod-provided steps, honor a usable native default where readiness can be
-   established. Otherwise leave that step available with the existing plan intact.
-   Do not restart the entire setup or silently discard requested constraints.
-7. Remove manual KCSG/SOS2/planet initialization calls only after their native
-   hooks have been traced and verified to run once. Optional feature integrations
-   can remain where they provide a genuinely separate function.
+## Native page experiment: diagnostic only
 
-The reference metadata confirms useful native APIs and fields, including world
-parameter inputs, starting-site selection, ideology pages, and starting-pawn
-pages. It contains stripped method bodies and cannot demonstrate frame order,
-window behavior, asynchronous completion, or the semantics of patched UI code.
-A guessed auto-clicker based on those signatures would not be a verified native
-startup implementation.
+The [native startup prototype](native-startup-prototype.md) remains accessible
+through a development action, separate from the normal Random button. Its native
+entry/page handling, cover and handover are useful for investigating startup hooks.
+Its ideology/manual-dialog handovers fail the one-click acceptance requirement.
+It has added code while the old adapters remain, so it is not yet a demonstrated
+maintenance reduction.
 
-## Required validation before replacing the default
+Pause expansion of that workflow as the planned default. Preserve the experiment
+for investigation; do not promote it merely because it exercises more native UI
+methods. The [Harmony audit](harmony-audit.md) and its tested execution guards are
+independently useful.
 
-Trace a normal startup in a running licensed 1.6 game and compare it with the new
-path. Verify callback order/count, queued world creation, ideology/pawn timing,
-validation warnings, cancellation, and asynchronous page transitions. Then test
-representative page-hook, world-generation, scenario, ideology and pawn mods.
+Any future replacement must demonstrate, in a running licensed 1.6 game:
 
-Use automated controller/policy tests for sequencing, duplicate-advance guards,
-plan preservation and failure handling, alongside those engine checks. The
-current cloud contains reference assemblies and test tools, not a running game.
-That limits what can be claimed about a replacement for the entire startup flow.
+1. A complete configured automatic start, including Ideology, with no routine
+   page/dialog acknowledgments after clicking Random.
+2. Preserved scenario constraints and callback order/count, including queued
+   generation, cancellation and failures.
+3. Representative compatibility gains with old adapters actually removed.
+4. One smaller supported startup implementation after retiring redundant paths;
+   avoid maintaining two production startup systems indefinitely.
 
-The existing development builds remain intermediate work. The prototype is not
-the default startup path and does not yet automate ideology. No complete native
-page-flow replacement or runtime verification is claimed. Prioritize finishing
-and verifying this path over feature expansion or more guessed exceptions.
+The cloud's stripped reference assemblies establish signatures, not runtime UI
+timing or compatibility. Portable policy/Harmony tests do not prove these gates.
+The normal Random button continues to use the existing implementation; recording
+this direction does not claim its current interactive fallback cases are fixed.

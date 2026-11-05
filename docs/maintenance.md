@@ -1,9 +1,13 @@
 # Maintaining the mod
 
-Follow the [automatic compatibility direction](automatic-compatibility.md): normal
-game/mod initialization and minimal user setup take priority over feature growth.
-The [native startup prototype](native-startup-prototype.md) and
-[Harmony audit](harmony-audit.md) track the first implementation milestone.
+Follow the [one-click startup direction](automatic-compatibility.md): configure
+beforehand, click once and enter the game. Lower maintenance and compatibility
+improvements must preserve that experience. Routine interactive handover is not
+a successful automatic start.
+The [native startup prototype](native-startup-prototype.md) is retained as a
+diagnostic experiment, with expansion as the planned default paused. Its manual
+fallback does not meet the one-click requirement. The [Harmony audit](harmony-audit.md)
+and execution-guard fixes remain independently useful.
 
 ## Code layout
 

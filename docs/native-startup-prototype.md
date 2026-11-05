@@ -1,9 +1,13 @@
 # Native startup prototype (RimWorld 1.6)
 
-This is the first implementation milestone toward a smaller Random Start that
-sets inputs and lets RimWorld and installed mods perform initialization. It is
-not yet the replacement for the normal Random button. It has compiled and its
-portable sequencing/Harmony tests pass; no in-game execution is claimed.
+**Status: diagnostic experiment; expansion as the planned default is paused.**
+The [one-click startup requirement](automatic-compatibility.md) takes precedence:
+interactive handover does not meet the core mod concept. This prototype is useful
+for investigating native startup hooks, but its manual dialogs/ideology steps
+disqualify its current behavior as a replacement for the normal Random button.
+It has compiled and its portable sequencing/Harmony tests pass; no in-game
+execution is claimed. The sections below describe the experiment as implemented,
+not an approved change to the normal startup experience.
 
 ## Trying the prototype
 
@@ -91,10 +95,10 @@ later supported pages still receive their configured inputs once. Finish the
 remaining pages normally, including ideology. Their being shown is not evidence
 that a mod's defaults are safe to accept automatically.
 
-This is therefore not yet a fully automatic configured start with Ideology.
-The initial purpose is to exercise native entry, page ownership and transitions
-before changing the default or deleting adapters. The configured manual-pages
-option continues to control the existing startup path, not this debug action.
+This is therefore not a fully automatic configured start with Ideology. Keep it
+for investigating native entry, page ownership and transitions. Do not promote
+its manual fallback behavior to the default. The configured manual-pages option
+continues to control the existing startup path, not this debug action.
 
 Exceptions stop the prototype and clear its per-game override state. The error
 dialog asks the tester to cancel that setup. Do not continue a partially failed
@@ -104,7 +108,9 @@ prototype as a verified configuration.
 
 The cloud has stripped reference assemblies, not a runnable licensed game.
 Portable tests cannot establish the order and behavior of native UI callbacks.
-Before advancing this prototype to the normal Random button:
+Use these checks to investigate the experiment. Any future production replacement
+must also pass the no-routine-interaction and maintenance-reduction gates in the
+[one-click direction](automatic-compatibility.md):
 
 1. Trace a minimal start without Ideology, then with it. Check `Player.log` entries
    prefixed `[Random Start native prototype]` for opened pages and acceptance

@@ -1,8 +1,9 @@
 # Random Start maintenance plan
 
-The primary product goal is [automatic compatibility with minimal setup](automatic-compatibility.md).
-Prioritize the shared native startup path over new features or a growing list of
-mod-specific switches.
+The primary product goal is a [configurable one-click start](automatic-compatibility.md).
+Reduce maintenance and improve compatibility within that constraint. An automated
+page journey with routine confirmation dialogs does not meet it. The native page
+prototype is a diagnostic experiment; expansion as the planned default is paused.
 
 See the [general compatibility audit](compatibility.md) for a plan to reduce
 special-case integrations by preserving the normal game startup, scenario
