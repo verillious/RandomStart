@@ -7,13 +7,15 @@ using Verse;
 namespace RandomStartMod
 {
     // Uses the normal item's generation/serialization/arrival implementation.
-    public sealed class ScenPart_RandomStartThing : ScenPart_StartingThing_Defined
+    internal sealed class StartingItemTemplate : ScenPart_StartingThing_Defined
     {
-        public ScenPart_RandomStartThing() { }
-        internal static IEnumerable<ThingDef> EligibleThings(ScenPartDef definition) => new ScenPart_RandomStartThing { def = definition }.PossibleThingDefs();
+        private StartingItemTemplate() { }
+        internal static IEnumerable<ThingDef> EligibleThings(ScenPartDef definition) => new StartingItemTemplate { def = definition }.PossibleThingDefs();
         internal static ScenPart Create(ScenPartDef definition, ThingDef thing, ThingDef material, int amount)
         {
-            return new ScenPart_RandomStartThing { def = definition, thingDef = thing, stuff = material, count = amount };
+            // Publicized core fields are already part of the pinned 1.6 build.
+            // Store the actual vanilla type so saves do not require our helper.
+            return new ScenPart_StartingThing_Defined { def = definition, thingDef = thing, stuff = material, count = amount };
         }
     }
 
@@ -36,7 +38,7 @@ namespace RandomStartMod
                 candidate => candidate.scenPartClass == typeof(ScenPart_StartingThing_Defined));
             if (definition == null)
                 throw new InvalidOperationException("No standard starting-item scenario definition is available.");
-            var pool = ScenPart_RandomStartThing.EligibleThings(definition).Where(thing =>
+            var pool = StartingItemTemplate.EligibleThings(definition).Where(thing =>
                 (int)thing.techLevel > 0 && (int)thing.techLevel <= settings.randomItemTechLevelLimit).ToList();
             float remaining = settings.enableMarketValueLimit ? settings.randomItemTotalMarketValueLimit : float.PositiveInfinity;
             int requested = settings.randomItemRange.RandomInRange;
@@ -47,7 +49,7 @@ namespace RandomStartMod
                 float value = thing.GetStatValueAbstract(StatDefOf.MarketValue, material);
                 int amount = StartingItemBudget.AffordableCount(thing.stackLimit, value, remaining);
                 if (amount == 0) { pool.Remove(thing); i--; continue; }
-                scenario.parts.Add(ScenPart_RandomStartThing.Create(definition, thing, material, amount));
+                scenario.parts.Add(StartingItemTemplate.Create(definition, thing, material, amount));
                 remaining -= value * amount;
             }
         }
