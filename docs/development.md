@@ -76,6 +76,13 @@ Nothing here uploads to Steam Workshop.
 | My Little Planet | Change the subdivision setting and confirm the resulting world size. |
 | Realistic Planets / Prepare Moderately | Exercise the existing reflected integrations with their currently installed versions. They were not rewritten in this build change. |
 
+## General compatibility changes
+
+See [compatibility-testing.md](compatibility-testing.md) for the current refactor,
+feature semantics, and the in-game regression matrix. The standard scenario path
+now owns pawn counts and item delivery. Custom configuration pages can require
+manual completion; compilation does not validate their behavior.
+
 ## Optional-mod compatibility boundaries
 
 KCSG, SOS2, Real Ruins, and No Pause integrations now resolve their external

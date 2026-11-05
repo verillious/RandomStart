@@ -11,6 +11,10 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" PrivateAssets="all" />
     <!-- Test the production reflection boundary without loading game assemblies. -->
     <Compile Include="../Source/Compat/OptionalModApi.cs" Link="OptionalModApi.cs" />
+    <Compile Include="../Source/AdditiveOptions.cs" Link="AdditiveOptions.cs" />
+    <Compile Include="../Source/StartSession.cs" Link="StartSession.cs" />
+    <Compile Include="../Source/StartingItemBudget.cs" Link="StartingItemBudget.cs" />
+    <Compile Include="../Source/DependencyGraph.cs" Link="DependencyGraph.cs" />
     <ProjectReference Include="../Source/RandomStartMod.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <None Include="../Source/bin/$(Configuration)/net472/RandomStartMod.dll"
           Link="RandomStartMod.dll" CopyToOutputDirectory="PreserveNewest" />

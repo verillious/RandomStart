@@ -157,4 +157,7 @@
 	<RandomStartMod.TooltipTitles.FilterStartingBiome>Filter Starting Biome</RandomStartMod.TooltipTitles.FilterStartingBiome>
 	<RandomStartMod.TooltipTitles.FilterStartingHilliness>Filter Starting Hilliness</RandomStartMod.TooltipTitles.FilterStartingHilliness>
 	<RandomStartMod.TooltipTitles.FilterStartingTemperature>Filter Starting Temperature</RandomStartMod.TooltipTitles.FilterStartingTemperature>
+	<RandomStartMod.CustomSetupPages>This scenario adds mod-specific setup pages. Random Start has selected the scenario and prepared its starting items. Continue through the normal setup screens to configure the world, storyteller and any required mod options.</RandomStartMod.CustomSetupPages>
+	<RandomStartMod.UseNormalSetupPages>Use normal setup screens</RandomStartMod.UseNormalSetupPages>
+	<RandomStartMod.UseNormalSetupPagesTooltip>Keep the randomly selected scenario and starting-item plan, but configure the world, storyteller and ideology through the normal screens. Enable this when another mod needs setup that Random Start cannot detect automatically.</RandomStartMod.UseNormalSetupPagesTooltip>
 </LanguageData>

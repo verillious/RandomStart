@@ -1,5 +1,9 @@
 # Random Start maintenance plan
 
+See the [general compatibility audit](compatibility.md) for a plan to reduce
+special-case integrations by preserving the normal game startup, scenario
+callbacks, and additive patches.
+
 ## Target and current evidence
 
 Maintain a stable RimWorld 1.6 track and, as requested, an experimental 1.7
@@ -77,6 +81,16 @@ and Player.log or a HugsLib log when available. Remove personal information and
 credentials from logs. Distinguish reported, reproduced, fixed, and verified;
 keep feature requests separate. Do not require a full mod list before trying a
 minimal reproduction.
+
+## Compatibility implementation
+
+The general compatibility refactor implements additive UI changes, per-game
+state/settings, scenario copying and callbacks, custom-page handover, standard
+pawn generation constraints, scenario-driven item delivery, and narrow research
+grant/completion hooks. See [implementation details and in-game checks](compatibility-testing.md).
+The original issue table below records the audit baseline; remaining algorithmic
+bugs (including tile filtering, genes, and goodwill) are separate follow-up work.
+Real-mod integration checks and experimental 1.7 validation remain outstanding.
 
 ## Prioritized work
 

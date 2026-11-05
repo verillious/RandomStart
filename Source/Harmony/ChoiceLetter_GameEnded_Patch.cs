@@ -1,38 +1,25 @@
+using System.Collections.Generic;
 using HarmonyLib;
 using RimWorld;
 using Verse;
 
 namespace RandomStartMod
 {
-    [HarmonyPatch(typeof(ChoiceLetter), "OpenLetter")]
-    public class ChoiceLetter_GameEnded_Patch
+    [HarmonyPatch(typeof(ChoiceLetter_GameEnded), nameof(ChoiceLetter_GameEnded.Choices), MethodType.Getter)]
+    public static class ChoiceLetter_GameEnded_Patch
     {
-        [HarmonyPrefix]
-        public static bool Prefix(ChoiceLetter __instance)
+        private sealed class RandomStartChoice : DiaOption
         {
-            if (__instance.GetType() != typeof(ChoiceLetter_GameEnded))
+            internal RandomStartChoice() : base("RandomStartMod.Title".Translate())
             {
-                return true;
+                resolveTree = true;
+                action = () => LongEventHandler.QueueLongEvent(RandomScenario.SetupForRandomPlay,
+                    "GeneratingMap", false, GameAndMapInitExceptionHandlers.ErrorWhileGeneratingMap);
             }
-            DiaNode diaNode = new DiaNode(__instance.text);
-            diaNode.options.AddRange(__instance.Choices);
-
-            DiaOption randomStartOption = new DiaOption("RandomStartMod.Title".Translate());
-            randomStartOption.action = delegate
-            {
-                LongEventHandler.QueueLongEvent(delegate
-                {
-                    RandomScenario.SetupForRandomPlay();
-                }, "GeneratingMap", doAsynchronously: false, GameAndMapInitExceptionHandlers.ErrorWhileGeneratingMap);
-            };
-            randomStartOption.resolveTree = true;
-
-            Util.LogMessage("Patching GameEnded letter");
-            diaNode.options.Add(randomStartOption);
-            Dialog_NodeTreeWithFactionInfo window = new Dialog_NodeTreeWithFactionInfo(diaNode, __instance.relatedFaction, delayInteractivity: false, __instance.radioMode, __instance.title);
-            Find.WindowStack.Add(window);
-            return false;
         }
 
+        [HarmonyPostfix]
+        public static IEnumerable<DiaOption> Postfix(IEnumerable<DiaOption> __result) =>
+            AdditiveOptions.AppendOnce(__result, option => option is RandomStartChoice, () => new RandomStartChoice());
     }
 }

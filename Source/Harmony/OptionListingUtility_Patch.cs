@@ -1,70 +1,34 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using HarmonyLib;
 using RimWorld;
-using Verse;
 using UnityEngine;
-using System.Linq;
+using Verse;
 
 namespace RandomStartMod
 {
-    [HarmonyPatch(typeof(OptionListingUtility), "DrawOptionListing")]
-    public class OptionListingUtility_Patch
+    [HarmonyPatch(typeof(OptionListingUtility), nameof(OptionListingUtility.DrawOptionListing))]
+    public static class OptionListingUtility_Patch
     {
-        private static bool justEnteredMainMenu = false;
+        private sealed class RandomStartOption : ListableOption
+        {
+            public RandomStartOption(Action action) : base("Random".Translate(), action, null) { }
+        }
 
         [HarmonyPrefix]
-        public static void Prefix(ref List<ListableOption> optList)
+        public static void Prefix(List<ListableOption> optList)
         {
-            if (Current.ProgramState != ProgramState.Entry)
-            {
-                justEnteredMainMenu = false;
-                return;
-            }
-
-            if (!justEnteredMainMenu)
-            {
-                justEnteredMainMenu = true;
-                RandomStartData.startedFromRandom = false;
-            }
-
-            int index = 0;
-
-            if (ModsConfig.IsActive("phoenix.ContinueButton") || ModsConfig.IsActive("phoenix.ContinueButton_Steam"))
-            {
-                index = 1;
-            }
-
-            foreach (ListableOption opt in optList)
-            {
-                if (opt.label == "NewColony".Translate())
+            if (Current.ProgramState != ProgramState.Entry || optList == null) return;
+            AdditiveOptions.InsertBefore(optList, option => option.label == "NewColony".Translate(),
+                option => option is RandomStartOption, () => new RandomStartOption(() =>
                 {
-                    RandomStartMod randomStartMod = LoadedModManager.GetMod<RandomStartMod>();
-                    ListableOption newOption = new ListableOption(
-                    "Random".Translate(),
-                    delegate
-                    {
-                        if (Input.GetMouseButtonUp(0))
-                        {
-                            if (randomStartMod.CheckFirstTimeDialog())
-                            {
-                                LongEventHandler.QueueLongEvent(delegate
-                                {
-                                    RandomScenario.SetupForRandomPlay();
-                                }, "GeneratingMap", doAsynchronously: false, GameAndMapInitExceptionHandlers.ErrorWhileGeneratingMap);
-                            }
-
-                        }
-                        else
-                        {
-                            Find.WindowStack.Add(new Dialog_ModSettings(randomStartMod));
-                        }
-                    },
-                    null
-                    );
-                    optList.Insert(index, newOption);
-                    break;
-                }
-            }
+                    RandomStartMod mod = LoadedModManager.GetMod<RandomStartMod>();
+                    if (!Input.GetMouseButtonUp(0))
+                        Find.WindowStack.Add(new Dialog_ModSettings(mod));
+                    else if (mod.CheckFirstTimeDialog())
+                        LongEventHandler.QueueLongEvent(RandomScenario.SetupForRandomPlay,
+                            "GeneratingMap", false, GameAndMapInitExceptionHandlers.ErrorWhileGeneratingMap);
+                }));
         }
     }
 }

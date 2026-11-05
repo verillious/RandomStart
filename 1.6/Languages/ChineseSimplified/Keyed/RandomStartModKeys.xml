@@ -158,4 +158,7 @@
 	<RandomStartMod.TooltipTitles.FilterStartingBiome>过滤起始生物群落</RandomStartMod.TooltipTitles.FilterStartingBiome>
 	<RandomStartMod.TooltipTitles.FilterStartingHilliness>过滤起始地形起伏</RandomStartMod.TooltipTitles.FilterStartingHilliness>
 	<RandomStartMod.TooltipTitles.FilterStartingTemperature>过滤起始温度</RandomStartMod.TooltipTitles.FilterStartingTemperature>
+	<RandomStartMod.CustomSetupPages>此剧本包含模组专属的设置页面。随机开局已选择剧本并准备好起始物品。请继续完成常规设置页面，以配置世界、叙事者以及必要的模组选项。</RandomStartMod.CustomSetupPages>
+	<RandomStartMod.UseNormalSetupPages>使用常规设置页面</RandomStartMod.UseNormalSetupPages>
+	<RandomStartMod.UseNormalSetupPagesTooltip>保留随机选择的剧本和起始物品方案，但通过常规页面配置世界、叙事者和意识形态。如果其他模组需要随机开局无法自动识别的设置，请启用此选项。</RandomStartMod.UseNormalSetupPagesTooltip>
 </LanguageData>

@@ -327,6 +327,9 @@ namespace RandomStartMod
             listingStandard.Begin(rect);
 
             // Scenarios
+            DoSettingToggle(listingStandard.GetRect(24f), "RandomStartMod.UseNormalSetupPages".Translate(),
+                "RandomStartMod.UseNormalSetupPagesTooltip".Translate(), ref settings.useNormalSetupPages);
+            scenarioListingHeight += 24f;
             DoSettingToggle(listingStandard.GetRect(24f), "Randomize".Translate(), "RandomStartMod.TooltipTitles.RandomizeScenario".Translate().AsTipTitle() + "\n\n" + "RandomStartMod.Scenarios.RandomizeScenarioTooltip".Translate(), ref settings.createRandomScenario);
             scenarioListingHeight += 24f;
             if (!settings.createRandomScenario)

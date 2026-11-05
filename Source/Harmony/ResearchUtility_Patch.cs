@@ -1,230 +1,92 @@
-﻿using HarmonyLib;
-using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using HarmonyLib;
+using RimWorld;
 using Verse;
 
 namespace RandomStartMod
 {
-    [HarmonyPatch(typeof(ResearchUtility), "ApplyPlayerStartingResearch")]
-    internal class ResearchUtility_Patch
+    [HarmonyPatch(typeof(ResearchUtility), nameof(ResearchUtility.ApplyPlayerStartingResearch))]
+    internal static class ResearchUtility_Patch
     {
-        static public void FinishProjectOptionalPrequisites(ResearchProjectDef proj, bool doCompletionDialog = false, Pawn researcher = null, bool doCompletionLetter = true, bool doPrerequisites = true)
+        [HarmonyPrefix]
+        static void Prefix(out IDisposable __state)
         {
-            if (proj.prerequisites != null && doPrerequisites)
-            {
-                for (int i = 0; i < proj.prerequisites.Count; i++)
+            var state = RandomStartData.State;
+            __state = null;
+            if (state == null || !state.Settings.removeStartingResearch) return;
+            __state = state.GrantingResearch.Enter(true);
+            state.ProtectedIdeologyResearch.Clear();
+            var memes = Faction.OfPlayer?.ideos?.PrimaryIdeo?.memes;
+            if (memes == null) return;
+            foreach (var meme in memes)
+                foreach (var project in meme.startingResearchProjects ?? new List<ResearchProjectDef>())
                 {
-                    if (!proj.prerequisites[i].IsFinished)
-                    {
-                        Find.ResearchManager.FinishProject(proj.prerequisites[i], doCompletionDialog, researcher, doCompletionLetter);
-                    }
+                    state.ProtectedIdeologyResearch.Add(project);
+                    state.ProtectedIdeologyResearch.UnionWith(DependencyGraph.Descendants(project, item => item.prerequisites));
                 }
-            }
-
-
-            int num = Find.ResearchManager.GetTechprints(proj);
-            if (num < proj.TechprintCount)
-            {
-                Find.ResearchManager.AddTechprints(proj, proj.TechprintCount - num);
-            }
-
-            if (proj.RequiredAnalyzedThingCount > 0)
-            {
-                for (int j = 0; j < proj.requiredAnalyzed.Count; j++)
-                {
-                    CompProperties_CompAnalyzableUnlockResearch compProperties = proj.requiredAnalyzed[j].GetCompProperties<CompProperties_CompAnalyzableUnlockResearch>();
-                    Find.AnalysisManager.ForceCompleteAnalysisProgress(compProperties.analysisID);
-                }
-            }
-
-            if (proj.baseCost > 0f)
-            {
-                Find.ResearchManager.progress[proj] = proj.baseCost;
-            }
-            else if (ModsConfig.AnomalyActive && proj.knowledgeCost > 0f)
-            {
-                Find.ResearchManager.anomalyKnowledge.SetOrAdd(proj, proj.knowledgeCost);
-                Find.SignalManager.SendSignal(new Signal("ThingStudied", global: true));
-            }
-
-            if (researcher != null)
-            {
-                TaleRecorder.RecordTale(TaleDefOf.FinishedResearchProject, researcher, proj);
-            }
-
-            Find.ResearchManager.ReapplyAllMods();
-            if (proj.recalculatePower)
-            {
-                try
-                {
-                    foreach (Map map in Find.Maps)
-                    {
-                        foreach (Thing item in map.listerThings.ThingsInGroup(ThingRequestGroup.PowerTrader))
-                        {
-                            CompPowerTrader compPowerTrader;
-                            if ((compPowerTrader = item.TryGetComp<CompPowerTrader>()) != null)
-                            {
-                                compPowerTrader.SetUpPowerVars();
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex.ToString());
-                }
-            }
-
-            if (doCompletionDialog)
-            {
-                DiaNode diaNode = new DiaNode((string)("ResearchFinished".Translate(proj.LabelCap) + "\n\n" + proj.description));
-                diaNode.options.Add(DiaOption.DefaultOK);
-                DiaOption diaOption = new DiaOption("ResearchScreen".Translate());
-                diaOption.resolveTree = true;
-                diaOption.action = delegate
-                {
-                    Find.MainTabsRoot.SetCurrentTab(MainButtonDefOf.Research);
-                    MainTabWindow_Research mainTabWindow_Research;
-                    if ((mainTabWindow_Research = MainButtonDefOf.Research.TabWindow as MainTabWindow_Research) != null && proj.tab != null)
-                    {
-                        mainTabWindow_Research.CurTab = proj.tab;
-                    }
-                };
-                diaNode.options.Add(diaOption);
-                Find.WindowStack.Add(new Dialog_NodeTree(diaNode, delayInteractivity: true));
-            }
-
-            if (doCompletionLetter && !proj.discoveredLetterTitle.NullOrEmpty() && Find.Storyteller.difficulty.AllowedBy(proj.discoveredLetterDisabledWhen))
-            {
-                Find.LetterStack.ReceiveLetter(proj.discoveredLetterTitle, proj.discoveredLetterText, LetterDefOf.NeutralEvent);
-            }
-
-            if (proj.teachConcept != null)
-            {
-                LessonAutoActivator.TeachOpportunity(proj.teachConcept, OpportunityType.Important);
-            }
-
-            if (Find.ResearchManager.currentProj == proj)
-            {
-                Find.ResearchManager.currentProj = null;
-            }
-            else if (ModsConfig.AnomalyActive && proj.knowledgeCategory != null)
-            {
-                foreach (ResearchManager.KnowledgeCategoryProject currentAnomalyKnowledgeProject in Find.ResearchManager.CurrentAnomalyKnowledgeProjects)
-                {
-                    if (currentAnomalyKnowledgeProject.project == proj)
-                    {
-                        currentAnomalyKnowledgeProject.project = null;
-                        break;
-                    }
-                }
-            }
-
-            foreach (Def unlockedDef in proj.UnlockedDefs)
-            {
-                ThingDef thingDef;
-                if ((thingDef = unlockedDef as ThingDef) != null)
-                {
-                    thingDef.Notify_UnlockedByResearch();
-                }
-            }
-
-            Find.SignalManager.SendSignal(new Signal("ResearchCompleted", global: true));
         }
 
-        [HarmonyPrefix]
-        static bool Prefix()
+        [HarmonyPostfix]
+        static void Postfix(IDisposable __state)
         {
-            if (!RandomStartData.startedFromRandom)
+            __state?.Dispose();
+            var state = RandomStartData.State;
+            if (state == null || state.ResearchApplied || !state.Settings.addRandomResearch) return;
+            state.ResearchApplied = true;
+            var settings = state.Settings;
+            var pool = DefDatabase<ResearchProjectDef>.AllDefsListForReading.Where(project =>
+                (int)project.techLevel <= settings.randomResearchTechLevelLimit
+                && project.knowledgeCategory == null && !project.IsFinished).ToList();
+            int count = Math.Min(Math.Max(0, settings.randomResearchRange.RandomInRange), pool.Count);
+            for (int i = 0; i < count; i++)
             {
-                return true;
+                ResearchProjectDef project = pool.RandomElement();
+                pool.Remove(project);
+                if (project.IsFinished) continue;
+                var blocked = settings.doRandomResearchPrerequisites ? null
+                    : DependencyGraph.Descendants(project, candidate => candidate.prerequisites);
+                using (state.BlockedPrerequisites.Enter(blocked))
+                    Find.ResearchManager.FinishProject(project, false, null, false);
             }
+        }
 
-            RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
-            if (!settings.removeStartingResearch && !settings.addRandomResearch)
-            {
-                return true;
-            }
+        [HarmonyFinalizer]
+        static void Finalizer(IDisposable __state) => __state?.Dispose();
+    }
 
-            Util.LogMessage("Patching ResearchUtility");
+    // The original starting-grant method always executes. Only the specific
+    // faction grants requested for removal are withheld, and only during that call.
+    [HarmonyPatch(typeof(ResearchManager), nameof(ResearchManager.FinishProject))]
+    internal static class StartingResearchGrant_Patch
+    {
+        [HarmonyPrefix]
+        static bool Prefix(ResearchManager __instance, ResearchProjectDef __0)
+        {
+            var state = RandomStartData.State;
+            if (state == null || !ReferenceEquals(__instance, Find.ResearchManager)) return true;
+            if (state.BlockedPrerequisites.Value?.Contains(__0) == true) return false;
+            if (!state.GrantingResearch.Value || !state.Settings.removeStartingResearch) return true;
+            var tags = Faction.OfPlayer.def.startingResearchTags;
+            if (tags == null || !tags.Any(tag => __0.HasTag(tag))) return true;
+            // Preserve the existing feature's ideology grants.
+            return state.ProtectedIdeologyResearch.Contains(__0);
+        }
+    }
 
-            if (!settings.removeStartingResearch)
-            {
-                if (Faction.OfPlayer.def.startingResearchTags != null)
-                {
-                    foreach (ResearchProjectTagDef startingResearchTag in Faction.OfPlayer.def.startingResearchTags)
-                    {
-                        foreach (ResearchProjectDef allDef in DefDatabase<ResearchProjectDef>.AllDefs)
-                        {
-                            if (allDef.HasTag(startingResearchTag))
-                            {
-                                Find.ResearchManager.FinishProject(allDef, doCompletionDialog: false, null, doCompletionLetter: false);
-                            }
-                        }
-                    }
-                }
-                foreach (ResearchProjectTagDef startingTechprintsResearchTag in Faction.OfPlayer.def.startingTechprintsResearchTags)
-                {
-                    foreach (ResearchProjectDef allDef2 in DefDatabase<ResearchProjectDef>.AllDefs)
-                    {
-                        if (allDef2.HasTag(startingTechprintsResearchTag))
-                        {
-                            int techprints = Find.ResearchManager.GetTechprints(allDef2);
-                            if (techprints < allDef2.TechprintCount)
-                            {
-                                Find.ResearchManager.AddTechprints(allDef2, allDef2.TechprintCount - techprints);
-                            }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                Util.LogMessage("Skipping Starting Research");
-            }
-
-            Ideo ideo;
-            if (ModLister.IdeologyInstalled && (ideo = Faction.OfPlayer.ideos?.PrimaryIdeo) != null)
-            {
-                foreach (MemeDef meme in ideo.memes)
-                {
-                    foreach (ResearchProjectDef startingResearchProject in meme.startingResearchProjects)
-                    {
-                        Find.ResearchManager.FinishProject(startingResearchProject, doCompletionDialog: false, null, doCompletionLetter: false);
-                    }
-                }
-            }
-
-            if (settings.addRandomResearch)
-            {
-                List<ResearchProjectDef> possibleProjects = DefDatabase<ResearchProjectDef>
-                    .AllDefsListForReading.Where(def =>
-                        (
-                            (int)def.techLevel <= settings.randomResearchTechLevelLimit
-                            && def.tab.label != "anomaly"
-                        )
-                    )
-                    .ToList();
-                if (possibleProjects.Count > 0)
-                {
-                    for (int i = 0; i < settings.randomResearchRange.RandomInRange; i++)
-                    {
-                        ResearchProjectDef projectDef = possibleProjects.RandomElement();
-                        possibleProjects.Remove(projectDef);
-                        FinishProjectOptionalPrequisites(
-                            projectDef,
-                            doCompletionDialog: false,
-                            null,
-                            doCompletionLetter: false,
-                            doPrerequisites: settings.doRandomResearchPrerequisites
-                        );
-                    }
-                }
-            }
-
-            return false;
+    [HarmonyPatch(typeof(ResearchManager), nameof(ResearchManager.AddTechprints))]
+    internal static class StartingTechprintsGrant_Patch
+    {
+        [HarmonyPrefix]
+        static bool Prefix(ResearchManager __instance, ResearchProjectDef __0)
+        {
+            var state = RandomStartData.State;
+            if (state == null || !ReferenceEquals(__instance, Find.ResearchManager)
+                || !state.GrantingResearch.Value || !state.Settings.removeStartingResearch) return true;
+            if (state.ProtectedIdeologyResearch.Contains(__0)) return true;
+            var tags = Faction.OfPlayer.def.startingTechprintsResearchTags;
+            return tags == null || !tags.Any(tag => __0.HasTag(tag));
         }
     }
 }

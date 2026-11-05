@@ -94,6 +94,7 @@ namespace RandomStartMod
         public List<string> factionsExcludeFromReputationRandomization = new List<string>();
 
         public bool createRandomScenario = false;
+        public bool useNormalSetupPages = false;
         public bool enableCustomScenarios = true;
         public bool enableSteamWorkshopScenarios = true;
 
@@ -237,6 +238,24 @@ namespace RandomStartMod
         public bool limitStartingTileTemperature = false;
         public FloatRange limitStartingTileTemperatureRange = new FloatRange(-10f, 30f);
 
+        internal RandomStartSettings SnapshotForStart()
+        {
+            var copy = (RandomStartSettings)MemberwiseClone();
+            foreach (var field in typeof(RandomStartSettings).GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public))
+            {
+                var list = field.GetValue(this) as System.Collections.IList;
+                if (list == null) continue;
+                var cloned = (System.Collections.IList)Activator.CreateInstance(list.GetType());
+                foreach (object value in list)
+                {
+                    var name = value as PawnNameData;
+                    cloned.Add(name == null ? value : new PawnNameData(name.firstName, name.nickName, name.lastName));
+                }
+                field.SetValue(copy, cloned);
+            }
+            return copy;
+        }
+
         public override void ExposeData()
         {
             // Ensure lists are properly initialized before serialization
@@ -276,6 +295,7 @@ namespace RandomStartMod
             Scribe_Values.Look(ref randomiseWorldSeed, "randomiseWorldSeed", true);
             Scribe_Values.Look(ref worldSeed, "worldSeed", "village");
             Scribe_Values.Look(ref createRandomScenario, "createRandomScenario", false);
+            Scribe_Values.Look(ref useNormalSetupPages, "useNormalSetupPages", false);
             Scribe_Values.Look(ref enableCustomScenarios, "enableCustomScenarios", true);
             Scribe_Values.Look(
                 ref enableSteamWorkshopScenarios,
@@ -753,6 +773,7 @@ namespace RandomStartMod
 
         public void ResetScenarios()
         {
+            useNormalSetupPages = false;
             createRandomScenario = false;
             enableCustomScenarios = true;
             enableSteamWorkshopScenarios = true;

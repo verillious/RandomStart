@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection.Emit;
 using RandomStartMod.Compat;
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
 using Verse;
-using static RimWorld.PsychicRitualRoleDef;
 
 namespace RandomStartMod
 {
@@ -16,15 +14,41 @@ namespace RandomStartMod
     {
         public static void SetupForRandomPlay()
         {
+            try { SetupForRandomPlayInner(); }
+            catch { RandomStartData.End(Current.Game); throw; }
+        }
+
+        private static void SetupForRandomPlayInner()
+        {
             Util.LogMessage($"Randomising Scenario");
-            RandomStartData.startedFromRandom = true;
             RandomStartSettings settings = LoadedModManager
                 .GetMod<RandomStartMod>()
                 .GetSettings<RandomStartSettings>();
 
             Current.ProgramState = ProgramState.Entry;
             Current.Game = new Game { InitData = new GameInitData() };
+            RandomStartData.Begin(settings);
+            settings = RandomStartData.State.Settings;
             SetupRandomScenario(settings);
+            StartingItems.Prepare(Find.Scenario, settings);
+            Find.Scenario.PreConfigure();
+            Page firstPage = Find.Scenario.GetFirstConfigPage();
+            bool showPages = settings.useNormalSetupPages;
+            var visited = new HashSet<Page>();
+            for (Page page = firstPage; page != null; page = page.next)
+            {
+                if (!visited.Add(page)) throw new InvalidOperationException("Scenario configuration pages form a cycle.");
+                if (page.GetType().Assembly != typeof(Page).Assembly) showPages = true;
+            }
+            if (showPages)
+            {
+                if (firstPage == null) throw new InvalidOperationException("This scenario has no configuration pages.");
+                // Keep the copied scenario/item plan and use the real page chain.
+                Find.WindowStack.Add(firstPage);
+                if (!settings.useNormalSetupPages)
+                    Find.WindowStack.Add(new Dialog_MessageBox("RandomStartMod.CustomSetupPages".Translate()));
+                return;
+            }
             SetupRandomDifficulty(settings);
             SetupRandomPlanet(settings);
 
@@ -57,7 +81,7 @@ namespace RandomStartMod
                     Util.LogMessage("Filtering starting tile by allowed biomes");
                     foreach (string biomeDefName in settings.allowedBiomes)
                     {
-                        BiomeDef biomeDef = BiomeDef.Named(biomeDefName);
+                        BiomeDef biomeDef = DefDatabase<BiomeDef>.GetNamedSilentFail(biomeDefName);
                         if (biomeDef != null)
                         {
                             filterBiomes.Add(biomeDef);
@@ -178,139 +202,7 @@ namespace RandomStartMod
                 SetupRandomIdeology(settings);
             }
 
-            foreach (ScenPart allPart in Find.Scenario.AllParts)
-            {
-                allPart.PostIdeoChosen();
-            }
-
-            if (
-                settings.enablePrepareModeratelyIntegration
-                && (
-                    ModsConfig.IsActive("Lakuna.PrepareModerately")
-                    || ModsConfig.IsActive("Lakuna.PrepareModerately_Steam")
-                )
-            )
-            {
-                Util.LogMessage("Using PrepareModerately integration for starting pawn generation");
-                // Apply selected filter if integration is enabled
-                if (
-                    !string.IsNullOrEmpty(settings.selectedPrepareModeratelyFilter)
-                    && (
-                        ModsConfig.IsActive("Lakuna.PrepareModerately")
-                        || ModsConfig.IsActive("Lakuna.PrepareModerately_Steam")
-                    )
-                )
-                {
-                    PrepareModeratelyCompat.SetCurrentFilter(
-                        settings.selectedPrepareModeratelyFilter
-                    );
-                }
-
-                PrepareModeratelyCompat.RandomiseStartingPawns();
-            }
-            else if (
-                settings.startingPawnForceViolence
-                || !settings.randomisePawnAge
-                || !settings.randomisePawnSex
-                || !settings.randomisePawnName
-                || settings.PawnNotDisabledWorkTags
-                || (settings.pawnNames != null && settings.pawnNames.Count > 0)
-            )
-            {
-                StartingPawnUtility.ClearAllStartingPawns();
-                for (int i = 0; i < 10; i++)
-                {
-                    PawnGenerationRequest request = StartingPawnUtility.DefaultStartingPawnRequest;
-                    if (settings.startingPawnForceViolence)
-                    {
-                        request.MustBeCapableOfViolence = true;
-                    }
-                    if (!settings.randomisePawnAge)
-                    {
-                        request.FixedBiologicalAge = settings.randomisePawnAgeRange.RandomInRange;
-                        request.BiologicalAgeRange = null;
-                        request.ExcludeBiologicalAgeRange = null;
-                    }
-                    if (!settings.randomisePawnSex)
-                    {
-                        request.FixedGender = (Gender)settings.PawnSex;
-                    }
-
-                    if (settings.PawnNotDisabledWorkTags)
-                    {
-                        StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.Add(request);
-                        StartingPawnUtility.AddNewPawn(i);
-                        int iterations = 0;
-                        while (
-                            Find.GameInitData.startingAndOptionalPawns[i]
-                                .GetDisabledWorkTypes(true)
-                                .Count > 0
-                        )
-                        {
-                            StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.RemoveAt(
-                                i
-                            );
-                            Find.GameInitData.startingAndOptionalPawns.RemoveAt(i);
-                            StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.Add(
-                                request
-                            );
-                            StartingPawnUtility.AddNewPawn(i);
-                            iterations++;
-                            if (iterations > 99)
-                            {
-                                Log.Warning(
-                                    "[Random Start] Could not generate starting pawn without disabled work tags after 100 tries, accepting disabled work tags"
-                                );
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        StartingPawnUtility.StartingAndOptionalPawnGenerationRequests.Add(request);
-                        StartingPawnUtility.AddNewPawn(i);
-                    }
-                }
-
-                // Handle name assignment for all generated pawns using new pawn names list (only if PrepareModerately is disabled)
-                if (
-                    !settings.enablePrepareModeratelyIntegration
-                    && !settings.randomisePawnName
-                    && settings.pawnNames != null
-                    && settings.pawnNames.Count > 0
-                )
-                {
-                    for (
-                        int pawnIndex = 0;
-                        pawnIndex < Find.GameInitData.startingAndOptionalPawns.Count
-                            && pawnIndex < settings.pawnNames.Count;
-                        pawnIndex++
-                    )
-                    {
-                        Pawn pawn = Find.GameInitData.startingAndOptionalPawns[pawnIndex];
-                        PawnNameData nameData = settings.pawnNames[pawnIndex];
-                        NameTriple originalName =
-                            pawn.Name as NameTriple ?? new NameTriple("", "", "");
-
-                        string firstName = string.IsNullOrWhiteSpace(nameData.firstName)
-                            ? originalName.First
-                            : nameData.firstName;
-                        string nickName = string.IsNullOrWhiteSpace(nameData.nickName)
-                            ? originalName.Nick
-                            : nameData.nickName;
-                        string lastName = string.IsNullOrWhiteSpace(nameData.lastName)
-                            ? originalName.Last
-                            : nameData.lastName;
-
-                        pawn.Name = new NameTriple(firstName, nickName, lastName);
-                    }
-                }
-            }
-
-            if (ModsConfig.BiotechActive)
-            {
-                SetupRandomGenes(settings);
-            }
+            Find.Scenario.PostIdeoChosen();
 
             Find.GameInitData.startedFromEntry = true;
 
@@ -447,6 +339,32 @@ namespace RandomStartMod
             }
         }
 
+        internal static void FinishStartingPawnSetup(RandomStartSettings settings)
+        {
+            bool usePrepareModerately = settings.enablePrepareModeratelyIntegration && PrepareModeratelyCompat.IsAvailable;
+            if (usePrepareModerately)
+            {
+                if (!string.IsNullOrEmpty(settings.selectedPrepareModeratelyFilter))
+                    PrepareModeratelyCompat.SetCurrentFilter(settings.selectedPrepareModeratelyFilter);
+                PrepareModeratelyCompat.RandomiseStartingPawns();
+            }
+            else if (!settings.randomisePawnName && settings.pawnNames != null)
+            {
+                var pawns = Find.GameInitData.startingAndOptionalPawns;
+                for (int i = 0; i < pawns.Count && i < settings.pawnNames.Count; i++)
+                {
+                    PawnNameData name = settings.pawnNames[i];
+                    if (name == null || name.IsEmpty() || !pawns[i].RaceProps.Humanlike) continue;
+                    NameTriple previous = pawns[i].Name as NameTriple ?? new NameTriple("", "", "");
+                    pawns[i].Name = new NameTriple(
+                        string.IsNullOrWhiteSpace(name.firstName) ? previous.First : name.firstName,
+                        string.IsNullOrWhiteSpace(name.nickName) ? previous.Nick : name.nickName,
+                        string.IsNullOrWhiteSpace(name.lastName) ? previous.Last : name.lastName);
+                }
+            }
+            if (ModsConfig.BiotechActive) SetupRandomGenes(settings);
+        }
+
         private static void SetupRandomScenario(RandomStartSettings settings)
         {
             if (settings.createRandomScenario)
@@ -461,7 +379,7 @@ namespace RandomStartMod
 
                 scenarios.AddRange(
                     ScenarioLister
-                        .AllScenarios()
+                        .ScenariosInCategory(ScenarioCategory.FromDef)
                         .Where(
                             (Scenario scenario) =>
                                 !settings.disabledScenarios.Contains(scenario.name)
@@ -489,7 +407,7 @@ namespace RandomStartMod
                             )
                     );
 
-                Scenario randomScenario = scenarios.RandomElement();
+                Scenario randomScenario = scenarios.RandomElementWithFallback();
                 if (randomScenario == null)
                 {
                     string errorString = "[Random Start] Could not find valid Scenario from:";
@@ -501,80 +419,16 @@ namespace RandomStartMod
                     randomScenario = ScenarioDefOf.Crashlanded.scenario;
                 }
 
-                if (settings.removeStartingItems)
-                {
-                    Util.LogMessage("Removing scattered starting items from Scenario");
-                    randomScenario.parts.RemoveAll(x => x is ScenPart_ScatterThings);
-                }
-                Current.Game.Scenario = randomScenario;
+                Current.Game.Scenario = randomScenario.CopyForEditing();
             }
             Util.LogMessage($"Starting {Current.Game.Scenario}");
         }
 
         private static void SetupRandomDifficulty(RandomStartSettings settings)
         {
-            DifficultyDef chosenDifficultyDef = DefDatabase<DifficultyDef>.AllDefs.First(
-                (DifficultyDef d) => d.defName == settings.difficulty
-            );
-            if (chosenDifficultyDef.isCustom)
-            {
-                chosenDifficultyDef.threatScale = settings.threatScale;
-                chosenDifficultyDef.allowBigThreats = settings.allowBigThreats;
-                chosenDifficultyDef.allowIntroThreats = settings.allowIntroThreats;
-                chosenDifficultyDef.allowCaveHives = settings.allowCaveHives;
-                chosenDifficultyDef.peacefulTemples = settings.peacefulTemples;
-                chosenDifficultyDef.allowViolentQuests = settings.allowViolentQuests;
-                chosenDifficultyDef.predatorsHuntHumanlikes = settings.predatorsHuntHumanlikes;
-                chosenDifficultyDef.scariaRotChance = settings.scariaRotChance;
-                chosenDifficultyDef.colonistMoodOffset = settings.colonistMoodOffset;
-                chosenDifficultyDef.tradePriceFactorLoss = settings.tradePriceFactorLoss;
-                chosenDifficultyDef.cropYieldFactor = settings.cropYieldFactor;
-                chosenDifficultyDef.mineYieldFactor = settings.mineYieldFactor;
-                chosenDifficultyDef.butcherYieldFactor = settings.butcherYieldFactor;
-                chosenDifficultyDef.researchSpeedFactor = settings.researchSpeedFactor;
-                chosenDifficultyDef.diseaseIntervalFactor = settings.diseaseIntervalFactor;
-                chosenDifficultyDef.enemyReproductionRateFactor =
-                    settings.enemyReproductionRateFactor;
-                chosenDifficultyDef.playerPawnInfectionChanceFactor =
-                    settings.playerPawnInfectionChanceFactor;
-                chosenDifficultyDef.manhunterChanceOnDamageFactor =
-                    settings.manhunterChanceOnDamageFactor;
-                chosenDifficultyDef.deepDrillInfestationChanceFactor =
-                    settings.deepDrillInfestationChanceFactor;
-                chosenDifficultyDef.wastepackInfestationChanceFactor =
-                    settings.wastepackInfestationChanceFactor;
-                chosenDifficultyDef.foodPoisonChanceFactor = settings.foodPoisonChanceFactor;
-                chosenDifficultyDef.maintenanceCostFactor = settings.maintenanceCostFactor;
-                chosenDifficultyDef.enemyDeathOnDownedChanceFactor =
-                    settings.enemyDeathOnDownedChanceFactor;
-                chosenDifficultyDef.adaptationGrowthRateFactorOverZero =
-                    settings.adaptationGrowthRateFactorOverZero;
-                chosenDifficultyDef.adaptationEffectFactor = settings.adaptationEffectFactor;
-                chosenDifficultyDef.questRewardValueFactor = settings.questRewardValueFactor;
-                chosenDifficultyDef.raidLootPointsFactor = settings.raidLootPointsFactor;
-                chosenDifficultyDef.allowTraps = settings.allowTraps;
-                chosenDifficultyDef.allowTurrets = settings.allowTurrets;
-                chosenDifficultyDef.allowMortars = settings.allowMortars;
-                chosenDifficultyDef.classicMortars = settings.classicMortars;
-                chosenDifficultyDef.allowExtremeWeatherIncidents =
-                    settings.allowExtremeWeatherIncidents;
-                chosenDifficultyDef.fixedWealthMode = settings.fixedWealthMode;
-                chosenDifficultyDef.lowPopConversionBoost = settings.lowPopConversionBoost;
-                chosenDifficultyDef.minThreatPointsRangeCeiling =
-                    settings.minThreatPointsRangeCeiling;
-                chosenDifficultyDef.babiesAreHealthy = settings.babiesAreHealthy;
-                chosenDifficultyDef.noBabiesOrChildren = settings.noBabiesOrChildren;
-                chosenDifficultyDef.childAgingRate = settings.childAgingRate;
-                chosenDifficultyDef.adultAgingRate = settings.adultAgingRate;
-                chosenDifficultyDef.unwaveringPrisoners = settings.unwaveringPrisoners;
-                chosenDifficultyDef.childRaidersAllowed = settings.childRaidersAllowed;
-                chosenDifficultyDef.anomalyThreatsInactiveFraction =
-                    settings.anomalyThreatsInactiveFraction;
-                chosenDifficultyDef.anomalyThreatsActiveFraction =
-                    settings.anomalyThreatsActiveFraction;
-                chosenDifficultyDef.studyEfficiencyFactor = settings.studyEfficiencyFactor;
-            }
-
+            DifficultyDef chosenDifficultyDef = DefDatabase<DifficultyDef>.GetNamedSilentFail(settings.difficulty)
+                ?? DefDatabase<DifficultyDef>.GetNamedSilentFail("Rough")
+                ?? DefDatabase<DifficultyDef>.AllDefs.First();
             StorytellerDef chosenStoryteller = StorytellerDefOf.Cassandra;
             List<StorytellerDef> possibleStorytellers = new List<StorytellerDef>();
 
@@ -596,7 +450,6 @@ namespace RandomStartMod
                 settings.disabledStorytellers.Remove(chosenStoryteller.defName);
             }
 
-            chosenStoryteller.tutorialMode = false;
 
             if (
                 ModsConfig.IsActive("brrainz.nopausechallenge")
@@ -607,6 +460,68 @@ namespace RandomStartMod
             }
 
             Current.Game.storyteller = new Storyteller(chosenStoryteller, chosenDifficultyDef);
+
+            if (chosenDifficultyDef.isCustom)
+            {
+                Difficulty difficulty = Current.Game.storyteller.difficulty;
+                difficulty.threatScale = settings.threatScale;
+                difficulty.allowBigThreats = settings.allowBigThreats;
+                difficulty.allowIntroThreats = settings.allowIntroThreats;
+                difficulty.allowCaveHives = settings.allowCaveHives;
+                difficulty.peacefulTemples = settings.peacefulTemples;
+                difficulty.allowViolentQuests = settings.allowViolentQuests;
+                difficulty.predatorsHuntHumanlikes = settings.predatorsHuntHumanlikes;
+                difficulty.scariaRotChance = settings.scariaRotChance;
+                difficulty.colonistMoodOffset = settings.colonistMoodOffset;
+                difficulty.tradePriceFactorLoss = settings.tradePriceFactorLoss;
+                difficulty.cropYieldFactor = settings.cropYieldFactor;
+                difficulty.mineYieldFactor = settings.mineYieldFactor;
+                difficulty.butcherYieldFactor = settings.butcherYieldFactor;
+                difficulty.researchSpeedFactor = settings.researchSpeedFactor;
+                difficulty.diseaseIntervalFactor = settings.diseaseIntervalFactor;
+                difficulty.enemyReproductionRateFactor =
+                    settings.enemyReproductionRateFactor;
+                difficulty.playerPawnInfectionChanceFactor =
+                    settings.playerPawnInfectionChanceFactor;
+                difficulty.manhunterChanceOnDamageFactor =
+                    settings.manhunterChanceOnDamageFactor;
+                difficulty.deepDrillInfestationChanceFactor =
+                    settings.deepDrillInfestationChanceFactor;
+                difficulty.wastepackInfestationChanceFactor =
+                    settings.wastepackInfestationChanceFactor;
+                difficulty.foodPoisonChanceFactor = settings.foodPoisonChanceFactor;
+                difficulty.maintenanceCostFactor = settings.maintenanceCostFactor;
+                difficulty.enemyDeathOnDownedChanceFactor =
+                    settings.enemyDeathOnDownedChanceFactor;
+                difficulty.adaptationGrowthRateFactorOverZero =
+                    settings.adaptationGrowthRateFactorOverZero;
+                difficulty.adaptationEffectFactor = settings.adaptationEffectFactor;
+                difficulty.questRewardValueFactor = settings.questRewardValueFactor;
+                difficulty.raidLootPointsFactor = settings.raidLootPointsFactor;
+                difficulty.allowTraps = settings.allowTraps;
+                difficulty.allowTurrets = settings.allowTurrets;
+                difficulty.allowMortars = settings.allowMortars;
+                difficulty.classicMortars = settings.classicMortars;
+                difficulty.allowExtremeWeatherIncidents =
+                    settings.allowExtremeWeatherIncidents;
+                difficulty.fixedWealthMode = settings.fixedWealthMode;
+                difficulty.lowPopConversionBoost = settings.lowPopConversionBoost;
+                difficulty.minThreatPointsRangeCeiling =
+                    settings.minThreatPointsRangeCeiling;
+                difficulty.babiesAreHealthy = settings.babiesAreHealthy;
+                difficulty.noBabiesOrChildren = settings.noBabiesOrChildren;
+                difficulty.childAgingRate = settings.childAgingRate;
+                difficulty.adultAgingRate = settings.adultAgingRate;
+                difficulty.unwaveringPrisoners = settings.unwaveringPrisoners;
+                difficulty.childRaidersAllowed = settings.childRaidersAllowed;
+                difficulty.anomalyThreatsInactiveFraction =
+                    settings.anomalyThreatsInactiveFraction;
+                difficulty.anomalyThreatsActiveFraction =
+                    settings.anomalyThreatsActiveFraction;
+                difficulty.studyEfficiencyFactor = settings.studyEfficiencyFactor;
+            }
+
+
 
             if (chosenDifficultyDef.isCustom)
             {
@@ -664,60 +579,20 @@ namespace RandomStartMod
 
             List<FactionDef> worldFactions = new List<FactionDef>();
 
-            IEnumerable<FactionDef> allFactionDefs =
-                DefDatabase<FactionDef>.AllDefsListForReading.Where((FactionDef x) => x.isPlayer);
-
-            bool needToWriteSettings = false;
-
-            List<string> factionsAlwaysAdd = new List<string>(settings.factionsAlwaysAdd);
-            foreach (string factionDefName in factionsAlwaysAdd)
+            foreach (string name in settings.factionsAlwaysAdd ?? new List<string>())
             {
-                FactionDef faction = DefDatabase<FactionDef>.GetNamed(factionDefName, false);
-                if (faction == null)
-                {
-                    settings.factionsAlwaysAdd.Remove(factionDefName);
-                    Util.LogMessage(
-                        $"Tried to create invalid Faction {faction}. Removing from list."
-                    );
-                    needToWriteSettings = true;
-                    continue;
-                }
+                FactionDef faction = DefDatabase<FactionDef>.GetNamedSilentFail(name);
+                if (faction != null) worldFactions.Add(faction);
+            }
+            var randomFactions = (settings.factionsRandomlyAdd ?? new List<string>())
+                .Select(name => DefDatabase<FactionDef>.GetNamedSilentFail(name))
+                .Where(faction => faction != null).Distinct().ToList();
+            int factionCount = settings.randomFactionRange.RandomInRange;
+            for (int i = 0; i < factionCount && randomFactions.Count > 0; i++)
+            {
+                FactionDef faction = randomFactions.RandomElement();
                 worldFactions.Add(faction);
-            }
-
-            if (settings.factionsRandomlyAdd.Count > 0)
-            {
-                List<string> randomFactions = new List<string>(settings.factionsRandomlyAdd);
-                for (int i = 0; i < settings.randomFactionRange.RandomInRange; i++)
-                {
-                    string randomFaction = randomFactions.RandomElement();
-                    FactionDef faction = DefDatabase<FactionDef>.GetNamed(randomFaction, false);
-
-                    if (faction == null)
-                    {
-                        settings.factionsRandomlyAdd.Remove(randomFaction);
-                        randomFactions.Remove(randomFaction);
-                        Util.LogMessage(
-                            $"Tried to create invalid Faction {randomFaction}. Removing from list."
-                        );
-                        needToWriteSettings = true;
-                        if (randomFactions.Count == 0)
-                            break;
-                        continue;
-                    }
-                    worldFactions.Add(faction);
-                    if (settings.uniqueFactions)
-                    {
-                        randomFactions.Remove(randomFaction);
-                        if (randomFactions.Count == 0)
-                            break;
-                    }
-                }
-            }
-
-            if (needToWriteSettings)
-            {
-                settings.Write();
+                if (settings.uniqueFactions) randomFactions.Remove(faction);
             }
 
             if (
@@ -744,6 +619,11 @@ namespace RandomStartMod
                 Compat.SOS2Compat.SetupForStartInSpace();
             }
 
+            foreach (ScenPart part in Find.Scenario.AllParts)
+            {
+                FactionDef required = part.def?.preventRemovalOfFaction;
+                if (required != null && !worldFactions.Contains(required)) worldFactions.Add(required);
+            }
             Util.LogMessage($"Created {worldFactions.Count} factions");
 
             string worldSeed;
@@ -786,7 +666,7 @@ namespace RandomStartMod
                 }
                 RealisticPlanetsCompat.GenerateRealisticPlanetWorld(
                     settings.planetCoverage,
-                    GenText.RandomSeedString(),
+                    worldSeed,
                     rainfall,
                     temperature,
                     population,
@@ -1118,7 +998,7 @@ namespace RandomStartMod
         {
             if (settings.enableRandomXenotypes)
             {
-                foreach (Pawn p in Find.GameInitData.startingAndOptionalPawns)
+                foreach (Pawn p in Find.GameInitData.startingAndOptionalPawns.Where(pawn => pawn.genes != null))
                 {
                     IEnumerable<XenotypeDef> xenotypes =
                         DefDatabase<XenotypeDef>.AllDefsListForReading;
@@ -1139,7 +1019,7 @@ namespace RandomStartMod
 
             if (settings.enableRandomCustomXenotypes)
             {
-                foreach (Pawn p in Find.GameInitData.startingAndOptionalPawns)
+                foreach (Pawn p in Find.GameInitData.startingAndOptionalPawns.Where(pawn => pawn.genes != null))
                 {
                     List<GeneDef> selectedGenes = new List<GeneDef>();
                     for (int i = 0; i < settings.randomGeneRange.RandomInRange; i++)
@@ -1209,33 +1089,5 @@ namespace RandomStartMod
             }
         }
 
-        private static void SetupRandomResearch(RandomStartSettings settings)
-        {
-            if (settings.addRandomResearch)
-            {
-                List<ResearchProjectDef> possibleProjects = DefDatabase<ResearchProjectDef>
-                    .AllDefsListForReading.Where(def =>
-                        (
-                            (int)def.techLevel <= settings.randomResearchTechLevelLimit
-                            && def.tab.label != "anomaly"
-                        )
-                    )
-                    .ToList();
-                if (possibleProjects.Count > 0)
-                {
-                    for (int i = 0; i < settings.randomResearchRange.RandomInRange; i++)
-                    {
-                        ResearchProjectDef projectDef = possibleProjects.RandomElement();
-                        possibleProjects.Remove(projectDef);
-                        Find.ResearchManager.FinishProject(
-                            projectDef,
-                            doCompletionDialog: false,
-                            null,
-                            doCompletionLetter: false
-                        );
-                    }
-                }
-            }
-        }
     }
 }
