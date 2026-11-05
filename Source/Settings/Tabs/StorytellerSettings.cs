@@ -114,7 +114,7 @@ namespace RandomStartMod
             Widgets.EndGroup();
             if (Mouse.IsOver(rect2))
             {
-                TooltipHandler.TipRegion(rect2, storytellerDef.LabelCap.AsTipTitle() + "\n" + storytellerDef.description + "\n" + "\n" + GetSourceModMetaData(storytellerDef).Name.AsTipTitle());
+                TooltipHandler.TipRegion(rect2, storytellerDef.LabelCap.AsTipTitle() + "\n" + storytellerDef.description + "\n" + "\n" + GetSourceModName(storytellerDef).AsTipTitle());
                 Widgets.DrawHighlight(rect2);
             }
             return result;

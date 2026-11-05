@@ -73,6 +73,7 @@ namespace RandomStartMod
                     listingStandard.Gap(4f);
                     if (DoBiomeRow(listingStandard.GetRect(24f), biomesAllowed[i], settings.allowedBiomes, i))
                     {
+                        biomesAllowed.RemoveAt(i);
                         i--;
                     }
                     listingStandard.Gap(4f);
@@ -174,6 +175,7 @@ namespace RandomStartMod
                     listingStandard.Gap(4f);
                     if (DoHillinessRow(listingStandard.GetRect(24f), hillinessAllowed[i], settings.allowedHilliness, i))
                     {
+                        hillinessAllowed.RemoveAt(i);
                         i--;
                     }
                     listingStandard.Gap(4f);
@@ -295,7 +297,7 @@ namespace RandomStartMod
             if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
             {
                 SoundDefOf.Click.PlayOneShotOnCamera();
-                biomeDefNames.RemoveAt(index);
+                biomeDefNames.Remove(biomeDef.defName);
                 result = true;
             }
             Widgets.EndGroup();
@@ -305,7 +307,7 @@ namespace RandomStartMod
                 string tooltip = biomeDef.LabelCap.AsTipTitle() + "\n" + biomeDef.description;
                 if (biomeDef.modContentPack != null)
                 {
-                    tooltip += "\n\n" + GetSourceModMetaData(biomeDef).Name.AsTipTitle();
+                    tooltip += "\n\n" + GetSourceModName(biomeDef).AsTipTitle();
                 }
                 TooltipHandler.TipRegion(rect2, tooltip);
                 Widgets.DrawHighlight(rect2);
@@ -346,7 +348,7 @@ namespace RandomStartMod
             if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
             {
                 SoundDefOf.Click.PlayOneShotOnCamera();
-                hillinessValues.RemoveAt(index);
+                hillinessValues.Remove(hillinessValue);
                 result = true;
             }
             Widgets.EndGroup();

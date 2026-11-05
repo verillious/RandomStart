@@ -19,7 +19,6 @@ namespace RandomStartMod.Compat
         private static Type planetsGameComponentType;
         private static Type worldTypeType;
         private static Type axialTiltType;
-        private static Type rainfallModifierType;
         private static Type planetsCreateWorldParamsType;
         private static Type worldTypeUtilityType;
         private static Type axialTiltUtilityType;
@@ -38,7 +37,6 @@ namespace RandomStartMod.Compat
                     planetsGameComponentType = realisticPlanetsAssembly.GetType("Planets_Code.Core.Planets_GameComponent");
                     worldTypeType = realisticPlanetsAssembly.GetType("Planets_Code.WorldGen.WorldType");
                     axialTiltType = realisticPlanetsAssembly.GetType("Planets_Code.WorldGen.AxialTilt");
-                    rainfallModifierType = realisticPlanetsAssembly.GetType("Planets_Code.WorldGen.RainfallModifier");
                     planetsCreateWorldParamsType = realisticPlanetsAssembly.GetType("Planets_Code.Core.Planets_CreateWorldParams");
                     worldTypeUtilityType = realisticPlanetsAssembly.GetType("Planets_Code.WorldGen.WorldTypeUtility");
                     axialTiltUtilityType = realisticPlanetsAssembly.GetType("Planets_Code.WorldGen.AxialTiltUtility");

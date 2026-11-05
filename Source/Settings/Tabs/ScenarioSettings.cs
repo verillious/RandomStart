@@ -60,7 +60,7 @@ namespace RandomStartMod
                         continue;
 
                     Texture2D tex = GetSourceIcon(scenarioDef);
-                    string source = GetSourceModMetaData(scenarioDef).Name;
+                    string source = GetSourceModName(scenarioDef);
                     if (!settings.disabledScenarios.Contains(scenarioDef.scenario.name))
                     {
                         listingStandard.Gap(4f);

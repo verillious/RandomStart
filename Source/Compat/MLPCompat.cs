@@ -31,8 +31,11 @@ namespace RandomStartMod.Compat
                     1f
                 )
             );
-            PlanetLayerSettingsDefOf.Surface.settings.subdivisions =
-                settings.myLittlePlanetSubcount;
+        }
+
+        public static void ApplyWorldSize(int subdivisions)
+        {
+            PlanetLayerSettingsDefOf.Surface.settings.subdivisions = Mathf.Clamp(subdivisions, 6, 10);
         }
     }
 

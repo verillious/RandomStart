@@ -48,6 +48,7 @@ namespace RandomStartMod
                 listingStandard.Gap(4f);
                 if (DoFactionRow(listingStandard.GetRect(24f), factionsAlwaysAdd[i], settings.factionsAlwaysAdd, i))
                 {
+                    factionsAlwaysAdd.RemoveAt(i);
                     i--;
                 }
                 listingStandard.Gap(4f);
@@ -132,6 +133,7 @@ namespace RandomStartMod
                 listingStandard.Gap(4f);
                 if (DoFactionRow(listingStandard.GetRect(24f), factionsRandomlyAdd[i], settings.factionsRandomlyAdd, i))
                 {
+                    factionsRandomlyAdd.RemoveAt(i);
                     i--;
                 }
                 listingStandard.Gap(4f);
@@ -350,14 +352,14 @@ namespace RandomStartMod
             if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
             {
                 SoundDefOf.Click.PlayOneShotOnCamera();
-                factionDefNames.RemoveAt(index);
+                factionDefNames.Remove(factionDef.defName);
                 result = true;
             }
             Widgets.EndGroup();
             ModContentPack mod = factionDef.modContentPack;
             if (Mouse.IsOver(rect2))
             {
-                TooltipHandler.TipRegion(rect2, factionDef.LabelCap.AsTipTitle() + "\n" + factionDef.Description + "\n" + "\n" + GetSourceModMetaData(factionDef).Name.AsTipTitle());
+                TooltipHandler.TipRegion(rect2, factionDef.LabelCap.AsTipTitle() + "\n" + factionDef.Description + "\n" + "\n" + GetSourceModName(factionDef).AsTipTitle());
                 Widgets.DrawHighlight(rect2);
             }
             return result;

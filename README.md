@@ -6,8 +6,9 @@ A mod for RimWorld to add a Random Start button to the main menu.
 
 See [building and testing](docs/development.md) for the portable 1.6 build,
 automated checks, downloadable development packages, and in-game testing.
-The [maintenance plan](docs/modernization.md) tracks reported/source-level bugs
-and the separate experimental 1.7 port.
+See [code layout and maintenance standards](docs/maintenance.md) and the
+[Steam report triage](docs/steam-reports.md). The [maintenance plan](docs/modernization.md)
+tracks source-level issues and the separate experimental 1.7 port.
 
 
 ![alt text](https://github.com/verillious/RandomStart/blob/main/About/Preview.png?raw=true)

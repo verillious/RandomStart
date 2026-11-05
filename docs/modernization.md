@@ -70,10 +70,11 @@ section. Validate assets with `python3 tools/validate_xml.py`.
 ## Workshop report intake
 
 Source: [Workshop comments](https://steamcommunity.com/workshop/filedetails/?id=3257028947).
-Reading the page was blocked by the cloud network policy during this audit.
-No Workshop comments have been reviewed or attributed to the findings below.
-Access requests for steamcommunity.com and store.steampowered.com are saved in
-the environment configuration draft and must be applied through settings.
+Access now works, and all 233 accessible comments have been reviewed. See
+[Steam report triage](steam-reports.md) for dated links, source-level fixes,
+historical closures, feature requests and cases still needing reproduction.
+The source-level findings below originated in the earlier audit; they are not
+all reproduced Workshop bugs.
 
 For each report, record the comment URL/date, game build, mod version, DLCs,
 relevant mods/load order, settings, expected/actual behavior, reproduction steps,

@@ -85,15 +85,23 @@ namespace RandomStartMod
                     DoSettingToggle(listingStandard.GetRect(24f), "CreateFluid".Translate(), "FluidIdeoTip".Translate(), ref settings.fluidIdeo);
                     optionalFeaturesListingHeight += 24f;
 
-                    // Random Meme Range
-                    listingStandard.Indent(8);
-                    listingStandard.Label("RandomStartMod.Misc.RandomMemeCountLabel".Translate());
-                    listingStandard.Outdent(8);
-                    optionalFeaturesListingHeight += Text.LineHeight + 12f;
-                    Widgets.IntRange(listingStandard.GetRect(32f), 382399866, ref settings.randomMemeRange, 1, 10);
-                    optionalFeaturesListingHeight += 32f;
-                    listingStandard.Gap(2f);
-                    optionalFeaturesListingHeight += 2f;
+                    if (settings.fluidIdeo)
+                    {
+                        Widgets.Label(listingStandard.GetRect(42f), "RandomStartMod.FluidMemeCountInfo".Translate());
+                        optionalFeaturesListingHeight += 42f;
+                    }
+                    else
+                    {
+                        // Random Meme Range
+                        listingStandard.Indent(8);
+                        listingStandard.Label("RandomStartMod.Misc.RandomMemeCountLabel".Translate());
+                        listingStandard.Outdent(8);
+                        optionalFeaturesListingHeight += Text.LineHeight + 12f;
+                        Widgets.IntRange(listingStandard.GetRect(32f), 382399866, ref settings.randomMemeRange, 1, 10);
+                        optionalFeaturesListingHeight += 32f;
+                        listingStandard.Gap(2f);
+                        optionalFeaturesListingHeight += 2f;
+                    }
 
                     // Ensure ideology lists are initialized
                     if (settings.forcedMemes == null) settings.forcedMemes = new List<string>();
@@ -124,6 +132,7 @@ namespace RandomStartMod
                         listingStandard.Gap(4f);
                         if (DoMemeRow(listingStandard.GetRect(24f), forcedMemes[i], settings.forcedMemes, i))
                         {
+                            forcedMemes.RemoveAt(i);
                             i--;
                         }
                         listingStandard.Gap(4f);
@@ -185,6 +194,7 @@ namespace RandomStartMod
                         listingStandard.Gap(4f);
                         if (DoMemeRow(listingStandard.GetRect(24f), disallowedMemes[i], settings.disallowedMemes, i))
                         {
+                            disallowedMemes.RemoveAt(i);
                             i--;
                         }
                         listingStandard.Gap(4f);
@@ -239,6 +249,7 @@ namespace RandomStartMod
                         listingStandard.Gap(4f);
                         if (DoPreceptRow(listingStandard.GetRect(24f), disallowedPrecepts[i], settings.disallowedPrecepts, i))
                         {
+                            disallowedPrecepts.RemoveAt(i);
                             i--;
                         }
                         listingStandard.Gap(4f);
@@ -376,7 +387,7 @@ namespace RandomStartMod
             if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
             {
                 SoundDefOf.Click.PlayOneShotOnCamera();
-                memeDefNames.RemoveAt(index);
+                memeDefNames.Remove(memeDef.defName);
                 result = true;
             }
             Widgets.EndGroup();
@@ -386,7 +397,7 @@ namespace RandomStartMod
                 string tooltip = memeDef.LabelCap.AsTipTitle() + "\n" + memeDef.description;
                 if (memeDef.modContentPack != null)
                 {
-                    tooltip += "\n\n" + GetSourceModMetaData(memeDef).Name.AsTipTitle();
+                    tooltip += "\n\n" + GetSourceModName(memeDef).AsTipTitle();
                 }
                 TooltipHandler.TipRegion(rect2, tooltip);
                 Widgets.DrawHighlight(rect2);
@@ -430,7 +441,7 @@ namespace RandomStartMod
             if (Widgets.ButtonImage(new Rect(rect.width - 24f - 6f, 0f, 24f, 24f), TexButton.Delete))
             {
                 SoundDefOf.Click.PlayOneShotOnCamera();
-                preceptDefNames.RemoveAt(index);
+                preceptDefNames.Remove(preceptDef.defName);
                 result = true;
             }
             Widgets.EndGroup();
@@ -440,7 +451,7 @@ namespace RandomStartMod
                 string tooltip = text.AsTipTitle() + "\n" + preceptDef.description;
                 if (preceptDef.modContentPack != null)
                 {
-                    tooltip += "\n\n" + GetSourceModMetaData(preceptDef).Name.AsTipTitle();
+                    tooltip += "\n\n" + GetSourceModName(preceptDef).AsTipTitle();
                 }
                 TooltipHandler.TipRegion(rect2, tooltip);
                 Widgets.DrawHighlight(rect2);

@@ -49,23 +49,17 @@ namespace RandomStartMod
 
         public ModMetaData GetSourceModMetaData(Def def)
         {
-            return def.modContentPack.ModMetaData;
+            return def?.modContentPack?.ModMetaData;
         }
+
+        private string GetSourceModName(Def def) => GetSourceModMetaData(def)?.Name ?? "Unknown".Translate().ToString();
 
         public Texture2D GetSourceIcon(Def def)
         {
-            ModContentPack modContentPack = def.modContentPack;
-            if (modContentPack == null)
-            {
-                return ContentFinder<Texture2D>.Get("UI/Buttons/Dev/Save");
-            }
-            ModMetaData modMetaData = modContentPack.ModMetaData;
-            if (modContentPack.IsOfficialMod)
-            {
-                return modMetaData.Expansion.Icon;
-            }
-            else
-                return modMetaData.Icon;
+            var content = def?.modContentPack;
+            var metadata = content?.ModMetaData;
+            return (content?.IsOfficialMod == true ? metadata?.Expansion?.Icon : metadata?.Icon)
+                ?? ContentFinder<Texture2D>.Get("UI/Buttons/Dev/Save");
         }
 
         private static float Reciprocal(float f, float cutOff)

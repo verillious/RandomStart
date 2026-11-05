@@ -108,6 +108,9 @@ namespace RandomStartMod
 
             Util.LogMessage($"Using world seed: '{worldSeed}'");
 
+            if (ModsConfig.IsActive("Oblitus.MyLittlePlanet") || ModsConfig.IsActive("Oblitus.MyLittlePlanet_Steam"))
+                MLPCompat.ApplyWorldSize(settings.myLittlePlanetSubcount);
+
             if (
                 ModsConfig.IsActive("koth.RealisticPlanets1.6")
                 || ModsConfig.IsActive("koth.RealisticPlanets1.6_Steam")
