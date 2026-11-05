@@ -52,129 +52,31 @@ namespace RandomStartMod
             SetupRandomDifficulty(settings);
             SetupRandomPlanet(settings);
 
-            // Handle starting tile filtering
-            bool hasFilters =
-                (
-                    settings.filterStartingBiome
-                    && settings.allowedBiomes != null
-                    && settings.allowedBiomes.Count > 0
-                )
-                || (
-                    settings.filterStartingHilliness
-                    && settings.allowedHilliness != null
-                    && settings.allowedHilliness.Count > 0
-                );
-
-            if (hasFilters)
+            var biomes = settings.filterStartingBiome
+                ? (settings.allowedBiomes ?? new List<string>()).Select(name => DefDatabase<BiomeDef>.GetNamedSilentFail(name))
+                    .Where(biome => biome != null)
+                : Enumerable.Empty<BiomeDef>();
+            var hills = settings.filterStartingHilliness
+                ? (settings.allowedHilliness ?? new List<int>()).Where(value => value >= 1 && value <= 4).Select(value => (Hilliness)value)
+                : Enumerable.Empty<Hilliness>();
+            var filters = new StartingTileFilters<BiomeDef, Hilliness>(biomes, hills,
+                settings.limitStartingTileTemperature, settings.limitStartingTileTemperatureRange.min,
+                settings.limitStartingTileTemperatureRange.max);
+            var surface = Find.WorldGrid.Surface;
+            int selected;
+            if (filters.Active && RandomSelection.TryChooseIndex(surface.tiles.Count, index =>
             {
-                bool foundValidTile = false;
-                List<BiomeDef> filterBiomes = new List<BiomeDef>();
-                List<Hilliness> filterHilliness = new List<Hilliness>();
-
-                // Setup biome filtering
-                if (
-                    settings.filterStartingBiome
-                    && settings.allowedBiomes != null
-                    && settings.allowedBiomes.Count > 0
-                )
-                {
-                    Util.LogMessage("Filtering starting tile by allowed biomes");
-                    foreach (string biomeDefName in settings.allowedBiomes)
-                    {
-                        BiomeDef biomeDef = DefDatabase<BiomeDef>.GetNamedSilentFail(biomeDefName);
-                        if (biomeDef != null)
-                        {
-                            filterBiomes.Add(biomeDef);
-                        }
-                    }
-                }
-
-                // Setup hilliness filtering
-                if (
-                    settings.filterStartingHilliness
-                    && settings.allowedHilliness != null
-                    && settings.allowedHilliness.Count > 0
-                )
-                {
-                    Util.LogMessage("Filtering starting tile by allowed hilliness");
-                    foreach (int hillinessValue in settings.allowedHilliness)
-                    {
-                        if (hillinessValue >= 1 && hillinessValue <= 4) // Flat, SmallHills, LargeHills, Mountainous
-                        {
-                            filterHilliness.Add((Hilliness)hillinessValue);
-                        }
-                    }
-                }
-
-                // Find tiles that match all enabled filters
-                List<Tile> filteredTiles = Find.WorldGrid.Surface.tiles.FindAll(tile =>
-                {
-                    // Check biome filter (if enabled)
-                    bool biomeMatch =
-                        !settings.filterStartingBiome
-                        || filterBiomes.Count == 0
-                        || filterBiomes.Contains(tile.biome);
-
-                    // Check hilliness filter (if enabled)
-                    bool hillinessMatch =
-                        !settings.filterStartingHilliness
-                        || filterHilliness.Count == 0
-                        || filterHilliness.Contains(tile.hilliness);
-
-                    bool temperatureRangeMatch =
-                        !settings.limitStartingTileTemperature
-                        || (
-                            tile.temperature >= settings.limitStartingTileTemperatureRange.min
-                            && tile.temperature <= settings.limitStartingTileTemperatureRange.max
-                        );
-
-                    return biomeMatch && hillinessMatch && temperatureRangeMatch;
-                });
-
-                foreach (Tile filteredTile in filteredTiles)
-                {
-                    if (
-                        !filteredTile.PrimaryBiome.canBuildBase
-                        || !filteredTile.PrimaryBiome.implemented
-                        || filteredTile.hilliness == Hilliness.Impassable
-                    )
-                    {
-                        continue;
-                    }
-
-                    if (!filteredTile.PrimaryBiome.canAutoChoose)
-                    {
-                        continue;
-                    }
-
-                    PlanetTile filteredPlanetTile = Find.WorldGrid
-                        .Surface[Find.WorldGrid.Surface.tiles.IndexOf(filteredTile)]
-                        .tile;
-
-                    if (TileFinder.IsValidTileForNewSettlement(filteredPlanetTile))
-                    {
-                        Find.GameInitData.startingTile = filteredPlanetTile;
-                        string biomeInfo = filteredPlanetTile.Tile.biome.label.CapitalizeFirst();
-                        string hillinessInfo = filteredTile.hilliness.GetLabelCap();
-                        Util.LogMessage(
-                            $"Found valid tile for random start: {biomeInfo}, {hillinessInfo}"
-                        );
-                        foundValidTile = true;
-                        break;
-                    }
-                }
-
-                if (!foundValidTile)
-                {
-                    Util.LogMessage(
-                        "No valid tile found for applied filters. Choosing random tile."
-                    );
-                    Find.GameInitData.ChooseRandomStartingTile();
-                }
-            }
+                Tile tile = surface.tiles[index];
+                return tile.PrimaryBiome != null && tile.PrimaryBiome.canBuildBase
+                    && tile.PrimaryBiome.implemented && tile.PrimaryBiome.canAutoChoose
+                    && tile.hilliness != Hilliness.Impassable
+                    && filters.Matches(tile.biome, tile.hilliness, tile.temperature);
+            }, index => TileFinder.IsValidTileForNewSettlement(surface[index].tile),
+                upper => Rand.Range(0, upper), out selected))
+                Find.GameInitData.startingTile = surface[selected].tile;
             else
             {
-                // No filters applied, choose random tile
+                if (filters.Active) Util.LogMessage("No valid tile matched the starting filters; using the game's random starting tile.");
                 Find.GameInitData.ChooseRandomStartingTile();
             }
 
@@ -184,7 +86,7 @@ namespace RandomStartMod
 
             Season startingSeason = (Season)settings.startingSeason;
             if (settings.randomiseSeason)
-                startingSeason = (Season)Rand.Range(1, 4);
+                startingSeason = new[] { Season.Spring, Season.Summer, Season.Fall, Season.Winter }.RandomElement();
 
             Find.GameInitData.startingSeason = startingSeason;
             Find.GameInitData.mapSize = settings.mapSize;
@@ -208,122 +110,25 @@ namespace RandomStartMod
 
             if (settings.randomiseFactionGoodwill)
             {
-                Util.LogMessage("Randomising Faction Goodwill");
-                foreach (Faction item in Find.FactionManager.AllFactionsListForReading)
+                var excluded = new HashSet<string>(settings.factionsExcludeFromReputationRandomization ?? new List<string>());
+                var factions = Find.FactionManager.AllFactionsListForReading.Distinct().ToList();
+                Pairwise.ForEach(factions, faction => excluded.Contains(faction.def.defName), (a, b) =>
                 {
-                    // Skip faction if it's excluded from reputation randomization
-                    if (
-                        settings.factionsExcludeFromReputationRandomization != null
-                        && settings.factionsExcludeFromReputationRandomization.Contains(
-                            item.def.defName
-                        )
-                    )
-                    {
-                        continue;
-                    }
-
-                    // Only remove relations for factions that aren't excluded
-                    List<FactionRelation> relationsToRemove = new List<FactionRelation>();
-                    foreach (FactionRelation relation in item.relations)
-                    {
-                        if (
-                            settings.factionsExcludeFromReputationRandomization == null
-                            || !settings.factionsExcludeFromReputationRandomization.Contains(
-                                relation.other.def.defName
-                            )
-                        )
-                        {
-                            relationsToRemove.Add(relation);
-                        }
-                    }
-                    foreach (FactionRelation relation in relationsToRemove)
-                    {
-                        item.relations.Remove(relation);
-                    }
-
-                    foreach (Faction item2 in Find.FactionManager.AllFactionsListForReading)
-                    {
-                        if (item != item2)
-                        {
-                            // Skip if either faction is excluded from reputation randomization
-                            if (
-                                settings.factionsExcludeFromReputationRandomization != null
-                                && (
-                                    settings.factionsExcludeFromReputationRandomization.Contains(
-                                        item.def.defName
-                                    )
-                                    || settings.factionsExcludeFromReputationRandomization.Contains(
-                                        item2.def.defName
-                                    )
-                                )
-                            )
-                            {
-                                continue;
-                            }
-
-                            if (item.RelationWith(item2, allowNull: true) == null)
-                            {
-                                int initialGoodwill = GetInitialGoodwill(item, item2);
-
-                                FactionRelationKind kind = (
-                                    (initialGoodwill > -10)
-                                        ? (
-                                            (initialGoodwill < 75)
-                                                ? FactionRelationKind.Neutral
-                                                : FactionRelationKind.Ally
-                                        )
-                                        : FactionRelationKind.Hostile
-                                );
-                                FactionRelation factionRelation = new FactionRelation();
-                                factionRelation.other = item2;
-                                factionRelation.baseGoodwill = initialGoodwill;
-                                factionRelation.kind = kind;
-                                item.relations.Add(factionRelation);
-                                FactionRelation factionRelation2 = new FactionRelation();
-                                factionRelation2.other = item;
-                                factionRelation2.baseGoodwill = initialGoodwill;
-                                factionRelation2.kind = kind;
-                                item2.relations.Add(factionRelation2);
-                            }
-
-                            int RoundNum(int num)
-                            {
-                                int rem = num % 10;
-                                return rem >= 5 ? (num - rem + 10) : (num - rem);
-                            }
-
-                            int GetInitialGoodwill(Faction a, Faction b)
-                            {
-                                if (a.def.permanentEnemy || b.def.permanentEnemy)
-                                {
-                                    return -100;
-                                }
-                                if (
-                                    (a.def.permanentEnemyToEveryoneExceptPlayer && !b.IsPlayer)
-                                    || (b.def.permanentEnemyToEveryoneExceptPlayer && !a.IsPlayer)
-                                )
-                                {
-                                    return -100;
-                                }
-                                if (
-                                    a.def.permanentEnemyToEveryoneExcept != null
-                                    && !a.def.permanentEnemyToEveryoneExcept.Contains(b.def)
-                                )
-                                {
-                                    return -100;
-                                }
-                                if (
-                                    b.def.permanentEnemyToEveryoneExcept != null
-                                    && !b.def.permanentEnemyToEveryoneExcept.Contains(a.def)
-                                )
-                                {
-                                    return -100;
-                                }
-                                return RoundNum(Rand.Range(-100, 101));
-                            }
-                        }
-                    }
-                }
+                    // Leave fixed/non-diplomatic relationships under the game's rules.
+                    if ((!a.IsPlayer && !a.HasGoodwill) || (!b.IsPlayer && !b.HasGoodwill)
+                        || a.def.permanentEnemy || b.def.permanentEnemy
+                        || (a.def.permanentEnemyToEveryoneExceptPlayer && !b.IsPlayer)
+                        || (b.def.permanentEnemyToEveryoneExceptPlayer && !a.IsPlayer)
+                        || (a.def.permanentEnemyToEveryoneExcept != null && !a.def.permanentEnemyToEveryoneExcept.Contains(b.def))
+                        || (b.def.permanentEnemyToEveryoneExcept != null && !b.def.permanentEnemyToEveryoneExcept.Contains(a.def))) return;
+                    if (a.RelationWith(b, true) == null || b.RelationWith(a, true) == null)
+                        a.TryMakeInitialRelationsWith(b);
+                    if (a.RelationWith(b, true) == null || b.RelationWith(a, true) == null) return;
+                    int desired = Rand.RangeInclusive(-10, 10) * 10;
+                    // This API maintains the bilateral relation and applies modded
+                    // goodwill rules. Do not delete either faction's relation list.
+                    a.TryAffectGoodwillWith(b, desired - a.BaseGoodwillWith(b), false, false);
+                });
             }
             PageUtility.InitGameStart();
 
@@ -996,98 +801,53 @@ namespace RandomStartMod
 
         private static void SetupRandomGenes(RandomStartSettings settings)
         {
+            var pawns = Find.GameInitData.startingAndOptionalPawns.Where(pawn => pawn.genes != null).ToList();
             if (settings.enableRandomXenotypes)
             {
-                foreach (Pawn p in Find.GameInitData.startingAndOptionalPawns.Where(pawn => pawn.genes != null))
-                {
-                    IEnumerable<XenotypeDef> xenotypes =
-                        DefDatabase<XenotypeDef>.AllDefsListForReading;
-                    if (
-                        settings.respectFactionXenotypes
-                        && Find.FactionManager.OfPlayer.def.basicMemberKind.xenotypeSet != null
-                    )
-                        xenotypes = xenotypes.Where(
-                            (XenotypeDef x) =>
-                                Find.FactionManager.OfPlayer.def.basicMemberKind.xenotypeSet.Contains(
-                                    x
-                                )
-                        );
-                    XenotypeDef xenotype = xenotypes.RandomElement();
-                    p.genes.SetXenotype(xenotype);
-                }
+                var xenotypes = DefDatabase<XenotypeDef>.AllDefsListForReading.AsEnumerable();
+                var factionSet = Faction.OfPlayer.def.basicMemberKind?.xenotypeSet;
+                if (settings.respectFactionXenotypes && factionSet != null)
+                    xenotypes = xenotypes.Where(xenotype => factionSet.Contains(xenotype));
+                var pool = xenotypes.ToList();
+                if (pool.Count == 0)
+                    Log.Warning("[Random Start] No eligible xenotypes; keeping scenario-generated xenotypes.");
+                else
+                    foreach (Pawn pawn in pawns) pawn.genes.SetXenotype(pool.RandomElement());
             }
-
-            if (settings.enableRandomCustomXenotypes)
+            if (!settings.enableRandomCustomXenotypes) return;
+            var eligible = DefDatabase<GeneDef>.AllDefsListForReading.Where(gene => gene.canGenerateInGeneSet).ToList();
+            var invalid = new HashSet<GeneDef>();
+            foreach (Pawn pawn in pawns)
             {
-                foreach (Pawn p in Find.GameInitData.startingAndOptionalPawns.Where(pawn => pawn.genes != null))
+                var pool = new List<GeneDef>(eligible);
+                int count = Math.Min(Math.Max(0, settings.randomGeneRange.RandomInRange), pool.Count);
+                bool changed = false;
+                for (int i = 0; i < count; i++)
                 {
-                    List<GeneDef> selectedGenes = new List<GeneDef>();
-                    for (int i = 0; i < settings.randomGeneRange.RandomInRange; i++)
+                    GeneDef root = pool.RandomElement();
+                    pool.Remove(root);
+                    List<GeneDef> ordered;
+                    if (!DependencyGraph.TryOrder(root,
+                        gene => gene.prerequisite == null ? null : new[] { gene.prerequisite }, out ordered))
                     {
-                        selectedGenes.Add(
-                            DefDatabase<GeneDef>
-                                .AllDefsListForReading.Where((GeneDef g) => g.canGenerateInGeneSet)
-                                .RandomElement()
-                        );
+                        if (invalid.Add(root)) Log.Warning($"[Random Start] Skipping cyclic gene prerequisites for {root.defName}.");
+                        continue;
                     }
-                    if (selectedGenes.Count > 0)
-                    {
-                        int metabolismTotal = 0;
-                        foreach (GeneDef geneDef in selectedGenes)
-                        {
-                            if (settings.enableMetabolicEfficiencyMinimum)
-                            {
-                                if (
-                                    (metabolismTotal + geneDef.biostatMet)
-                                    >= settings.minimumMetabolicEfficiency
-                                )
-                                {
-                                    GivePawnGene(p, geneDef, ref metabolismTotal);
-                                    metabolismTotal += geneDef.biostatMet;
-                                    foreach (Gene gene in p.genes.GenesListForReading)
-                                    {
-                                        if (gene.Overridden)
-                                        {
-                                            p.genes.RemoveGene(gene);
-                                            metabolismTotal -= gene.def.biostatMet;
-                                        }
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                GivePawnGene(p, geneDef, ref metabolismTotal);
-                                foreach (Gene gene in p.genes.GenesListForReading)
-                                {
-                                    if (gene.Overridden)
-                                    {
-                                        p.genes.RemoveGene(gene);
-                                        metabolismTotal -= gene.def.biostatMet;
-                                    }
-                                }
-                            }
-                        }
-
-                        p.genes.xenotypeName = GeneUtility.GenerateXenotypeNameFromGenes(
-                            selectedGenes
-                        );
-                        p.genes.iconDef = DefDatabase<XenotypeIconDef>.GetRandom();
-                    }
+                    bool xenogene = Rand.Bool;
+                    changed |= GeneBatch.TryApply(ordered,
+                        gene => pawn.genes.GenesListForReading.Any(existing => existing.def == gene),
+                        gene => pawn.genes.AddGene(gene, xenogene), gene => pawn.genes.RemoveGene(gene),
+                        () => !settings.enableMetabolicEfficiencyMinimum
+                            || pawn.genes.GenesListForReading.Where(gene => gene.Active).Sum(gene => gene.def.biostatMet)
+                                >= settings.minimumMetabolicEfficiency);
                 }
+                if (!changed) continue;
+                var active = pawn.genes.GenesListForReading.Where(gene => gene.Active).Select(gene => gene.def).Distinct().ToList();
+                if (active.Count == 0) continue;
+                pawn.genes.xenotypeName = GeneUtility.GenerateXenotypeNameFromGenes(active);
+                if (DefDatabase<XenotypeIconDef>.AllDefsListForReading.TryRandomElement(out var icon))
+                    pawn.genes.iconDef = icon;
             }
         }
-
-        private static void GivePawnGene(Pawn p, GeneDef geneDef, ref int metabolismTotal)
-        {
-            p.genes.AddGene(geneDef, Rand.Bool);
-            Gene gene = GeneMaker.MakeGene(geneDef, p);
-            p.genes.OverrideAllConflicting(gene);
-            metabolismTotal += geneDef.biostatMet;
-            if (geneDef.prerequisite != null)
-            {
-                GivePawnGene(p, geneDef.prerequisite, ref metabolismTotal);
-            }
-        }
-
     }
 }
