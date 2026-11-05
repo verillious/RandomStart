@@ -23,6 +23,7 @@ namespace RandomStartMod
         private readonly RandomStartSettings settings;
         private readonly StartupSequence<Page> sequence = new StartupSequence<Page>();
         private Page currentPage;
+        private StartupProgressWindow progressWindow;
         private int openedFrame;
         private bool goodwillApplied;
 
@@ -127,12 +128,47 @@ namespace RandomStartMod
             });
         }
 
+        private Window TopSetupWindow => Find.WindowStack.Windows.LastOrDefault(window => !ReferenceEquals(window, progressWindow));
+
+        internal void WindowOpened(Window window)
+        {
+            if (ReferenceEquals(window, progressWindow)) return;
+            Opened(window as Page);
+            RefreshProgress();
+        }
+
+        internal void RefreshProgress()
+        {
+            Window top = TopSetupWindow;
+            bool blocked = top != null && !ReferenceEquals(top, currentPage);
+            bool cover = Current.ProgramState == ProgramState.Entry
+                && sequence.ShouldCover(currentPage, currentPage?.IsOpen == true, blocked, LongEventHandler.AnyEventNowOrWaiting);
+            if (!cover)
+            {
+                CloseProgress();
+                return;
+            }
+            if (progressWindow == null) progressWindow = new StartupProgressWindow(this);
+            if (!progressWindow.IsOpen) Find.WindowStack.Add(progressWindow);
+        }
+
+        internal void CloseProgress()
+        {
+            if (progressWindow?.IsOpen == true) progressWindow.Close(false);
+        }
+
+        internal void ContinueManually()
+        {
+            sequence.Stop();
+            CloseProgress();
+        }
+
         internal void AfterWindowsDrawn()
         {
             if (sequence.Stopped || Current.ProgramState != ProgramState.Entry || currentPage == null || !currentPage.IsOpen
                 || Time.frameCount <= openedFrame || Event.current?.type != EventType.Repaint) return;
             bool blocked = LongEventHandler.AnyEventNowOrWaiting
-                || !ReferenceEquals(Find.WindowStack.Windows.LastOrDefault(), currentPage);
+                || !ReferenceEquals(TopSetupWindow, currentPage);
             Page page = currentPage;
             sequence.TryAdvance(page, blocked, () =>
             {
@@ -145,7 +181,9 @@ namespace RandomStartMod
 
         internal static void Fail(Exception error)
         {
+            var controller = RandomStartData.State?.NativeStartup;
             RandomStartData.End(Current.Game);
+            controller?.CloseProgress();
             Log.Error("[Random Start native prototype] Stopped; cancel this setup and return to the menu. " + error);
             Find.WindowStack.Add(new Dialog_MessageBox("RandomStartMod.NativePrototypeFailed".Translate()));
         }

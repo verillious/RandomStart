@@ -29,7 +29,7 @@ namespace RandomStartMod
             if (!__runOriginal) return;
             var controller = RandomStartData.State?.NativeStartup;
             if (controller == null) return;
-            try { controller.Opened(__0 as Page); }
+            try { controller.WindowOpened(__0); }
             catch (Exception error) { NativeStartupController.Fail(error); }
         }
     }
@@ -43,7 +43,11 @@ namespace RandomStartMod
             if (!__runOriginal) return;
             var controller = RandomStartData.State?.NativeStartup;
             if (controller == null) return;
-            try { controller.AfterWindowsDrawn(); }
+            try
+            {
+                controller.AfterWindowsDrawn();
+                controller.RefreshProgress();
+            }
             catch (Exception error) { NativeStartupController.Fail(error); }
         }
     }

@@ -48,6 +48,7 @@ public class StartupSequenceTests
     {
         var sequence = new StartupSequence<object>();
         Assert.False(sequence.TryAdvance(new object(), false, () => throw new Exception("Unknown page")));
+        Assert.False(sequence.ShouldCover(new object(), true, false, true));
     }
 
     [Fact]
@@ -100,5 +101,62 @@ public class StartupSequenceTests
         Assert.True(sequence.ConfigureOnce(new EqualPage(), () => applied++));
         Assert.True(sequence.ConfigureOnce(new EqualPage(), () => applied++));
         Assert.Equal(2, applied);
+    }
+
+    [Fact]
+    public void CoverRevealsARejectedTransitionAndReturnsForTheNextConfiguredPage()
+    {
+        var sequence = new StartupSequence<object>();
+        var page = new object();
+        sequence.ConfigureOnce(page, () => { });
+        Assert.True(sequence.ShouldCover(page, stepOpen: true, blocked: false, workPending: false));
+        sequence.TryAdvance(page, false, () => { /* Validation leaves the page open. */ });
+        Assert.False(sequence.ShouldCover(page, stepOpen: true, blocked: false, workPending: false));
+        Assert.False(sequence.Stopped);
+
+        // The user corrects the native page and advances it manually.
+        var nextPage = new object();
+        sequence.ConfigureOnce(nextPage, () => { });
+        Assert.True(sequence.ShouldCover(nextPage, stepOpen: true, blocked: false, workPending: false));
+    }
+
+    [Fact]
+    public void QueuedGenerationKeepsCoverAfterPageClosesWithoutRepeatingTheAction()
+    {
+        var sequence = new StartupSequence<object>();
+        var page = new object();
+        sequence.ConfigureOnce(page, () => { });
+        int worldsQueued = 0;
+        sequence.TryAdvance(page, false, () => worldsQueued++);
+        Assert.True(sequence.ShouldCover(page, stepOpen: false, blocked: false, workPending: true));
+        Assert.True(sequence.ShouldCover(page, stepOpen: true, blocked: false, workPending: true));
+        Assert.False(sequence.TryAdvance(page, false, () => worldsQueued++));
+        Assert.Equal(1, worldsQueued);
+        Assert.False(sequence.ShouldCover(page, stepOpen: false, blocked: false, workPending: false));
+    }
+
+    [Fact]
+    public void ModalDialogIsRevealedEvenDuringQueuedWorkAndCoverCanReturnAfterwards()
+    {
+        var sequence = new StartupSequence<object>();
+        var page = new object();
+        sequence.ConfigureOnce(page, () => { });
+        sequence.TryAdvance(page, false, () => { });
+        Assert.False(sequence.ShouldCover(page, stepOpen: true, blocked: true, workPending: true));
+        Assert.False(sequence.ShouldCover(page, stepOpen: true, blocked: true, workPending: false));
+        Assert.True(sequence.ShouldCover(page, stepOpen: true, blocked: false, workPending: true));
+    }
+
+    [Fact]
+    public void ManualHandoverKeepsCoverHiddenForLaterPagesAndQueuedWork()
+    {
+        var sequence = new StartupSequence<object>();
+        var page = new object();
+        sequence.ConfigureOnce(page, () => { });
+        sequence.Stop();
+        Assert.False(sequence.ShouldCover(page, stepOpen: true, blocked: false, workPending: true));
+        var laterPage = new object();
+        sequence.ConfigureOnce(laterPage, () => { });
+        Assert.False(sequence.ShouldCover(laterPage, stepOpen: true, blocked: false, workPending: false));
     }
 }

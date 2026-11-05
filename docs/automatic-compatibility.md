@@ -24,6 +24,9 @@ patching decisions and actual pinned-runtime tests.
   requested. Avoid asking users to identify which compatibility switches to set.
 - Automatically advance supported steps only after initialization and validation
   complete. Preserve asynchronous work and genuine mod-required decisions.
+- Cover automated pages with a progress screen while preserving their normal
+  lifecycle and drawing. Reveal pages/dialogs that need input; avoid visible
+  setup-page flicker during ordinary automatic advancement.
 - Pause only for missing required data or a choice that cannot safely be inferred;
   keep completed random choices when handing control to the user.
 - Prefer a shared solution to a class of startup hooks over another package-ID

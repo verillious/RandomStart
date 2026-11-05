@@ -44,6 +44,35 @@ when the handler queues a dialog or asynchronous generation without closing it.
 A rejected attempt leaves the real page available for manual correction; the
 controller does not repeatedly submit it.
 
+## Progress screen
+
+Supported automated pages sit behind an opaque, full-screen **Preparing random
+start…** window. The normal pages continue to open, initialize and draw underneath
+it; their draw methods are not replaced or skipped. The cover uses RimWorld's
+window/input routing to block clicks and acceptance keys on hidden controls.
+It follows the game's UI scale and screen resolution.
+
+The controller ignores only its own cover when checking for a blocking window,
+so the cover does not prevent automatic advancement. A real dialog takes priority:
+the cover closes to expose it, and the controller does not answer it automatically.
+The cover can return when the dialog continues into queued work or the next
+supported page. An acceptance attempt that leaves a page open without queued work
+also reveals that page for manual correction. Ideology/unknown-page handover and
+errors dismiss the cover.
+
+**Continue setup manually**, or Escape while the cover has input, stops automatic
+advancement and removes the cover while retaining the applied choices. Queued
+generation is allowed to finish; this does not cancel or restart it. A stale cover
+also closes on the UI thread when its game/session ends. It is not serialized and
+does not add a new saved setting.
+
+The cover's decision policy has automated tests for rejected validation, blocking
+dialogs, queued generation after page closure, manual handover and resuming on
+a subsequent page. Actual opacity, focus, input routing, display scaling and frame
+order still require a running-game check; the cloud cannot confirm visual behavior.
+
+## Existing integrations
+
 The existing item/research hooks remain scoped to the new game. The prototype
 does not manually call KCSG, SOS2, VFE faction, Real Ruins, No Pause, My Little
 Planet, Realistic Planets or Prepare Moderately adapters. Their normal hooks and
@@ -86,6 +115,11 @@ Before advancing this prototype to the normal Random button:
    and one map start, including validation dialogs and long events.
 3. Open an extra modal over a page, reject a warning, go back, cancel and start
    again. Confirm no repeated queued action, rerolled page or leaked overrides.
+   Check that automated pages stay covered without visible flashes, including
+   between world-generation steps. Check the cover at different UI scales and
+   after resizing the game window. Verify Enter/mouse input cannot change hidden
+   controls, Escape/manual continuation reveals the current page, and genuine
+   mod/validation dialogs remain visible and interactive.
 4. Implement and verify normal ideology transitions without manually duplicating
    `PostIdeoChosen`, pawn generation, preset loading or dialog continuation.
 5. Test representative scenario/page-hook/world mods. Trace KCSG/SOS2/native

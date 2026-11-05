@@ -30,6 +30,16 @@ namespace RandomStartMod
             return true;
         }
 
+        internal bool ShouldCover(TStep step, bool stepOpen, bool blocked, bool workPending)
+        {
+            if (Stopped || blocked || step == null || !steps.TryGetValue(step, out StepState state))
+                return false;
+            // An acceptance that leaves its page open without queued work needs
+            // manual correction. Keep that page visible instead of trapping the
+            // user behind progress. Dialogs are always revealed by 'blocked'.
+            return workPending || (stepOpen && !state.AdvanceAttempted);
+        }
+
         internal void Stop() => Stopped = true;
     }
 }

@@ -165,4 +165,6 @@
 	<RandomStartMod.FluidMemeCountInfo>Fluid starts use the game's initial meme count. Forced and faction-required memes still apply.</RandomStartMod.FluidMemeCountInfo>
 	<RandomStartMod.NativePrototypeManual>The native startup prototype needs manual completion from this step. Choices already applied are retained. Configure ideology and any remaining options on the normal setup pages; automatic ideology configuration is still under development.</RandomStartMod.NativePrototypeManual>
 	<RandomStartMod.NativePrototypeFailed>The native startup prototype encountered an error. Cancel this setup and return to the main menu. Details are available in the log. You can use the normal Random button for the existing startup process.</RandomStartMod.NativePrototypeFailed>
+	<RandomStartMod.PreparingRandomStart>Preparing random start…</RandomStartMod.PreparingRandomStart>
+	<RandomStartMod.ContinueSetupManually>Continue setup manually</RandomStartMod.ContinueSetupManually>
 </LanguageData>
