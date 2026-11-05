@@ -9,10 +9,12 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" PrivateAssets="all" />
+    <PackageReference Include="Lib.Harmony" Version="2.3.6" />
     <!-- Test the production reflection boundary without loading game assemblies. -->
     <Compile Include="../Source/Compat/OptionalModApi.cs" Link="OptionalModApi.cs" />
     <Compile Include="../Source/AdditiveOptions.cs" Link="AdditiveOptions.cs" />
     <Compile Include="../Source/StartSession.cs" Link="StartSession.cs" />
+    <Compile Include="../Source/StartupSequence.cs" Link="StartupSequence.cs" />
     <Compile Include="../Source/StartingItemBudget.cs" Link="StartingItemBudget.cs" />
     <Compile Include="../Source/DependencyGraph.cs" Link="DependencyGraph.cs" />
     <Compile Include="../Source/StartingTileSelection.cs" Link="StartingTileSelection.cs" />

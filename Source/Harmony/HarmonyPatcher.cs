@@ -10,7 +10,7 @@ namespace RandomStartMod
         static RandomStartPatcher()
         {
             var harmony = new Harmony("com.bogknight.RandomStart");
-            harmony.PatchAll();
+            harmony.PatchAll(typeof(RandomStartPatcher).Assembly);
             Mod mod = LoadedModManager.GetMod<RandomStartMod>();
             Util.LogMessage($"{mod.Content.ModMetaData.ModVersion}");
         }

@@ -2,6 +2,8 @@
 
 Follow the [automatic compatibility direction](automatic-compatibility.md): normal
 game/mod initialization and minimal user setup take priority over feature growth.
+The [native startup prototype](native-startup-prototype.md) and
+[Harmony audit](harmony-audit.md) track the first implementation milestone.
 
 ## Code layout
 
@@ -14,7 +16,8 @@ game/mod initialization and minimal user setup take priority over feature growth
 - `Source/Compat/`: one class/file per existing integration and its reflection
   boundary. No new service container or integration framework is needed.
 - `Source/Harmony/`: narrow game hooks; reusable policy code stays outside patches.
-- `Tests/`: portable policy/metadata tests. They do not run RimWorld.
+- `Tests/`: portable policy/metadata and real Harmony composition tests. They do
+  not run RimWorld.
 
 The structural move preserved 130 existing method signatures and bodies, with
 inherited trailing whitespace trimmed afterwards. Static field initialization
@@ -32,8 +35,8 @@ its initial-fluid meme count; the configurable range remains for fixed ideologie
 Forced/faction-required memes are still honored. Saved ideologies retain their
 own loaded mode.
 
-The central settings file is 185 lines rather than 2,777; the start controller is
-232 rather than 853. More files make responsibilities easier to locate. The
+At the structural refactor, the central settings file became 185 lines rather
+than 2,777; the start controller became 232 rather than 853. More files make responsibilities easier to locate. The
 important reduction in maintained behavior comes from delegating generation to
 the game, not merely moving text between files.
 

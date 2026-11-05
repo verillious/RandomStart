@@ -23,16 +23,16 @@ namespace RandomStartMod
     internal static class StartingPawnPhase_Patch
     {
         [HarmonyPrefix]
-        static void Prefix(Scenario __instance, out IDisposable __state)
+        static void Prefix(Scenario __instance, bool __runOriginal, out IDisposable __state)
         {
-            __state = ReferenceEquals(__instance, Find.Scenario)
+            __state = __runOriginal && ReferenceEquals(__instance, Find.Scenario)
                 ? RandomStartData.State?.PreparingPawns.Enter(true) : null;
         }
         [HarmonyPostfix]
-        static void Postfix(IDisposable __state)
+        static void Postfix(IDisposable __state, bool __runOriginal)
         {
             var state = RandomStartData.State;
-            if (__state != null && state != null) RandomScenario.FinishStartingPawnSetup(state.Settings);
+            if (__runOriginal && __state != null && state != null) RandomScenario.FinishStartingPawnSetup(state.Settings);
         }
         [HarmonyFinalizer]
         static void Finalizer(IDisposable __state) => __state?.Dispose();
@@ -42,10 +42,10 @@ namespace RandomStartMod
     internal static class StartingPawnSlot_Patch
     {
         [HarmonyPrefix]
-        static void Prefix(out IDisposable __state)
+        static void Prefix(bool __runOriginal, out IDisposable __state)
         {
             var state = RandomStartData.State;
-            __state = state != null && state.PreparingPawns.Value ? state.GeneratingPawn.Enter(true) : null;
+            __state = __runOriginal && state != null && state.PreparingPawns.Value ? state.GeneratingPawn.Enter(true) : null;
         }
         [HarmonyFinalizer]
         static void Finalizer(IDisposable __state) => __state?.Dispose();
@@ -62,7 +62,8 @@ namespace RandomStartMod
                 || __0.Context != PawnGenerationContext.PlayerStarter
                 || __0.KindDef?.race?.race?.Humanlike != true) return;
             var settings = state.Settings;
-            if (settings.enablePrepareModeratelyIntegration && Compat.PrepareModeratelyCompat.IsAvailable) return;
+            if (state.NativeStartup == null && settings.enablePrepareModeratelyIntegration
+                && Compat.PrepareModeratelyCompat.IsAvailable) return;
             bool allowsAdults = (__0.AllowedDevelopmentalStages & DevelopmentalStage.Adult) != 0;
             if (settings.startingPawnForceViolence && allowsAdults) __0.MustBeCapableOfViolence = true;
             // Explicit scenario restrictions take precedence over optional age/sex overrides.

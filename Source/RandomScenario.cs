@@ -29,7 +29,7 @@ namespace RandomStartMod
             Current.Game = new Game { InitData = new GameInitData() };
             RandomStartData.Begin(settings);
             settings = RandomStartData.State.Settings;
-            SetupRandomScenario(settings);
+            Current.Game.Scenario = ChooseRandomScenario(settings);
             StartingItems.Prepare(Find.Scenario, settings);
             Find.Scenario.PreConfigure();
             Page firstPage = Find.Scenario.GetFirstConfigPage();
@@ -52,6 +52,42 @@ namespace RandomStartMod
             SetupRandomDifficulty(settings);
             SetupRandomPlanet(settings);
 
+            SetupRandomStartingSite(settings);
+
+            if (
+                ModsConfig.IsActive("OskarPotocki.VanillaFactionsExpanded.Core")
+                || ModsConfig.IsActive("OskarPotocki.VanillaFactionsExpanded.Core_Steam")
+            )
+            {
+                Compat.VECoreCompat.SetupForKCSG();
+            }
+
+            if (ModsConfig.IdeologyActive)
+            {
+                SetupRandomIdeology(settings);
+            }
+
+            Find.Scenario.PostIdeoChosen();
+
+            Find.GameInitData.startedFromEntry = true;
+
+            SetupRandomGoodwill(settings);
+            PageUtility.InitGameStart();
+
+            if (
+                ModsConfig.IsActive("Woolstrand.RealRuins")
+                || ModsConfig.IsActive("Woolstrand.RealRuins_Steam")
+            )
+            {
+                if (settings.enableAutoRealRuins)
+                {
+                    Compat.RealRuinsCompat.CreatePOIs();
+                }
+            }
+        }
+
+        internal static void SetupRandomStartingSite(RandomStartSettings settings)
+        {
             var biomes = settings.filterStartingBiome
                 ? (settings.allowedBiomes ?? new List<string>()).Select(name => DefDatabase<BiomeDef>.GetNamedSilentFail(name))
                     .Where(biome => biome != null)
@@ -91,23 +127,10 @@ namespace RandomStartMod
             Find.GameInitData.startingSeason = startingSeason;
             Find.GameInitData.mapSize = settings.mapSize;
 
-            if (
-                ModsConfig.IsActive("OskarPotocki.VanillaFactionsExpanded.Core")
-                || ModsConfig.IsActive("OskarPotocki.VanillaFactionsExpanded.Core_Steam")
-            )
-            {
-                Compat.VECoreCompat.SetupForKCSG();
-            }
+        }
 
-            if (ModsConfig.IdeologyActive)
-            {
-                SetupRandomIdeology(settings);
-            }
-
-            Find.Scenario.PostIdeoChosen();
-
-            Find.GameInitData.startedFromEntry = true;
-
+        internal static void SetupRandomGoodwill(RandomStartSettings settings)
+        {
             if (settings.randomiseFactionGoodwill)
             {
                 var excluded = new HashSet<string>(settings.factionsExcludeFromReputationRandomization ?? new List<string>());
@@ -130,23 +153,12 @@ namespace RandomStartMod
                     a.TryAffectGoodwillWith(b, desired - a.BaseGoodwillWith(b), false, false);
                 });
             }
-            PageUtility.InitGameStart();
-
-            if (
-                ModsConfig.IsActive("Woolstrand.RealRuins")
-                || ModsConfig.IsActive("Woolstrand.RealRuins_Steam")
-            )
-            {
-                if (settings.enableAutoRealRuins)
-                {
-                    Compat.RealRuinsCompat.CreatePOIs();
-                }
-            }
         }
 
         internal static void FinishStartingPawnSetup(RandomStartSettings settings)
         {
-            bool usePrepareModerately = settings.enablePrepareModeratelyIntegration && PrepareModeratelyCompat.IsAvailable;
+            bool usePrepareModerately = RandomStartData.State?.NativeStartup == null
+                && settings.enablePrepareModeratelyIntegration && PrepareModeratelyCompat.IsAvailable;
             if (usePrepareModerately)
             {
                 if (!string.IsNullOrEmpty(settings.selectedPrepareModeratelyFilter))
@@ -170,11 +182,13 @@ namespace RandomStartMod
             if (ModsConfig.BiotechActive) SetupRandomGenes(settings);
         }
 
-        private static void SetupRandomScenario(RandomStartSettings settings)
+        internal static Scenario ChooseRandomScenario(RandomStartSettings settings)
         {
+            Scenario chosen;
+
             if (settings.createRandomScenario)
             {
-                Current.Game.Scenario = ScenarioMaker.GenerateNewRandomScenario(
+                chosen = ScenarioMaker.GenerateNewRandomScenario(
                     GenText.RandomSeedString()
                 );
             }
@@ -224,9 +238,10 @@ namespace RandomStartMod
                     randomScenario = ScenarioDefOf.Crashlanded.scenario;
                 }
 
-                Current.Game.Scenario = randomScenario.CopyForEditing();
+                chosen = randomScenario.CopyForEditing();
             }
-            Util.LogMessage($"Starting {Current.Game.Scenario}");
+            Util.LogMessage($"Starting {chosen}");
+            return chosen;
         }
     }
 }

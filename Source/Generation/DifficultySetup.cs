@@ -13,7 +13,7 @@ namespace RandomStartMod
     public static partial class RandomScenario
     {
 
-        private static void SetupRandomDifficulty(RandomStartSettings settings)
+        internal static void SetupRandomDifficulty(RandomStartSettings settings, bool initializeOptionalMods = true)
         {
             DifficultyDef chosenDifficultyDef = DefDatabase<DifficultyDef>.GetNamedSilentFail(settings.difficulty)
                 ?? DefDatabase<DifficultyDef>.GetNamedSilentFail("Rough")
@@ -40,10 +40,10 @@ namespace RandomStartMod
             }
 
 
-            if (
+            if (initializeOptionalMods && (
                 ModsConfig.IsActive("brrainz.nopausechallenge")
                 || ModsConfig.IsActive("brrainz.nopausechallenge_steam")
-            )
+            ))
             {
                 Compat.NoPauseCompat.SetupForNoPause();
             }

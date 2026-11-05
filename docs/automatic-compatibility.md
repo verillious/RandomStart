@@ -5,6 +5,15 @@ This takes precedence over adding more optional integrations or randomization
 features. Preserve the mod's purpose: press Random, receive a valid randomized
 start, and let the installed game/mods perform their normal initialization.
 
+Maintenance cost is a primary constraint: shrink responsibility for other mods'
+internals. Do not build an automatic panel importer or a new integration framework.
+Preserve Random Start's own configuration; retiring controls that exist solely
+for another mod may be necessary and must be documented explicitly.
+
+The [native startup prototype](native-startup-prototype.md) implements the first
+development-only milestone. The [Harmony audit](harmony-audit.md) records the
+patching decisions and actual pinned-runtime tests.
+
 ## Default behavior to work toward
 
 - Run the actual new-game configuration lifecycle, applying a captured random
@@ -85,7 +94,7 @@ plan preservation and failure handling, alongside those engine checks. The
 current cloud contains reference assemblies and test tools, not a running game.
 That limits what can be claimed about a replacement for the entire startup flow.
 
-The existing development builds remain intermediate work. No native page-flow
-replacement is claimed implemented or verified by this document. While awaiting
-runtime verification, prioritize source investigation and a reviewable startup
-implementation over feature expansion or more guessed compatibility exceptions.
+The existing development builds remain intermediate work. The prototype is not
+the default startup path and does not yet automate ideology. No complete native
+page-flow replacement or runtime verification is claimed. Prioritize finishing
+and verifying this path over feature expansion or more guessed exceptions.

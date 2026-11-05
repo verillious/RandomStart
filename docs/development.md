@@ -11,6 +11,10 @@ The pinned RimRef package provides compilation signatures with Ludeon's
 permission. It is not a runnable game. Harmony remains a required installed mod;
 the build does not bundle another copy of it.
 
+This branch includes a development-only [native startup prototype](native-startup-prototype.md).
+Its debug action exercises the real setup pages; the normal Random button keeps
+using the existing path. See the guide for implemented scope and runtime checks.
+
 ## Local or cloud checks
 
 Run from the repository root:
@@ -23,8 +27,9 @@ dotnet build Source/RandomStartMod.csproj -c Debug --no-restore
 python3 tools/package_mod.py
 ```
 
-The test project builds the real mod, exercises the production reflection
-boundary under .NET 8, and inspects the resulting assembly's dependency metadata.
+The test project builds the real mod, exercises production policies/reflection
+under .NET 8, tests the pinned Harmony runtime's composition and cleanup behavior,
+and inspects the resulting assembly's dependency metadata.
 It does not load RimWorld or prove that another mod's current fields and methods
 match the integration. Test those integrations in the game.
 

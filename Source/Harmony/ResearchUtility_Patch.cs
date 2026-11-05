@@ -11,11 +11,11 @@ namespace RandomStartMod
     internal static class ResearchUtility_Patch
     {
         [HarmonyPrefix]
-        static void Prefix(out IDisposable __state)
+        static void Prefix(bool __runOriginal, out IDisposable __state)
         {
             var state = RandomStartData.State;
             __state = null;
-            if (state == null || !state.Settings.removeStartingResearch) return;
+            if (!__runOriginal || state == null || !state.Settings.removeStartingResearch) return;
             __state = state.GrantingResearch.Enter(true);
             state.ProtectedIdeologyResearch.Clear();
             var memes = Faction.OfPlayer?.ideos?.PrimaryIdeo?.memes;
@@ -29,11 +29,11 @@ namespace RandomStartMod
         }
 
         [HarmonyPostfix]
-        static void Postfix(IDisposable __state)
+        static void Postfix(IDisposable __state, bool __runOriginal)
         {
             __state?.Dispose();
             var state = RandomStartData.State;
-            if (state == null || state.ResearchApplied || !state.Settings.addRandomResearch) return;
+            if (!__runOriginal || state == null || state.ResearchApplied || !state.Settings.addRandomResearch) return;
             state.ResearchApplied = true;
             var settings = state.Settings;
             var pool = DefDatabase<ResearchProjectDef>.AllDefsListForReading.Where(project =>

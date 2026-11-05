@@ -15,6 +15,27 @@ namespace RandomStartMod
 
         private static void SetupRandomPlanet(RandomStartSettings settings)
         {
+            WorldSetupPlan plan = ChooseWorldParameters(settings, true);
+            if (ModsConfig.IsActive("Oblitus.MyLittlePlanet") || ModsConfig.IsActive("Oblitus.MyLittlePlanet_Steam"))
+                MLPCompat.ApplyWorldSize(settings.myLittlePlanetSubcount);
+
+            if (ModsConfig.IsActive("koth.RealisticPlanets1.6") || ModsConfig.IsActive("koth.RealisticPlanets1.6_Steam"))
+            {
+                int oceanType = settings.randomiseOceanType ? settings.randomiseOceanTypeRange.RandomInRange : settings.realisticPlanetsOceanType;
+                int axialTilt = settings.randomiseAxialTilt ? settings.randomiseAxialTiltRange.RandomInRange : settings.realisticPlanetsAxialTilt;
+                RealisticPlanetsCompat.GenerateRealisticPlanetWorld(plan.Coverage, plan.Seed,
+                    plan.Rainfall, plan.Temperature, plan.Population, plan.LandmarkDensity,
+                    plan.Factions, plan.Pollution, oceanType, axialTilt,
+                    settings.realisticPlanetsWorldType, settings.randomiseRealisticPlanets);
+            }
+            else
+                Current.Game.World = WorldGenerator.GenerateWorld(plan.Coverage, plan.Seed,
+                    plan.Rainfall, plan.Temperature, plan.Population, plan.LandmarkDensity,
+                    plan.Factions, plan.Pollution);
+        }
+
+        internal static WorldSetupPlan ChooseWorldParameters(RandomStartSettings settings, bool initializeOptionalMods)
+        {
             OverallRainfall rainfall = (OverallRainfall)settings.rainfall;
             if (settings.randomiseRainfall)
                 rainfall = (OverallRainfall)settings.randomiseRainfallRange.RandomInRange;
@@ -54,26 +75,26 @@ namespace RandomStartMod
                 if (settings.uniqueFactions) randomFactions.Remove(faction);
             }
 
-            if (
+            if (initializeOptionalMods && (
                 ModsConfig.IsActive("OskarPotocki.VFE.Empire")
                 || ModsConfig.IsActive("OskarPotocki.VFE.Empire_Steam")
-            )
+            ))
             {
                 Compat.VFEECompat.EnsureScenarioFactions(worldFactions);
             }
 
-            if (
+            if (initializeOptionalMods && (
                 ModsConfig.IsActive("OskarPotocki.VFE.Deserters")
                 || ModsConfig.IsActive("OskarPotocki.VFE.Deserters_Steam")
-            )
+            ))
             {
                 Compat.VFEDCompat.EnsureScenarioFactions(worldFactions);
             }
 
-            if (
+            if (initializeOptionalMods && (
                 ModsConfig.IsActive("kentington.saveourship2")
                 || ModsConfig.IsActive("kentington.saveourship2_steam")
-            )
+            ))
             {
                 Compat.SOS2Compat.SetupForStartInSpace();
             }
@@ -108,53 +129,27 @@ namespace RandomStartMod
 
             Util.LogMessage($"Using world seed: '{worldSeed}'");
 
-            if (ModsConfig.IsActive("Oblitus.MyLittlePlanet") || ModsConfig.IsActive("Oblitus.MyLittlePlanet_Steam"))
-                MLPCompat.ApplyWorldSize(settings.myLittlePlanetSubcount);
-
-            if (
-                ModsConfig.IsActive("koth.RealisticPlanets1.6")
-                || ModsConfig.IsActive("koth.RealisticPlanets1.6_Steam")
-            )
-            {
-                int oceanType = settings.realisticPlanetsOceanType;
-                if (settings.randomiseOceanType)
-                {
-                    oceanType = settings.randomiseOceanTypeRange.RandomInRange;
-                }
-                int axialTilt = settings.realisticPlanetsAxialTilt;
-                if (settings.randomiseAxialTilt)
-                {
-                    axialTilt = settings.randomiseAxialTiltRange.RandomInRange;
-                }
-                RealisticPlanetsCompat.GenerateRealisticPlanetWorld(
-                    settings.planetCoverage,
-                    worldSeed,
-                    rainfall,
-                    temperature,
-                    population,
-                    landmarkDensity,
-                    worldFactions,
-                    pollution,
-                    oceanType,
-                    axialTilt,
-                    settings.realisticPlanetsWorldType,
-                    settings.randomiseRealisticPlanets
-                );
-            }
-            else
-            {
-                Current.Game.World = WorldGenerator.GenerateWorld(
-                    settings.planetCoverage,
-                    worldSeed,
-                    rainfall,
-                    temperature,
-                    population,
-                    landmarkDensity,
-                    worldFactions,
-                    pollution
-                );
-            }
+            return new WorldSetupPlan(settings.planetCoverage, worldSeed, rainfall, temperature,
+                population, landmarkDensity, worldFactions, pollution);
         }
+    }
 
+    internal sealed class WorldSetupPlan
+    {
+        internal readonly float Coverage, Pollution;
+        internal readonly string Seed;
+        internal readonly OverallRainfall Rainfall;
+        internal readonly OverallTemperature Temperature;
+        internal readonly OverallPopulation Population;
+        internal readonly LandmarkDensity LandmarkDensity;
+        internal readonly List<FactionDef> Factions;
+
+        internal WorldSetupPlan(float coverage, string seed, OverallRainfall rainfall,
+            OverallTemperature temperature, OverallPopulation population, LandmarkDensity landmarkDensity,
+            List<FactionDef> factions, float pollution)
+        {
+            Coverage = coverage; Seed = seed; Rainfall = rainfall; Temperature = temperature;
+            Population = population; LandmarkDensity = landmarkDensity; Factions = factions; Pollution = pollution;
+        }
     }
 }
