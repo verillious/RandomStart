@@ -1,5 +1,8 @@
 # Maintaining the mod
 
+Follow the [automatic compatibility direction](automatic-compatibility.md): normal
+game/mod initialization and minimal user setup take priority over feature growth.
+
 ## Code layout
 
 - `Source/RandomScenario.cs`: start orchestration, scenario choice and pawn setup.
