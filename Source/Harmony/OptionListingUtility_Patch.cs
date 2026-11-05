@@ -38,7 +38,7 @@ namespace RandomStartMod
             {
                 if (opt.label == "NewColony".Translate())
                 {
-                    RandomStartMod randomStartMod = (RandomStartMod)LoadedModManager.ModHandles.First((Mod m) => m.Content.Name == "Random Start");
+                    RandomStartMod randomStartMod = LoadedModManager.GetMod<RandomStartMod>();
                     ListableOption newOption = new ListableOption(
                     "Random".Translate(),
                     delegate

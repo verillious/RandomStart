@@ -12,30 +12,36 @@ namespace RandomStartMod.Compat
 {
     public static class VECoreCompat
     {
+        private static readonly OptionalModApi Api = new OptionalModApi("Vanilla Expanded Framework", message => Log.Warning(message));
+
         public static void SetupForKCSG()
         {
-            Util.LogMessage("[VECoreCompat] Setting up for KCSG AddStartingStructure");
-            if (
-                Current
-                    .Game.Scenario.AllParts.ToList()
-                    .Any((ScenPart s) => s.def.defName == "VFEC_AddStartingStructure")
-            )
+            ScenPart part = Current.Game.Scenario.AllParts.FirstOrDefault(
+                candidate => candidate.def.defName == "VFEC_AddStartingStructure");
+            if (part == null)
+                return;
+
+            bool initialized = Api.TryRun(() =>
             {
-                KCSG.PrepareCarefully_Util.pcScenariosSave.Clear();
-                KCSG.ScenPart_AddStartingStructure scenPart_AddStartingStructure =
-                    (KCSG.ScenPart_AddStartingStructure)
-                        Current
-                            .Game.Scenario.AllParts.ToList()
-                            .Find((ScenPart s) => s.def.defName == "VFEC_AddStartingStructure");
-                List<KCSG.StructureLayoutDef> chooseFrom = scenPart_AddStartingStructure.chooseFrom;
-                if (chooseFrom != null && chooseFrom.Count > 0)
-                {
-                    KCSG.PrepareCarefully_Util.pcScenariosSave.Add(
-                        scenPart_AddStartingStructure.chooseFrom.RandomElement(),
-                        scenPart_AddStartingStructure.nearMapCenter
-                    );
-                }
-            }
+                Type utility = OptionalModApi.RequireType("KCSG.PrepareCarefully_Util");
+                FieldInfo cacheField = OptionalModApi.RequireField(utility, "pcScenariosSave", true, typeof(IDictionary));
+                FieldInfo choicesField = OptionalModApi.RequireField(part.GetType(), "chooseFrom", false, typeof(IList));
+                FieldInfo nearCenterField = OptionalModApi.RequireField(part.GetType(), "nearMapCenter", false, typeof(bool));
+                var cache = (IDictionary)cacheField.GetValue(null);
+                var choices = (IList)choicesField.GetValue(part);
+                bool nearCenter = (bool)nearCenterField.GetValue(part);
+                if (cache == null)
+                    throw new InvalidOperationException("KCSG scenario cache is not initialized.");
+
+                // Resolve and validate all members before changing the external cache.
+                object chosen = choices != null && choices.Count > 0
+                    ? choices[Rand.Range(0, choices.Count)] : null;
+                cache.Clear();
+                if (chosen != null)
+                    cache.Add(chosen, nearCenter);
+            });
+            if (!initialized)
+                throw new InvalidOperationException("Random Start cannot initialize this starting-structure scenario with the installed Vanilla Expanded Framework. Choose another scenario or update the integration.");
         }
     }
 
@@ -105,20 +111,43 @@ namespace RandomStartMod.Compat
 
     public static class SOS2Compat
     {
+        private static readonly OptionalModApi Api = new OptionalModApi("Save Our Ship 2", message => Log.Warning(message));
+
         public static void SetupForStartInSpace()
         {
-            Util.LogMessage("[SOS2Compat] Running DoEarlyInit on SOS2 ScenParts");
-            foreach (ScenPart part in Find.Scenario.AllParts)
+            // Ordinary scenarios can continue without SOS2 hooks; a space-start
+            // scenario must not proceed in a partially initialized state.
+            bool requiresInitialization = Find.Scenario.AllParts.Any(part =>
+                IsSpaceStart(part.GetType()));
+            if (!requiresInitialization)
+                return;
+
+            bool initialized = Api.TryRun(() =>
             {
-                if (part is SaveOurShip2.ScenPart_LoadShip p && p.HasValidFilename())
+                Type loadShip = OptionalModApi.RequireType("SaveOurShip2.ScenPart_LoadShip");
+                Type startInSpace = OptionalModApi.RequireType("SaveOurShip2.ScenPart_StartInSpace");
+                MethodInfo hasFilename = OptionalModApi.RequireMethod(loadShip, "HasValidFilename", typeof(bool));
+                MethodInfo loadInit = OptionalModApi.RequireMethod(loadShip, "DoEarlyInit", typeof(void));
+                MethodInfo spaceInit = OptionalModApi.RequireMethod(startInSpace, "DoEarlyInit", typeof(void));
+                foreach (ScenPart part in Find.Scenario.AllParts)
                 {
-                    p.DoEarlyInit();
+                    if (loadShip.IsInstanceOfType(part) && (bool)hasFilename.Invoke(part, null))
+                        loadInit.Invoke(part, null);
+                    else if (startInSpace.IsInstanceOfType(part))
+                        spaceInit.Invoke(part, null);
                 }
-                else if (part is SaveOurShip2.ScenPart_StartInSpace s)
-                {
-                    s.DoEarlyInit();
-                }
-            }
+            });
+            if (!initialized)
+                throw new InvalidOperationException("Random Start cannot initialize this space-start scenario with the installed Save Our Ship 2. Choose another scenario or update the integration.");
+        }
+
+        private static bool IsSpaceStart(Type type)
+        {
+            for (; type != null; type = type.BaseType)
+                if (type.FullName == "SaveOurShip2.ScenPart_LoadShip"
+                    || type.FullName == "SaveOurShip2.ScenPart_StartInSpace")
+                    return true;
+            return false;
         }
     }
 
@@ -415,45 +444,63 @@ namespace RandomStartMod.Compat
 
     public static class RealRuinsCompat
     {
+        private static readonly OptionalModApi Api = new OptionalModApi("Real Ruins", message => Log.Warning(message));
+
         public static void CreatePOIs()
         {
-            RandomStartSettings settings = LoadedModManager
-                .GetMod<RandomStartMod>()
-                .GetSettings<RandomStartSettings>();
+            Api.TryRun(() =>
+            {
+                Type pageType = OptionalModApi.RequireType("RealRuins.Page_PlanetaryRuinsLoader");
+                Type settingsType = OptionalModApi.RequireType("RealRuins.RealRuins_ModSettings");
+                FieldInfo optionsField = OptionalModApi.RequireField(settingsType, "planetaryRuinsOptions", true);
+                object options = optionsField.GetValue(null);
+                if (options == null || !typeof(Window).IsAssignableFrom(pageType))
+                    throw new InvalidOperationException("Real Ruins planetary options or page are unavailable.");
 
-            Util.LogMessage("[RealRuinsCompat] Generating POIs");
-            RealRuins.Page_PlanetaryRuinsLoader page = new RealRuins.Page_PlanetaryRuinsLoader();
-            page.mode = RealRuins.RuinsPageMode.FullAuto;
-            page.downloadLimit = RealRuins
-                .RealRuins_ModSettings
-                .planetaryRuinsOptions
-                .downloadLimit;
-            page.transferLimit = RealRuins
-                .RealRuins_ModSettings
-                .planetaryRuinsOptions
-                .transferLimit;
-            page.abandonedPercentage = (int)
-                RealRuins.RealRuins_ModSettings.planetaryRuinsOptions.abandonedLocations;
-            page.aggressiveDiscard = RealRuins
-                .RealRuins_ModSettings
-                .planetaryRuinsOptions
-                .excludePlainRuins;
-            page.biomeStrict = settings.realRuinsBiomeFilter;
-            page.StartLoadingList();
-            page.Close(false);
+                FieldInfo mode = OptionalModApi.RequireField(pageType, "mode", false);
+                if (!mode.FieldType.IsEnum)
+                    throw new InvalidOperationException("Real Ruins page mode is no longer an enum.");
+                object fullAuto = Enum.Parse(mode.FieldType, "FullAuto");
+                FieldInfo download = OptionalModApi.RequireField(pageType, "downloadLimit", false, typeof(int));
+                FieldInfo transfer = OptionalModApi.RequireField(pageType, "transferLimit", false, typeof(int));
+                FieldInfo abandoned = OptionalModApi.RequireField(pageType, "abandonedPercentage", false, typeof(int));
+                FieldInfo discard = OptionalModApi.RequireField(pageType, "aggressiveDiscard", false, typeof(bool));
+                FieldInfo biome = OptionalModApi.RequireField(pageType, "biomeStrict", false, typeof(bool));
+                MethodInfo start = OptionalModApi.RequireMethod(pageType, "StartLoadingList", typeof(void));
+                int downloadLimit = (int)OptionalModApi.RequireField(options.GetType(), "downloadLimit", false, typeof(int)).GetValue(options);
+                int transferLimit = (int)OptionalModApi.RequireField(options.GetType(), "transferLimit", false, typeof(int)).GetValue(options);
+                int abandonedPercentage = (int)Convert.ToSingle(OptionalModApi.RequireField(options.GetType(), "abandonedLocations", false).GetValue(options));
+                bool aggressiveDiscard = (bool)OptionalModApi.RequireField(options.GetType(), "excludePlainRuins", false, typeof(bool)).GetValue(options);
+                RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
+
+                var page = (Window)Activator.CreateInstance(pageType);
+                mode.SetValue(page, fullAuto);
+                download.SetValue(page, downloadLimit);
+                transfer.SetValue(page, transferLimit);
+                abandoned.SetValue(page, abandonedPercentage);
+                discard.SetValue(page, aggressiveDiscard);
+                biome.SetValue(page, settings.realRuinsBiomeFilter);
+                start.Invoke(page, null);
+                page.Close(false);
+            });
         }
     }
 
     public static class NoPauseCompat
     {
+        private static readonly OptionalModApi Api = new OptionalModApi("No Pause Challenge", message => Log.Warning(message));
+
         public static void SetupForNoPause()
         {
-            Util.LogMessage("[NoPauseCompat] Setting up for no pause challenge");
-            RandomStartSettings settings = LoadedModManager
-                .GetMod<RandomStartMod>()
-                .GetSettings<RandomStartSettings>();
-            NoPauseChallenge.Main.noPauseEnabled = settings.noPauseEnabled;
-            NoPauseChallenge.Main.halfSpeedActive = settings.noPauseHalfSpeedEnabled;
+            Api.TryRun(() =>
+            {
+                Type main = OptionalModApi.RequireType("NoPauseChallenge.Main");
+                FieldInfo enabled = OptionalModApi.RequireField(main, "noPauseEnabled", true, typeof(bool));
+                FieldInfo halfSpeed = OptionalModApi.RequireField(main, "halfSpeedActive", true, typeof(bool));
+                RandomStartSettings settings = LoadedModManager.GetMod<RandomStartMod>().GetSettings<RandomStartSettings>();
+                enabled.SetValue(null, settings.noPauseEnabled);
+                halfSpeed.SetValue(null, settings.noPauseHalfSpeedEnabled);
+            });
         }
     }
 

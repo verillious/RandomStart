@@ -7,7 +7,6 @@ using RandomStartMod.Compat;
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
-using VEF;
 using Verse;
 using static RimWorld.PsychicRitualRoleDef;
 

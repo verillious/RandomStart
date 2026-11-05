@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" PrivateAssets="all" />
+    <!-- Test the production reflection boundary without loading game assemblies. -->
+    <Compile Include="../Source/Compat/OptionalModApi.cs" Link="OptionalModApi.cs" />
+    <ProjectReference Include="../Source/RandomStartMod.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <None Include="../Source/bin/$(Configuration)/net472/RandomStartMod.dll"
+          Link="RandomStartMod.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

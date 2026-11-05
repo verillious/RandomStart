@@ -1,0 +1,31 @@
+name: Build and test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Restore pinned dependencies
+        run: dotnet restore Tests/RandomStartMod.Tests.csproj --locked-mode
+      - name: Validate assets
+        run: python3 tools/validate_xml.py
+      - name: Build and test
+        run: dotnet test Tests/RandomStartMod.Tests.csproj -c Release --no-restore
+      - name: Package development build
+        run: python3 tools/package_mod.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RandomStart-1.6-development
+          path: artifacts/RandomStart-dev.zip
+          if-no-files-found: error

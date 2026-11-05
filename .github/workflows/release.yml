@@ -1,40 +1,45 @@
 name: Build Release
+
 on:
   release:
-    types:
-      - published
+    types: [published]
   workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Update Package ID
-        id: update-package-id
-        uses: MathieuSoysal/replace-string-in-file@v1.1.0
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
         with:
-          file: About/About.xml
-          old-string: bogknight.RandomStartDev
-          new-string: bogknight.RandomStart
-      - name: Update Version
-        id: update-version
-        uses: MathieuSoysal/replace-string-in-file@v1.1.0
-        with:
-          file: About/About.xml
-          old-string: MODVERSION
-          new-string: ${{ github.event.release.tag_name }}
-      - name: Package
-        id: package
-        run: |
-          mkdir RandomStart
-          cp -r About/ 1.5/ 1.6/ LoadFolders.xml RandomStart
-          zip -9 -r RandomStart.zip RandomStart
-      - name: Upload Package
-        id: upload-package
-        uses: actions/upload-release-asset@v1
+          global-json-file: global.json
+      - name: Restore pinned dependencies
+        run: dotnet restore Tests/RandomStartMod.Tests.csproj --locked-mode
+      - name: Validate assets
+        run: python3 tools/validate_xml.py
+      - name: Build and test
+        run: dotnet test Tests/RandomStartMod.Tests.csproj -c Release --no-restore
+      - name: Package release
+        if: github.event_name == 'release'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_VERSION: ${{ github.event.release.tag_name }}
+        run: python3 tools/package_mod.py --release-version "$RELEASE_VERSION" --output artifacts/RandomStart.zip
+      - name: Attach release package
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ github.event.release.tag_name }}
+        run: gh release upload "$RELEASE_VERSION" artifacts/RandomStart.zip
+      - name: Package manual development build
+        if: github.event_name == 'workflow_dispatch'
+        run: python3 tools/package_mod.py
+      - uses: actions/upload-artifact@v4
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: RandomStart.zip
-          asset_name: RandomStart-${{ github.event.release.tag_name }}.zip
-          asset_content_type: application/octet-stream
+          name: RandomStart-package
+          path: artifacts/*.zip
+          if-no-files-found: error

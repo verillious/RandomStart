@@ -2,6 +2,13 @@
 
 A mod for RimWorld to add a Random Start button to the main menu.
 
+## Development
+
+See [building and testing](docs/development.md) for the portable 1.6 build,
+automated checks, downloadable development packages, and in-game testing.
+The [maintenance plan](docs/modernization.md) tracks reported/source-level bugs
+and the separate experimental 1.7 port.
+
 
 ![alt text](https://github.com/verillious/RandomStart/blob/main/About/Preview.png?raw=true)
 
@@ -22,11 +29,11 @@ With the press of one button:
 -	Randomly select a storyteller from a configurable pool
 -	Select a configurable difficulty setting
 		-   Including custom difficulty settings
-		-   Disable Anomaly if desired 
+		-   Disable Anomaly if desired
 -	Randomly pick a scenario from a configurable pool
 	-	Remove or randomise starting research, limited to a configurable max tech level
 	-	Remove or randomise starting items, limited to a configurable max tech level
 -	Disable Ideology, Randomly generate a fluid or fixed Ideoligion or load a saved one
 -	Randomly select starting pawns
 		-   With random Xenotypes or Genes if desired
-	
+

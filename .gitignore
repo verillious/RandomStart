@@ -3,3 +3,7 @@ packages/
 Source/obj/
 Source/bin/
 .config/
+**/bin/
+**/obj/
+artifacts/
+**/__pycache__/
