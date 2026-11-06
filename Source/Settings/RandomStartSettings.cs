@@ -279,6 +279,11 @@ namespace RandomStartMod
                 new IntRange(2, 4)
             );
             Scribe_Values.Look(
+                ref randomiseLandmarkDensityRange,
+                "randomiseLandmarkDensityRange",
+                new IntRange(2, 4)
+            );
+            Scribe_Values.Look(
                 ref randomisePollutionRange,
                 "randomisePollutionRange",
                 new FloatRange(0.05f, 0.25f)
@@ -286,6 +291,7 @@ namespace RandomStartMod
             Scribe_Values.Look(ref randomiseRainfall, "randomiseRainfall", true);
             Scribe_Values.Look(ref randomiseTemperature, "randomiseTemperature", true);
             Scribe_Values.Look(ref randomisePopulation, "randomisePopulation", true);
+            Scribe_Values.Look(ref randomiseLandmarkDensity, "randomiseLandmarkDensity", true);
             Scribe_Values.Look(ref randomisePollution, "randomisePollution", true);
             Scribe_Values.Look(ref randomiseSeason, "randomiseSeason", false);
             Scribe_Values.Look(ref randomiseWorldSeed, "randomiseWorldSeed", true);
@@ -434,8 +440,12 @@ namespace RandomStartMod
                 true
             );
             Scribe_Values.Look(ref fixedWealthMode, "fixedWealthMode", false);
+            Scribe_Values.Look(ref fixedWealthTimeFactor, "fixedWealthTimeFactor", 1f);
+            Scribe_Values.Look(ref friendlyFireChanceFactor, "friendlyFireChanceFactor", 0.4f);
+            Scribe_Values.Look(ref allowInstantKillChance, "allowInstantKillChance", 0f);
             Scribe_Values.Look(ref unwaveringPrisoners, "unwaveringPrisoners", true);
             Scribe_Values.Look(ref childRaidersAllowed, "childRaidersAllowed", false);
+            Scribe_Values.Look(ref childShamblersAllowed, "childShamblersAllowed", false);
 
             Scribe_Values.Look(ref threatScale, "threatScale", 1f);
             Scribe_Values.Look(ref scariaRotChance, "scariaRotChance", 0f);

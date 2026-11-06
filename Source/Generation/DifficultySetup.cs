@@ -103,6 +103,7 @@ namespace RandomStartMod
                 difficulty.adultAgingRate = settings.adultAgingRate;
                 difficulty.unwaveringPrisoners = settings.unwaveringPrisoners;
                 difficulty.childRaidersAllowed = settings.childRaidersAllowed;
+                difficulty.childShamblersAllowed = settings.childShamblersAllowed;
                 difficulty.anomalyThreatsInactiveFraction =
                     settings.anomalyThreatsInactiveFraction;
                 difficulty.anomalyThreatsActiveFraction =

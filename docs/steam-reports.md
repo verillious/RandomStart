@@ -1,11 +1,13 @@
 # Steam report triage
 
-Reviewed on 2026-11-05: **all 233 publicly accessible comments** on the
+Reviewed on 2026-11-05 and rechecked on 2026-11-06: **all 233 publicly accessible comments** on the
 [Random Start Workshop item](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947),
 retrieved in three read-only pages of 100, 100, and 33 comments. This count includes
 questions, praise, author replies, feature requests, and historical reports;
 it does not mean 233 bugs. Dates below use Europe/London. Pagination can shift as
 new comments arrive; comment IDs identify the cited reports.
+The recheck found no new or edited comments. The newest remains the 2026-11-02
+request for an update.
 
 No Steam replies, Discord messages, or external log uploads were made. Off-site
 logs/screenshots linked by commenters were not inspected, and old reports do not
@@ -35,16 +37,24 @@ None of the new report-driven changes is claimed gameplay-verified.
 | Combat Extended ammo/gear causes generation errors | [2024-08-31](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=10#comment_4767710741170569246), [2024-08-31](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=10#comment_4767710741170578832) | Historical dev-build report; normal arrival delivery now restored. Needs current CE version, settings, scenario and fresh log to reproduce. |
 | Real Ruins background generation hangs | [2024-08-22](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=11#comment_4423184558852191414) | Unresolved real-mod/service interaction. Needs a current reproduction and log; no speculative timeout or disabled assertions added. |
 | Menu buttons extend below the screen with Dev/Continue | [2025-12-24](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=2#comment_694248493352543497) | Unresolved layout report. Requires display dimensions/UI scale and current menu contents; additive insertion alone does not solve overflow. |
-| Biomes! Caverns never produces cave starts | [2024-09-12](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=10#comment_4755326933237182397), [2024-12-22](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=8#comment_601891362926819842) | Needs current mod/version and expected layer/biome behavior. Surface-only selection and explicit legacy exclusions may be relevant; no unverified layer-generation rewrite. |
+| Biomes! Caverns never produces cave starts | [2024-09-17](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=10#comment_6679490359789026830), [2024-12-22](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=8#comment_601891362926819842) | Needs current mod/version and expected layer/biome behavior. Surface-only selection and explicit legacy exclusions may be relevant; no unverified layer-generation rewrite. |
 | Non-English text fails to load | [2024-08-04](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=12#comment_4511003232654866634) | Old unspecific report. Malformed Chinese XML and duplicate keys were fixed earlier. Current language/log details needed if other localization failures persist. |
 | Ideology save reload breaks crafting | [2024-06-03](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=17#comment_4339860800345608716), [2024-06-04](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=15#comment_4333105589461820869) | Historical: author reported a v0.11.2 fix in the thread. Keep a modern save/load smoke test; do not count the old report as a confirmed current regression. |
 | Unique faction mode removes saved preferences | [2024-06-05](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=14#comment_4333105589463680183), [2024-06-05](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=14#comment_4333105589464689643) | Historical author-confirmed fix. Current generation uses a per-run pool and preserves saved missing faction IDs; retain repeat-start coverage. |
 | Goodwill changes even when disabled | [2024-07-03](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=13#comment_4406291470272175644), [2024-07-04](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=13#comment_4406291673455400249) | Historical author-confirmed v0.12.4 fix. Current code retains the explicit setting gate and pairwise game-API updates. |
 | Other map-generation crashes without actionable logs | [2025-04-24](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=7#comment_601902470979974207), [2025-04-11](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=7#comment_530969587393575607), [2025-06-28](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=6#comment_601908461606822074) | Unresolved/insufficient evidence. Need exact game/mod versions, scenario/settings and fresh Player.log before assigning a cause. |
-
 | Cannibal/bloodfeeder memes conflict with generated precepts | [2024-05-31](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=21#comment_4339860450392459303) | Historical report. This branch supplies the selected meme plan to the normal ideology generator before initialization, instead of replacing memes afterwards. Consistent precepts still require an in-game check; the original base-game attribution is not verified. |
 | Genes do not grant their advertised traits | [2024-08-13](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=11#comment_4511004055390514101) | Historical report. Earlier gene fixes removed the untracked phantom gene and use real AddGene/RemoveGene objects. Need the specific gene defs/mod versions and current trait/active-gene inspection before claiming this report fixed. |
 | Ideology remains uneditable with an evolution option enabled | [2025-11-30](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=2#comment_691994366768720289) | Insufficient details to identify the mod/system or whether reformation conditions were met. Fluid initialization is corrected, but this broader report remains unverified. |
+
+## Additional 1.6 settings review
+
+The review also found six existing settings missing from `ExposeData`: the
+landmark randomization toggle and range, friendly-fire chance, instant-kill
+chance, fixed-wealth timing, and child shamblers. Source fixes now serialize all
+six using their existing field defaults. Custom difficulty setup now applies the
+child-shambler setting as well. These are existing-control fixes, not new options;
+save/restart persistence and their effects still need an in-game check.
 
 ## Feature requests kept separate
 
@@ -53,6 +63,7 @@ and a small supported feature set rather than promising another private integrat
 for every request.
 
 - Exclude planetkillers/permanent events: [2026-10-29](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=1#comment_571553273173173723), [2024-11-21](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=9#comment_4625854789815729108).
+- Landmark controls: [2025-09-10](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=3#comment_604166953732426017). Controls already exist, but review found their toggle/range were not serialized. Source fix now saves both; restart persistence needs an in-game check.
 - Bell-curve randomization: [2025-12-28](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=2#comment_694248809816968063).
 - River/coast/road/landform filters: [2025-11-09](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=2#comment_660467372238399283), [2024-06-11](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=14#comment_4333106094377321051).
 - Character/Pawn Editor presets: [2025-12-22](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=2#comment_694248165029831093), [2024-06-22](https://steamcommunity.com/sharedfiles/filedetails/?id=3257028947&ctp=14#comment_4343240135702651488).
