@@ -14,8 +14,8 @@ without retiring their settings or adding new dialogs to a supported start.
   saved settings or defaults; right-click still opens settings. The obsolete
   `openedSettings` marker is no longer read/written. Actual configuration keys
   and defaults remain intact.
-- Remove automatic handover into unfamiliar mod setup pages. An automatic start
-  requiring such a page now reports an unsupported scenario before world
+- Remove automatic handover into unfamiliar scenario-provided setup pages. An automatic start
+  requiring such a page reports an unsupported scenario before world
   generation. This is a compatibility limit, not a successful randomized start.
   The already-existing manual setup option remains available when explicitly
   selected before starting. Do not claim automatic support for mandatory custom
@@ -47,7 +47,7 @@ without retiring their settings or adding new dialogs to a supported start.
 
 ## Measured reduction
 
-Production C# source is 6,111 lines in this pass:
+At the initial simplification commit (`10bfed4`), production C# source was 6,111 lines:
 
 | Comparison | Removed production lines, net |
 | --- | ---: |
@@ -89,7 +89,7 @@ Inspected source snapshots:
 
 ## Validation and remaining work
 
-The portable suite now has 53 tests: existing policies, reflection/dependency
+The initial simplification suite had 53 tests: existing policies, reflection/dependency
 checks and actual pinned-Harmony composition tests. The 12 deleted tests belonged
 only to the removed page controller/cover; this is not removal of existing
 one-click regression coverage. Locked restore, Release tests, Debug compilation,
@@ -107,6 +107,30 @@ No running game is available in this cloud. In-game validation still needs:
   failure: one generator invocation, preserved original error, and no second world
   initialization. Other world-generator patches must still participate.
 - Saved settings loading after removal of the obsolete first-use marker.
+
+## Follow-up: world-page replacement regression
+
+A supplied local-test log on RimWorld 1.6.4871 shows The Sanguophage failing
+before generation. Realistic Planets replaces the standard global
+`Page_CreateWorldParams` through its `PageUtility.StitchedPages` postfix. Our
+first simplification incorrectly treated every foreign page in that full chain
+as additional scenario input and threw `CustomSetupRequired`. The failing check
+was ours; the constructor/replacement stack traces in this log are diagnostic
+messages, not evidence of a separate generation exception.
+
+Automatic startup now inspects only `ScenPart.GetConfigPages()` providers for
+additional scenario steps. It never calls `Scenario.GetFirstConfigPage()` merely
+to inspect the global setup UI. This avoids rejecting a normal scenario because
+a world mod replaces its standard settings screen. Explicit manual setup still
+uses the live full chain, including replacements, with its existing null/cycle
+checks. No package-ID allowlist or new dialog automation is added.
+
+Four portable regression tests verify that automatic starts do not invoke the
+global UI factory, explicit manual mode preserves the returned replacement and
+does not re-enumerate scenario providers, genuine unfamiliar scenario steps are
+still rejected, and empty/null entries do not force a UI. The suite now has
+57 tests. These tests verify routing policy; the reported mod combination still
+needs an in-game retest to establish what happens after this blocker is removed.
 
 The largest remaining code savings involve retiring optional mod-specific
 features (especially Prepare Moderately and Realistic Planets controls). That

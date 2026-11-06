@@ -16,15 +16,15 @@ The changes do not advertise support for 1.7.
   The storyteller definition is not modified. Missing faction preferences stay
   saved, and scenario-declared required factions are included generically.
 - Startup calls scenario `PreConfigure` and the scenario-level `PostIdeoChosen`
-  wrapper. It inspects the configuration page chain. If it contains a page type
-  supplied by another assembly, the existing chain is opened for manual setup.
-  The selected scenario and prepared item plan remain; world/storyteller choices
-  are then made through the normal screens. This does not identify every mod
-  that patches an existing vanilla page, and the automatic path does not emulate
-  every vanilla page transition. The **Use normal setup screens** setting in the
-  Scenarios tab also lets the user explicitly take that path when automatic
-  detection is insufficient. Ordinary scenario selection clears a cancelled
-  Random Start session before the normal setup entry point runs.
+  wrapper. Automatic starts inspect pages supplied by the scenario's parts,
+  without constructing the full global setup chain. A mod replacing a standard
+  world-settings page is not itself evidence that the scenario requires input.
+  Unfamiliar scenario-provided pages remain an explicit automatic-start limit;
+  they produce an error rather than an unrequested manual setup journey. The
+  **Use normal setup screens** setting explicitly opens the real full chain,
+  including mod replacements, while retaining the scenario/item plan. The direct
+  path still does not emulate every vanilla page lifecycle. Ordinary scenario
+  selection clears a cancelled Random Start session before normal setup begins.
 - The scenario generates its own pawn pool, counts, kinds, and per-slot requests.
   Optional human-pawn constraints are applied only to standard starting-pawn
   requests during the selected scenario's pawn-generation callback. Fixed
@@ -72,7 +72,8 @@ only one Random Start copy enabled. Restart RimWorld after replacing the DLL.
 | Continue Button or another menu mod | Existing options retain order; Random appears once immediately before New Colony. |
 | Game-ended letter, including a mod-added choice | Original and mod-added options remain; Random Start appears once and starts a new disposable game. |
 | Use normal setup screens | The setting persists, opens the normal page chain, and retains the selected scenario/item plan. Test it with an otherwise vanilla setup too. |
-| Scenario with mod-defined configuration pages | A notice explains the handover; normal pages appear and their options work. Complete the flow and verify resulting pawns/world/items. Cancel, choose ordinary New Colony and verify no Random Start overrides leak into it. |
+| Mod replaces the global world-settings page (reported with Realistic Planets) | Automatic starts do not instantiate the full setup chain solely to inspect it, and do not reject the scenario just because the global page was replaced. Verify The Sanguophage and another vanilla scenario. |
+| Scenario supplies an unfamiliar extra configuration page | Automatic mode reports the unsupported step before world generation. Explicit manual mode opens the full native chain. Cancel, choose ordinary New Colony and verify no Random Start overrides leak into it. |
 | Two random starts, then an ordinary New Colony start | No scenario parts, difficulty definitions, or temporary constraints carry over. |
 | Fail/cancel a start, then start normally | No active constraints or research suppression remain for the other game. |
 | Disable/re-enable a faction/content mod | Saved faction selections return; an unavailable selection is skipped for that run without deleting it. |
@@ -85,6 +86,7 @@ existing VFE faction bridges have not been deleted on the assumption that the ne
 callbacks cover them. Test each real mod before removing its adapter. Private
 reflection contracts still need maintenance when their owners change APIs.
 
-Complete any custom setup screens rather than trying to bypass unknown mod
-configuration. Do not disable another mod's patches or force load order to hide
-an unexplained failure. Record Player.log and the failing stage/settings.
+Use the explicitly selected manual mode for unsupported custom scenario setup;
+do not blindly answer unknown pages during an automatic start. Do not disable
+another mod's patches or force load order to hide an unexplained failure.
+Record Player.log and the failing stage/settings.

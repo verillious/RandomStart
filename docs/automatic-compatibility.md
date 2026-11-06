@@ -87,7 +87,9 @@ Any future replacement must demonstrate, in a running licensed 1.6 game:
 
 The cloud's stripped reference assemblies establish signatures, not runtime UI
 timing or compatibility. Portable policy/Harmony tests do not prove these gates.
-The normal Random button uses the direct automatic implementation. Custom setup
-pages are an explicit automatic-start limitation; they now report an unsupported
-scenario instead of opening an unrequested setup wizard. Users can explicitly
-choose manual setup in advance when they want that different workflow.
+The normal Random button uses the direct automatic implementation. Additional
+pages supplied by scenario parts are an explicit automatic-start limitation when
+unsupported. A mod replacing a standard global world-settings page is not itself
+evidence of required scenario input. Automatic starts do not build the full setup
+UI to make this distinction. Users can explicitly choose manual setup in advance
+when they want the full page chain.
