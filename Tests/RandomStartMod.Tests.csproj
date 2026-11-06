@@ -14,7 +14,6 @@
     <Compile Include="../Source/Compat/OptionalModApi.cs" Link="OptionalModApi.cs" />
     <Compile Include="../Source/AdditiveOptions.cs" Link="AdditiveOptions.cs" />
     <Compile Include="../Source/StartSession.cs" Link="StartSession.cs" />
-    <Compile Include="../Source/SetupPagePolicy.cs" Link="SetupPagePolicy.cs" />
     <Compile Include="../Source/StartingItemBudget.cs" Link="StartingItemBudget.cs" />
     <Compile Include="../Source/DependencyGraph.cs" Link="DependencyGraph.cs" />
     <Compile Include="../Source/StartingTileSelection.cs" Link="StartingTileSelection.cs" />

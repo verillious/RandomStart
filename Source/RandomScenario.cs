@@ -32,21 +32,6 @@ namespace RandomStartMod
             Current.Game.Scenario = ChooseRandomScenario(settings);
             StartingItems.Prepare(Find.Scenario, settings);
             Find.Scenario.PreConfigure();
-            Page firstPage = SetupPagePolicy.ForStart(settings.useNormalSetupPages,
-                () => Find.Scenario.GetFirstConfigPage(),
-                Find.Scenario.AllParts.SelectMany(part => part.GetConfigPages() ?? Enumerable.Empty<Page>()),
-                page => page.GetType().Assembly == typeof(Page).Assembly,
-                "RandomStartMod.CustomSetupRequired".Translate());
-            if (settings.useNormalSetupPages)
-            {
-                if (firstPage == null) throw new InvalidOperationException("This scenario has no configuration pages.");
-                var visited = new HashSet<Page>();
-                for (Page page = firstPage; page != null; page = page.next)
-                    if (!visited.Add(page)) throw new InvalidOperationException("Scenario configuration pages form a cycle.");
-                // Keep the copied scenario/item plan and use the real page chain.
-                Find.WindowStack.Add(firstPage);
-                return;
-            }
             SetupRandomDifficulty(settings);
             SetupRandomPlanet(settings);
 

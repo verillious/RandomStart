@@ -16,6 +16,10 @@ has been [archived on its experimental branch](native-startup-prototype.md), and
 its runtime code is removed here. See the [one-click simplification review](one-click-simplification.md)
 for changes, retained integrations and current limits.
 
+The setting that opened the game's configuration pages is fully removed. Old
+settings files may still contain its key, but it is ignored without resetting
+other preferences. Random Start never constructs a setup-page chain.
+
 ## Local or cloud checks
 
 Run from the repository root:
@@ -86,8 +90,9 @@ Nothing here uploads to Steam Workshop.
 
 See [compatibility-testing.md](compatibility-testing.md) for the current refactor,
 feature semantics, and the in-game regression matrix. The standard scenario path
-now owns pawn counts and item delivery. Custom configuration pages can require
-manual completion; compilation does not validate their behavior.
+owns pawn counts and item delivery. Workflows that depend on unconfigured input
+or page-only initialization still need investigation; Random Start offers no
+alternative setup-page route.
 
 ## Optional-mod compatibility boundaries
 

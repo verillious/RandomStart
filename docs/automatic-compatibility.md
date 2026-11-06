@@ -30,8 +30,8 @@ The user explicitly rejected that change to the core experience.
 - A workflow that cannot start without new information has a compatibility limit.
   Treat it as an unsupported automatic workflow, with a clear failure reason,
   rather than quietly converting Random into an interactive setup wizard.
-- Preserve deliberate manual setup as an explicitly selected mode. It does not
-  count as successful one-click compatibility and must not become the default.
+- Provide one startup path only. Configure preferences in Random Start's settings
+  before starting; do not add a mode that opens the standard new-game pages.
 - Actual generation errors still need reporting; eliminating routine prompts does
   not mean hiding failures or continuing with a broken game.
 
@@ -87,9 +87,9 @@ Any future replacement must demonstrate, in a running licensed 1.6 game:
 
 The cloud's stripped reference assemblies establish signatures, not runtime UI
 timing or compatibility. Portable policy/Harmony tests do not prove these gates.
-The normal Random button uses the direct automatic implementation. Additional
-pages supplied by scenario parts are an explicit automatic-start limitation when
-unsupported. A mod replacing a standard global world-settings page is not itself
-evidence of required scenario input. Automatic starts do not build the full setup
-UI to make this distinction. Users can explicitly choose manual setup in advance
-when they want the full page chain.
+The Random button uses the direct one-click implementation. It never builds or
+inspects setup pages, and there is no page-based fallback, mode flag or associated
+setting. Old saved values of the removed flag are ignored; other preferences stay
+in use. A mod replacing a world-settings screen cannot trigger a page-type
+rejection. Workflows that need additional unconfigured information can still
+require initialization support or fail; removing a UI does not supply missing data.

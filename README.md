@@ -2,6 +2,9 @@
 
 A mod for RimWorld to add a Random Start button to the main menu.
 
+Right-click Random to configure your preferences; left-click it to start a game
+with those preferences. Random Start provides the one-click startup path only.
+
 ## Development
 
 See [building and testing](docs/development.md) for the portable 1.6 build,

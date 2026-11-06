@@ -54,8 +54,9 @@ the game, not merely moving text between files.
 - `.editorconfig` defines formatting for touched files. Correctness analyzers
   catch stack-destroying rethrows (CA2200) and exceptions from finally blocks
   (CA2219). Broader analyzer/nullability adoption should be incremental.
-- Preserve saved settings keys, serialized type names and defaults. Avoid a
-  cosmetic mass rewrite that obscures behavior changes.
+- Preserve saved settings keys, serialized type names and defaults except when
+  explicitly retiring a feature. The removed setup-screen flag is ignored on
+  load; other saved preferences remain. Avoid a cosmetic mass rewrite.
 - Treat defName as identity. A visible row index is not an index into a saved
   list containing temporarily unavailable mod definitions.
 - Apply runtime settings during initialization, not only from drawing code.
@@ -63,9 +64,9 @@ the game, not merely moving text between files.
 - Handle optional source metadata/icons with an unknown-source fallback. Runtime
   defs should not crash the settings window because they have no source package.
 - Missing/failed saved ideology loads stop with a useful message. Version/mod-list
-  mismatches are still validated by the existing game loader; normal setup screens
-  are available when interactive decisions are needed. Do not silently substitute
-  a random ideology or clear user settings to hide an error.
+  mismatches are still validated by the existing game loader. Correct the saved
+  file or disable its override in Random Start settings before starting again.
+  Do not silently substitute a random ideology or clear preferences to hide an error.
 - Keep general mod cooperation in normal lifecycle/data APIs. Remove an existing
   adapter only after its real-mod behavior has been verified.
 

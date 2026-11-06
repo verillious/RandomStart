@@ -1,8 +1,9 @@
 # One-click simplification: first implementation pass
 
 Random Start keeps its direct automatic startup and existing configuration. This
-pass removes the page-driving experiment and simplifies existing integrations
-without retiring their settings or adding new dialogs to a supported start.
+pass removes the page-driving experiment and simplifies existing integrations.
+The later cleanup also removes the setup-screen option and all page inspection:
+there is one startup path, using the saved Random Start configuration.
 
 ## Implemented changes
 
@@ -14,12 +15,11 @@ without retiring their settings or adding new dialogs to a supported start.
   saved settings or defaults; right-click still opens settings. The obsolete
   `openedSettings` marker is no longer read/written. Actual configuration keys
   and defaults remain intact.
-- Remove automatic handover into unfamiliar scenario-provided setup pages. An automatic start
-  requiring such a page reports an unsupported scenario before world
-  generation. This is a compatibility limit, not a successful randomized start.
-  The already-existing manual setup option remains available when explicitly
-  selected before starting. Do not claim automatic support for mandatory custom
-  setup UI, or blindly acknowledge its questions.
+- Remove the setting that opened the game's setup screens, its saved field,
+  serialization/reset handling, UI labels, handover/error messages, routing
+  helper and dedicated tests. Old enabled values are ignored; other preferences
+  remain. Startup proceeds directly after `Scenario.PreConfigure`, without
+  building or inspecting any setup-page chain.
 - Combine Empire and Deserters faction rules into `ScenarioFactionRequirements`,
   alongside the generic `ScenPartDef.preventRemovalOfFaction` rule. Remove the
   two duplicated adapter classes and their package-ID checks. Inspect scenario
@@ -99,7 +99,8 @@ No running game is available in this cloud. In-game validation still needs:
 
 - A first-use left-click start, right-click configuration and another start in the
   same session, including ideology, pawn/item/research settings and cleanup.
-- The custom-page error in automatic mode and explicit manual setup when selected.
+- Upgrade from an old settings file with the removed setup-screen flag enabled:
+  other preferences remain and Random starts directly without configuration pages.
 - VFE starts with only Deserters preselected, only Empire preselected, neither,
   and both; verify each required faction exists once without changing deliberately
   repeated ordinary faction selections. Check KCSG structure/pawn/item arrival.
@@ -118,19 +119,17 @@ as additional scenario input and threw `CustomSetupRequired`. The failing check
 was ours; the constructor/replacement stack traces in this log are diagnostic
 messages, not evidence of a separate generation exception.
 
-Automatic startup now inspects only `ScenPart.GetConfigPages()` providers for
-additional scenario steps. It never calls `Scenario.GetFirstConfigPage()` merely
-to inspect the global setup UI. This avoids rejecting a normal scenario because
-a world mod replaces its standard settings screen. Explicit manual setup still
-uses the live full chain, including replacements, with its existing null/cycle
-checks. No package-ID allowlist or new dialog automation is added.
+A targeted routing policy initially narrowed that check to scenario providers.
+The user subsequently rejected the alternate startup mode entirely. The final
+cleanup removes both routes through setup pages, the routing policy and all
+page-based rejection. Neither `Scenario.GetFirstConfigPage()` nor
+`ScenPart.GetConfigPages()` is called by the current mod. World generation uses
+its existing direct path and retained parameter/initialization bridges.
 
-Four portable regression tests verify that automatic starts do not invoke the
-global UI factory, explicit manual mode preserves the returned replacement and
-does not re-enumerate scenario providers, genuine unfamiliar scenario steps are
-still rejected, and empty/null entries do not force a UI. The suite now has
-57 tests. These tests verify routing policy; the reported mod combination still
-needs an in-game retest to establish what happens after this blocker is removed.
+The four routing-policy tests are retired with that policy. The 53 independent
+one-click/Harmony/reflection tests remain, plus a compiled-assembly regression
+check that the removed setting field and setup-page factory references are
+absent (54 tests total). Actual game/mod behavior still needs an in-game retest.
 
 The largest remaining code savings involve retiring optional mod-specific
 features (especially Prepare Moderately and Realistic Planets controls). That

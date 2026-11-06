@@ -158,11 +158,7 @@
 	<RandomStartMod.TooltipTitles.FilterStartingBiome>过滤起始生物群落</RandomStartMod.TooltipTitles.FilterStartingBiome>
 	<RandomStartMod.TooltipTitles.FilterStartingHilliness>过滤起始地形起伏</RandomStartMod.TooltipTitles.FilterStartingHilliness>
 	<RandomStartMod.TooltipTitles.FilterStartingTemperature>过滤起始温度</RandomStartMod.TooltipTitles.FilterStartingTemperature>
-	<RandomStartMod.CustomSetupPages>此剧本包含模组专属的设置页面。随机开局已选择剧本并准备好起始物品。请继续完成常规设置页面，以配置世界、叙事者以及必要的模组选项。</RandomStartMod.CustomSetupPages>
-	<RandomStartMod.UseNormalSetupPages>使用常规设置页面</RandomStartMod.UseNormalSetupPages>
-	<RandomStartMod.UseNormalSetupPagesTooltip>保留随机选择的剧本和起始物品方案，但通过常规页面配置世界、叙事者和意识形态。如果其他模组需要随机开局无法自动识别的设置，请启用此选项。</RandomStartMod.UseNormalSetupPagesTooltip>
-	<RandomStartMod.SavedIdeoMissing>找不到所选的意识形态文件。请在随机开局设置中选择现有的已保存文件，或使用常规设置页面。</RandomStartMod.SavedIdeoMissing>
-	<RandomStartMod.SavedIdeoLoadFailed>无法加载所选的意识形态。请检查其游戏版本和所需模组，使用当前模组列表重新保存，或使用常规设置页面。本次随机开局已停止，未替换您的选择。</RandomStartMod.SavedIdeoLoadFailed>
+	<RandomStartMod.SavedIdeoMissing>找不到所选的意识形态文件。请在随机开局设置中选择现有的已保存文件，或禁用已保存意识形态的覆盖选项。</RandomStartMod.SavedIdeoMissing>
+	<RandomStartMod.SavedIdeoLoadFailed>无法加载所选的意识形态。请检查其游戏版本和所需模组，然后使用当前模组列表重新保存。本次随机开局已停止，未替换您的选择。</RandomStartMod.SavedIdeoLoadFailed>
 	<RandomStartMod.FluidMemeCountInfo>流动意识形态使用游戏的初始模因数量。强制模因和派系必需模因仍然适用。</RandomStartMod.FluidMemeCountInfo>
-	<RandomStartMod.CustomSetupRequired>所选剧本包含随机开局无法自动完成的自定义设置页面。请在随机开局设置中选择其他剧本，或明确启用常规设置页面以手动配置此剧本。</RandomStartMod.CustomSetupRequired>
 </LanguageData>

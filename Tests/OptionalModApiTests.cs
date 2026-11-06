@@ -111,6 +111,25 @@ public class OptionalModApiTests
             Assert.DoesNotContain(optional, dependencies);
     }
 
+    [Fact]
+    public void BuiltModCannotRestoreTheRemovedSetupScreenMode()
+    {
+        using var stream = File.OpenRead(Path.Combine(AppContext.BaseDirectory, "RandomStartMod.dll"));
+        using var pe = new PEReader(stream);
+        MetadataReader metadata = pe.GetMetadataReader();
+        TypeDefinition settings = metadata.TypeDefinitions.Select(metadata.GetTypeDefinition)
+            .Single(type => metadata.GetString(type.Name) == "RandomStartSettings");
+        // An old settings file may still contain the enabled flag. The current
+        // mod must have no field to restore it into and no native page builder
+        // left to send that user through configuration instead of starting.
+        Assert.DoesNotContain("useNormalSetupPages", settings.GetFields()
+            .Select(handle => metadata.GetString(metadata.GetFieldDefinition(handle).Name)));
+        string[] references = metadata.MemberReferences.Select(handle =>
+            metadata.GetString(metadata.GetMemberReference(handle).Name)).ToArray();
+        Assert.DoesNotContain("GetFirstConfigPage", references);
+        Assert.DoesNotContain("GetConfigPages", references);
+    }
+
     public class ApiFixture
     {
         public static bool Enabled = false;

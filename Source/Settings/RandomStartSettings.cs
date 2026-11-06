@@ -92,7 +92,6 @@ namespace RandomStartMod
         public List<string> factionsExcludeFromReputationRandomization = new List<string>();
 
         public bool createRandomScenario = false;
-        public bool useNormalSetupPages = false;
         public bool enableCustomScenarios = true;
         public bool enableSteamWorkshopScenarios = true;
 
@@ -292,7 +291,6 @@ namespace RandomStartMod
             Scribe_Values.Look(ref randomiseWorldSeed, "randomiseWorldSeed", true);
             Scribe_Values.Look(ref worldSeed, "worldSeed", "village");
             Scribe_Values.Look(ref createRandomScenario, "createRandomScenario", false);
-            Scribe_Values.Look(ref useNormalSetupPages, "useNormalSetupPages", false);
             Scribe_Values.Look(ref enableCustomScenarios, "enableCustomScenarios", true);
             Scribe_Values.Look(
                 ref enableSteamWorkshopScenarios,
@@ -770,7 +768,6 @@ namespace RandomStartMod
 
         public void ResetScenarios()
         {
-            useNormalSetupPages = false;
             createRandomScenario = false;
             enableCustomScenarios = true;
             enableSteamWorkshopScenarios = true;

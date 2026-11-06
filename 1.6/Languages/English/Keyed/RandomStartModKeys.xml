@@ -157,11 +157,7 @@
 	<RandomStartMod.TooltipTitles.FilterStartingBiome>Filter Starting Biome</RandomStartMod.TooltipTitles.FilterStartingBiome>
 	<RandomStartMod.TooltipTitles.FilterStartingHilliness>Filter Starting Hilliness</RandomStartMod.TooltipTitles.FilterStartingHilliness>
 	<RandomStartMod.TooltipTitles.FilterStartingTemperature>Filter Starting Temperature</RandomStartMod.TooltipTitles.FilterStartingTemperature>
-	<RandomStartMod.CustomSetupPages>This scenario adds mod-specific setup pages. Random Start has selected the scenario and prepared its starting items. Continue through the normal setup screens to configure the world, storyteller and any required mod options.</RandomStartMod.CustomSetupPages>
-	<RandomStartMod.UseNormalSetupPages>Use normal setup screens</RandomStartMod.UseNormalSetupPages>
-	<RandomStartMod.UseNormalSetupPagesTooltip>Keep the randomly selected scenario and starting-item plan, but configure the world, storyteller and ideology through the normal screens. Enable this when another mod needs setup that Random Start cannot detect automatically.</RandomStartMod.UseNormalSetupPagesTooltip>
-	<RandomStartMod.SavedIdeoMissing>The selected ideology file cannot be found. Choose an existing saved ideology in Random Start settings, or use the normal setup screens.</RandomStartMod.SavedIdeoMissing>
-	<RandomStartMod.SavedIdeoLoadFailed>The selected ideology could not be loaded. Check its game version and required mods, re-save it with your current mod list, or use the normal setup screens. The random start has stopped without replacing your selection.</RandomStartMod.SavedIdeoLoadFailed>
+	<RandomStartMod.SavedIdeoMissing>The selected ideology file cannot be found. Choose an existing saved ideology in Random Start settings, or disable the saved ideology override.</RandomStartMod.SavedIdeoMissing>
+	<RandomStartMod.SavedIdeoLoadFailed>The selected ideology could not be loaded. Check its game version and required mods, then re-save it with your current mod list. The random start has stopped without replacing your selection.</RandomStartMod.SavedIdeoLoadFailed>
 	<RandomStartMod.FluidMemeCountInfo>Fluid starts use the game's initial meme count. Forced and faction-required memes still apply.</RandomStartMod.FluidMemeCountInfo>
-	<RandomStartMod.CustomSetupRequired>The selected scenario includes a custom setup page that Random Start cannot complete automatically. Choose another scenario in Random Start settings, or explicitly enable normal setup pages to configure this scenario manually.</RandomStartMod.CustomSetupRequired>
 </LanguageData>

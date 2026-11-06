@@ -3,6 +3,8 @@
 The follow-up implementation and in-game checks are tracked in
 [compatibility-testing.md](compatibility-testing.md). Findings below describe the
 original `a64e7ee` baseline, not the current implementation.
+The historical UI-handover proposals below were subsequently rejected; the
+current mod has only the one-click path and no setup-screen option.
 
 ## Goal and evidence
 
